@@ -5,7 +5,12 @@ from typing import Annotated
 
 import typer
 
-from .engine import CONSTANT_DEFAULTS, DEFAULT_OUTPUT_VARIABLES, run_simulation
+from .engine import (
+    CONSTANT_DEFAULTS,
+    DEFAULT_OUTPUT_VARIABLES,
+    SimulationValidationError,
+    run_simulation,
+)
 from .models import SimulationRequest
 
 app = typer.Typer(name="pyworld3", help="Run World3 what-if simulations")
@@ -51,19 +56,23 @@ def simulate(
                 )
                 raise typer.Exit(code=1) from exc
 
-    request = SimulationRequest(
-        year_min=year_min,
-        year_max=year_max,
-        dt=dt,
-        pyear=pyear,
-        iphst=iphst,
-        constants=constants or None,
-        output_variables=var or None,
-    )
+    try:
+        request = SimulationRequest(
+            year_min=year_min,
+            year_max=year_max,
+            dt=dt,
+            pyear=pyear,
+            iphst=iphst,
+            constants=constants or None,
+            output_variables=var or None,
+        )
+    except ValueError as exc:
+        typer.echo(f"Error: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
 
     try:
         response = run_simulation(request)
-    except ValueError as exc:
+    except SimulationValidationError as exc:
         typer.echo(f"Error: {exc}", err=True)
         raise typer.Exit(code=1) from exc
 

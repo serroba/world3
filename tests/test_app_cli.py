@@ -71,3 +71,37 @@ def test_variables_command():
     assert result.exit_code == 0
     data = json.loads(result.stdout)
     assert "pop" in data
+
+
+# --- New validation tests ---
+
+
+def test_simulate_negative_constant():
+    result = runner.invoke(app, ["simulate", "--set", "nri=-1"])
+    assert result.exit_code == 1
+    assert "nri" in result.output
+
+
+def test_simulate_pyear_outside_range():
+    result = runner.invoke(app, ["simulate", "--pyear", "2200"])
+    assert result.exit_code == 1
+
+
+def test_simulate_iphst_outside_range():
+    result = runner.invoke(app, ["simulate", "--iphst", "1800"])
+    assert result.exit_code == 1
+
+
+def test_simulate_excessive_steps():
+    result = runner.invoke(app, ["simulate", "--dt", "0.001"])
+    assert result.exit_code == 1
+
+
+def test_simulate_year_min_out_of_bounds():
+    result = runner.invoke(app, ["simulate", "--year-min", "1000"])
+    assert result.exit_code == 1
+
+
+def test_simulate_year_max_out_of_bounds():
+    result = runner.invoke(app, ["simulate", "--year-max", "3000"])
+    assert result.exit_code == 1

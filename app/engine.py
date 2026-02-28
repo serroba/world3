@@ -4,6 +4,16 @@ from pyworld3 import World3
 
 from .models import SimulationRequest, SimulationResponse, TimeSeriesOutput
 
+
+class SimulationValidationError(ValueError):
+    """Raised for validation errors in simulation inputs/outputs.
+
+    This is a subclass of ValueError so existing code that catches ValueError
+    continues to work, but it can be caught specifically to distinguish our
+    validation messages from unexpected ValueErrors deeper in the stack.
+    """
+
+
 CONSTANT_DEFAULTS: dict[str, float] = {
     # Population sector
     "p1i": 65e7,
@@ -77,6 +87,87 @@ CONSTANT_DEFAULTS: dict[str, float] = {
     "nruf2": 1,
 }
 
+# (min, max) bounds for each constant. None means unbounded on that side.
+CONSTANT_CONSTRAINTS: dict[str, tuple[float | None, float | None]] = {
+    # Population initials (ge=0)
+    "p1i": (0, None),
+    "p2i": (0, None),
+    "p3i": (0, None),
+    "p4i": (0, None),
+    # Population time delays / rates (gt=0)
+    "dcfsn": (0, None),
+    "fcest": (0, None),
+    "hsid": (0, None),
+    "ieat": (0, None),
+    "len": (0, None),
+    "lpd": (0, None),
+    "mtfn": (0, None),
+    "pet": (0, None),
+    "rlt": (0, None),
+    "sad": (0, None),
+    "zpgt": (0, None),
+    # Capital initials (ge=0)
+    "ici": (0, None),
+    "sci": (0, None),
+    # Capital time delays / rates (gt=0)
+    "iet": (0, None),
+    "iopcd": (0, None),
+    "lufdt": (0, None),
+    # Capital multipliers / ratios (gt=0)
+    "icor1": (0, None),
+    "icor2": (0, None),
+    "scor1": (0, None),
+    "scor2": (0, None),
+    "alic1": (0, None),
+    "alic2": (0, None),
+    "alsc1": (0, None),
+    "alsc2": (0, None),
+    # Fractions (ge=0, le=1)
+    "lfpf": (0, 1),
+    "fioac1": (0, 1),
+    "fioac2": (0, 1),
+    # Agriculture initials (ge=0)
+    "ali": (0, None),
+    "pali": (0, None),
+    "io70": (0, None),
+    "uili": (0, None),
+    # Agriculture fractions / rates
+    "lfh": (0, 1),
+    "palt": (0, None),
+    "pl": (0, 1),
+    "alai1": (0, None),
+    "alai2": (0, None),
+    "lyf1": (0, None),
+    "lyf2": (0, None),
+    "sd": (0, None),
+    "alln": (0, None),
+    "uildt": (0, None),
+    "lferti": (0, None),
+    "ilf": (0, None),
+    "fspd": (0, None),
+    "sfpc": (0, None),
+    # Pollution initials (ge=0)
+    "ppoli": (0, None),
+    "ppol70": (0, None),
+    # Pollution rates / multipliers (gt=0)
+    "ahl70": (0, None),
+    "amti": (0, None),
+    "imti": (0, None),
+    "imef": (0, None),
+    "fipm": (0, None),
+    "frpm": (0, None),
+    "ppgf1": (0, None),
+    "ppgf2": (0, None),
+    "ppgf21": (0, None),
+    "pptd1": (0, None),
+    "pptd2": (0, None),
+    # Resource initial (ge=0)
+    "nri": (0, None),
+    # Resource multipliers (gt=0)
+    "nruf1": (0, None),
+    "nruf2": (0, None),
+}
+
 DEFAULT_OUTPUT_VARIABLES: list[str] = [
     "pop",
     "nr",
@@ -101,6 +192,22 @@ DEFAULT_OUTPUT_VARIABLES: list[str] = [
 ]
 
 
+def _validate_constants(overrides: dict[str, float]) -> None:
+    """Validate constant overrides against CONSTANT_CONSTRAINTS."""
+    errors: list[str] = []
+    for name, value in overrides.items():
+        bounds = CONSTANT_CONSTRAINTS.get(name)
+        if bounds is None:
+            continue
+        lo, hi = bounds
+        if lo is not None and value < lo:
+            errors.append(f"Constant '{name}' must be >= {lo}, got {value}")
+        if hi is not None and value > hi:
+            errors.append(f"Constant '{name}' must be <= {hi}, got {value}")
+    if errors:
+        raise SimulationValidationError("; ".join(errors))
+
+
 def run_simulation(request: SimulationRequest) -> SimulationResponse:
     world3 = World3(
         year_min=request.year_min,
@@ -114,8 +221,12 @@ def run_simulation(request: SimulationRequest) -> SimulationResponse:
     if request.constants:
         unknown = set(request.constants) - set(CONSTANT_DEFAULTS)
         if unknown:
-            raise ValueError(f"Unknown constants: {', '.join(sorted(unknown))}")
+            raise SimulationValidationError(
+                f"Unknown constants: {', '.join(sorted(unknown))}"
+            )
         merged.update(request.constants)
+
+    _validate_constants(merged)
 
     world3.init_world3_constants(**merged)
     world3.init_world3_variables()
@@ -129,18 +240,33 @@ def run_simulation(request: SimulationRequest) -> SimulationResponse:
         v for v in output_vars if v not in all_valid or not hasattr(world3, v)
     ]
     if unknown_vars:
-        raise ValueError(f"Unknown output variables: {', '.join(unknown_vars)}")
+        raise SimulationValidationError(
+            f"Unknown output variables: {', '.join(unknown_vars)}"
+        )
 
     series: dict[str, TimeSeriesOutput] = {}
     for var_name in output_vars:
         raw = getattr(world3, var_name)
         arr = np.asarray(raw, dtype=float)
         if np.any(np.isinf(arr)):
-            raise ValueError(
+            raise SimulationValidationError(
                 f"Infinite values encountered in simulation output for '{var_name}'"
             )
-        values = np.nan_to_num(arr, nan=0.0).tolist()
-        series[var_name] = TimeSeriesOutput(name=var_name, values=values)
+        nan_count = int(np.sum(np.isnan(arr)))
+        if nan_count > 0:
+            # Tolerate a single leading NaN (common initialization artifact in
+            # delay-based World3 variables like cbr/cdr at t=0).  Anything
+            # beyond that signals simulation divergence.
+            leading_nan = np.isnan(arr[0]) if len(arr) > 0 else False
+            if nan_count > 1 or (nan_count == 1 and not leading_nan):
+                raise SimulationValidationError(
+                    f"NaN values encountered in simulation output for"
+                    f" '{var_name}'; the simulation likely diverged"
+                )
+            # Replace the single leading NaN with 0.0
+            arr = arr.copy()
+            arr[0] = 0.0
+        series[var_name] = TimeSeriesOutput(name=var_name, values=arr.tolist())
 
     return SimulationResponse(
         year_min=request.year_min,

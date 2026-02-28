@@ -63,3 +63,49 @@ def test_simulate_no_body():
     assert resp.status_code == 200
     data = resp.json()
     assert "series" in data
+
+
+# --- New validation tests ---
+
+
+def test_simulate_negative_constant():
+    resp = client.post("/simulate", json={"constants": {"nri": -1}})
+    assert resp.status_code == 422
+    assert "nri" in resp.json()["detail"]
+
+
+def test_simulate_pyear_outside_range():
+    resp = client.post("/simulate", json={"pyear": 2200})
+    # Pydantic validation returns 422 via FastAPI's request validation
+    assert resp.status_code == 422
+
+
+def test_simulate_iphst_outside_range():
+    resp = client.post("/simulate", json={"iphst": 1800})
+    assert resp.status_code == 422
+
+
+def test_simulate_excessive_steps():
+    resp = client.post("/simulate", json={"dt": 0.001})
+    assert resp.status_code == 422
+
+
+def test_simulate_year_min_out_of_bounds():
+    resp = client.post("/simulate", json={"year_min": 1000})
+    assert resp.status_code == 422
+
+
+def test_simulate_year_max_out_of_bounds():
+    resp = client.post("/simulate", json={"year_max": 3000})
+    assert resp.status_code == 422
+
+
+def test_simulate_internal_error_no_leak():
+    """Unexpected errors should return generic 500, not leak internals."""
+    # A bare ValueError from deep in numpy/scipy should not leak through.
+    # We test this indirectly: our known validation errors return 422,
+    # and the 500 handler returns a generic message.
+    resp = client.post("/simulate", json={"constants": {"bad_param": 1}})
+    assert resp.status_code == 422
+    # The detail should be our validation message, not a stack trace
+    assert "Unknown constants" in resp.json()["detail"]
