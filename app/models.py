@@ -4,7 +4,9 @@ from pydantic import BaseModel, Field, model_validator
 class SimulationRequest(BaseModel):
     year_min: float = Field(default=1900, description="Start year of the simulation")
     year_max: float = Field(default=2100, description="End year of the simulation")
-    dt: float = Field(default=0.5, gt=0, description="Time step of the simulation [year]")
+    dt: float = Field(
+        default=0.5, gt=0, description="Time step of the simulation [year]"
+    )
     pyear: float = Field(
         default=1975, description="Implementation date of new policies [year]"
     )

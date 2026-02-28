@@ -1,7 +1,7 @@
 import json
 import sys
 from pathlib import Path
-from typing import Annotated, Optional
+from typing import Annotated
 
 import typer
 
@@ -19,15 +19,15 @@ def simulate(
     pyear: Annotated[float, typer.Option(help="Policy year")] = 1975,
     iphst: Annotated[float, typer.Option(help="Health policy year")] = 1940,
     set_: Annotated[
-        Optional[list[str]],
+        list[str] | None,
         typer.Option("--set", help="Constant override: name=value"),
     ] = None,
     var: Annotated[
-        Optional[list[str]],
+        list[str] | None,
         typer.Option(help="Output variable name"),
     ] = None,
     output: Annotated[
-        Optional[Path],
+        Path | None,
         typer.Option("--output", "-o", help="Output file (default: stdout)"),
     ] = None,
     pretty: Annotated[bool, typer.Option(help="Pretty-print JSON")] = False,
@@ -37,14 +37,19 @@ def simulate(
     if set_:
         for item in set_:
             if "=" not in item:
-                typer.echo(f"Error: invalid --set format '{item}', expected name=value", err=True)
+                typer.echo(
+                    f"Error: invalid --set format '{item}', expected name=value",
+                    err=True,
+                )
                 raise typer.Exit(code=1)
             name, val = item.split("=", 1)
             try:
                 constants[name] = float(val)
-            except ValueError:
-                typer.echo(f"Error: cannot parse '{val}' as float for '{name}'", err=True)
-                raise typer.Exit(code=1)
+            except ValueError as exc:
+                typer.echo(
+                    f"Error: cannot parse '{val}' as float for '{name}'", err=True
+                )
+                raise typer.Exit(code=1) from exc
 
     request = SimulationRequest(
         year_min=year_min,
@@ -60,7 +65,7 @@ def simulate(
         response = run_simulation(request)
     except ValueError as exc:
         typer.echo(f"Error: {exc}", err=True)
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from exc
 
     result = response.model_dump()
     indent = 2 if pretty else None

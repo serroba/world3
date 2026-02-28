@@ -125,7 +125,9 @@ def run_simulation(request: SimulationRequest) -> SimulationResponse:
 
     output_vars = request.output_variables or DEFAULT_OUTPUT_VARIABLES
     all_valid = set(DEFAULT_OUTPUT_VARIABLES) | set(CONSTANT_DEFAULTS)
-    unknown_vars = [v for v in output_vars if v not in all_valid or not hasattr(world3, v)]
+    unknown_vars = [
+        v for v in output_vars if v not in all_valid or not hasattr(world3, v)
+    ]
     if unknown_vars:
         raise ValueError(f"Unknown output variables: {', '.join(unknown_vars)}")
 
