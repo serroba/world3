@@ -1,0 +1,104 @@
+name: Simulation Check
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  simulation-visual:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: uv sync --extra app
+
+      - name: Run BAU simulation with summary and plot
+        run: |
+          uv run pyworld3 simulate --summary > sim_summary.txt
+          uv run pyworld3 simulate --plot world3_bau.png
+
+      - name: Commit plot to branch
+        run: |
+          mkdir -p .github/assets
+          cp world3_bau.png .github/assets/simulation-bau.png
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .github/assets/simulation-bau.png
+          git diff --cached --quiet && echo "No changes to commit" || \
+            git commit -m "Update BAU simulation plot [skip ci]" && git push
+
+      - name: Post PR comment with inline image
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const { owner, repo } = context.repo;
+            const prNumber = context.payload.pull_request.number;
+            const sha = context.sha.substring(0, 7);
+            const branch = context.payload.pull_request.head.ref;
+
+            const imgUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/.github/assets/simulation-bau.png`;
+            const summary = fs.readFileSync('sim_summary.txt', 'utf8');
+
+            const body = [
+              '## Simulation Check',
+              '',
+              'BAU scenario executed successfully on this branch.',
+              '',
+              '<details>',
+              '<summary><strong>Simulation Summary</strong> (click to expand)</summary>',
+              '',
+              '```',
+              summary.trim(),
+              '```',
+              '',
+              '</details>',
+              '',
+              '### BAU Scenario Plot',
+              '',
+              `![World3 BAU Simulation](${imgUrl})`,
+              '',
+              '---',
+              `_Generated automatically by CI on commit \`${sha}\`_`
+            ].join('\n');
+
+            const comments = await github.rest.issues.listComments({
+              owner, repo, issue_number: prNumber
+            });
+            const existing = comments.data.find(c =>
+              c.body.startsWith('## Simulation Check')
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner, repo,
+                comment_id: existing.id,
+                body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner, repo,
+                issue_number: prNumber,
+                body
+              });
+            }
+
+      - name: Upload plot artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bau-simulation-plot
+          path: world3_bau.png
