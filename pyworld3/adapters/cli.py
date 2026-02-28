@@ -234,7 +234,7 @@ def simulate(
         result = _service.run(request.to_params())
         response = SimulationResponse.from_result(result)
     except SimulationValidationError as exc:
-        typer.echo(f"Error: {exc}", err=True)
+        typer.echo(f"Error: {exc.safe_message}", err=True)
         raise typer.Exit(code=1) from exc
 
     if plot is not None:

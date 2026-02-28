@@ -24,7 +24,7 @@ def simulate(request: SimulationRequest | None = None):
         result = _service.run(request.to_params())
         return SimulationResponse.from_result(result)
     except SimulationValidationError as exc:
-        return JSONResponse(status_code=422, content={"detail": str(exc)})
+        return JSONResponse(status_code=422, content={"detail": exc.safe_message})
     except Exception:
         logger.exception("Unexpected error during simulation")
         return JSONResponse(
