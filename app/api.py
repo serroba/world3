@@ -3,7 +3,12 @@ import logging
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
-from .engine import CONSTANT_DEFAULTS, DEFAULT_OUTPUT_VARIABLES, run_simulation
+from .engine import (
+    CONSTANT_DEFAULTS,
+    DEFAULT_OUTPUT_VARIABLES,
+    SimulationValidationError,
+    run_simulation,
+)
 from .models import SimulationRequest, SimulationResponse
 
 logger = logging.getLogger(__name__)
@@ -17,7 +22,7 @@ def simulate(request: SimulationRequest | None = None):
         request = SimulationRequest()
     try:
         return run_simulation(request)
-    except ValueError as exc:
+    except SimulationValidationError as exc:
         return JSONResponse(status_code=422, content={"detail": str(exc)})
     except Exception:
         logger.exception("Unexpected error during simulation")
