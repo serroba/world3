@@ -13,10 +13,10 @@
 ---
 
 PyWorld3 is a Python implementation of the World3 model, as described in
-the book *Dynamics of Growth in a Finite World*. This version slightly differs
-from the previous one used in the world-known reference *the Limits to Growth*,
-because of different numerical parameters and a slightly different model
-structure.
+the book *Dynamics of Growth in a Finite World*. The lookup tables and default
+constants follow the 2004 "30-Year Update" (World3-03) parameterization from
+*Limits to Growth: The 30-Year Update*, based on the
+[PyWorld3-03](https://github.com/TimSchell98/PyWorld3-03) implementation.
 
 The World3 model is based on an Ordinary Differential Equation solved by a
 Backward Euler method. Although it is described with 12 state variables, taking
@@ -110,5 +110,9 @@ Jørgen Randers, and Erich Zahn. *Dynamics of Growth in a Finite World*.
 Cambridge, MA: Wright-Allen Press, 1974.
 - Meadows, Donella H., Dennis L. Meadows, Jorgen Randers, and William W.
 Behrens. *The Limits to Growth*. New York 102, no. 1972 (1972): 27.
+- Meadows, Donella H., Jorgen Randers, and Dennis L. Meadows. *Limits to
+Growth: The 30-Year Update*. Earthscan, 2005.
 - Markowich, P. *Sensitivity Analysis of Tech 1-A Systems Dynamics Model for
 Technological Shift*, (1979).
+- Vanwynsberghe, C. (2021). [PyWorld3](https://github.com/cvanwynsberghe/pyworld3) — The World3 model revisited in Python.
+- Nebel, A., Kling, A., Willamowski, R., & Schell, T. (2024). Recalibration of limits to growth: An update of the World3 model. *Journal of Industrial Ecology*, 28, 87–99. Their [PyWorld3-03](https://github.com/TimSchell98/PyWorld3-03) implementation provided the 2004 edition table functions and constants used in this fork.
