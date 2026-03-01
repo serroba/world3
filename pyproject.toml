@@ -38,6 +38,7 @@ app = [
 
 [project.scripts]
 pyworld3 = "pyworld3.adapters._entrypoint:main"
+generate-openapi = "scripts.generate_openapi:main"
 
 [project.urls]
 Homepage = "https://github.com/serroba/pyworld3"

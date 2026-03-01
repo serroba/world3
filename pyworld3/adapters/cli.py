@@ -1,4 +1,3 @@
-import importlib.resources
 import json
 import sys
 from collections import defaultdict
@@ -16,7 +15,13 @@ from pyworld3.domain.constants import (
 )
 from pyworld3.domain.exceptions import SimulationValidationError
 
-from .schemas import ScenarioFile, SimulationRequest, SimulationResponse
+from .schemas import (
+    ScenarioFile,
+    SimulationRequest,
+    SimulationResponse,
+)
+from .schemas import list_presets as _list_presets
+from .schemas import load_preset as _load_preset
 
 app = typer.Typer(name="pyworld3", help="Run World3 what-if simulations")
 
@@ -24,25 +29,6 @@ app = typer.Typer(name="pyworld3", help="Run World3 what-if simulations")
 # ---------------------------------------------------------------------------
 # Scenario / preset helpers
 # ---------------------------------------------------------------------------
-
-_PRESET_PACKAGE = "pyworld3.domain.presets"
-
-
-def _list_presets() -> list[str]:
-    """Return sorted list of available preset names (without .toml extension)."""
-    files = importlib.resources.files(_PRESET_PACKAGE)
-    return sorted(
-        p.name.removesuffix(".toml")
-        for p in files.iterdir()
-        if p.name.endswith(".toml")
-    )
-
-
-def _load_preset(name: str) -> ScenarioFile:
-    """Load a built-in preset by name."""
-    ref = importlib.resources.files(_PRESET_PACKAGE).joinpath(f"{name}.toml")
-    with importlib.resources.as_file(ref) as path:
-        return ScenarioFile.from_toml(path)
 
 
 def _load_scenario_file(path: Path) -> ScenarioFile:
