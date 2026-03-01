@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -849,10 +850,8 @@ def _print_validation_summary(result: ValidationResult) -> None:
     print("  " + "-" * (len(header) - 2))
 
     for name, vm in result.metrics.items():
-        mape_str = f"{vm.mape:.1f}%" if vm.mape == vm.mape else "N/A"
-        corr_str = (
-            f"{vm.correlation:.3f}" if vm.correlation == vm.correlation else "N/A"
-        )
+        mape_str = "N/A" if math.isnan(vm.mape) else f"{vm.mape:.1f}%"
+        corr_str = "N/A" if math.isnan(vm.correlation) else f"{vm.correlation:.3f}"
         print(
             f"  {name:<10s} {vm.rmse:>12.4g} {mape_str:>8s} {corr_str:>8s} "
             f"{vm.n_points:>8d} {vm.confidence:<10s}"

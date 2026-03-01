@@ -1,7 +1,9 @@
+from unittest.mock import patch
+
 from fastapi.testclient import TestClient
 
 from pyworld3.adapters.api import app
-from pyworld3.adapters.schemas import list_presets
+from pyworld3.adapters.schemas import ScenarioFile, list_presets
 from pyworld3.domain.constants import CONSTANT_DEFAULTS, DEFAULT_OUTPUT_VARIABLES
 
 client = TestClient(app)
@@ -250,3 +252,204 @@ def test_static_css_served():
     resp = client.get("/css/variables.css")
     assert resp.status_code == 200
     assert "--color-primary" in resp.text
+
+
+# --- Calibrate endpoint ---
+
+
+def _mock_calibrate_service_init(self, client=None):
+    """Patch CalibrationService to use a mock client that returns canned data."""
+    from pyworld3.adapters.owid.client import OWIDClient
+
+    mock_client = OWIDClient.__new__(OWIDClient)
+    mock_values = {
+        "sp_pop_totl": 3.7e9,
+        "sp_pop_0014_to_zs": 37.1,
+        "sp_pop_1564_to_zs": 57.6,
+        "sp_pop_65up_to_zs": 5.3,
+        "sp_dyn_tfrt_in": 4.74,
+        "ny_gdp_mktp_cd": 2.9e12,
+        "nv_ind_totl_zs": 38.0,
+        "ne_gdi_totl_zs": 25.0,
+        "en_atm_co2e_pp_gd": 0.95,
+    }
+    mock_client.fetch_value = lambda parquet_url, column, year, **kw: mock_values.get(
+        column
+    )
+    self._client = mock_client
+
+
+def _mock_validate_service_init(self, client=None):
+    """Patch ValidationService to use a mock client that returns canned timeseries."""
+    from pyworld3.adapters.owid.client import OWIDClient
+
+    mock_client = OWIDClient.__new__(OWIDClient)
+    mock_ts = {
+        "sp_pop_totl": (
+            [1960, 1970, 1980, 1990, 2000, 2010, 2020],
+            [3.0e9, 3.7e9, 4.4e9, 5.3e9, 6.1e9, 6.9e9, 7.8e9],
+        ),
+        "sp_dyn_le00_in": (
+            [1960, 1970, 1980, 1990, 2000, 2010, 2020],
+            [52.6, 58.8, 63.0, 65.4, 67.7, 70.6, 72.7],
+        ),
+        "sp_dyn_cbrt_in": (
+            [1960, 1970, 1980, 1990, 2000, 2010, 2020],
+            [34.9, 32.5, 28.3, 26.0, 21.5, 19.4, 17.9],
+        ),
+        "sp_dyn_cdrt_in": (
+            [1960, 1970, 1980, 1990, 2000, 2010, 2020],
+            [17.7, 12.4, 10.7, 9.4, 8.7, 7.9, 7.6],
+        ),
+    }
+
+    def _fetch_ts(parquet_url, column, **kwargs):
+        data = mock_ts.get(column)
+        if data is None:
+            return [], []
+        years, values = data
+        yr_min = kwargs.get("year_min")
+        yr_max = kwargs.get("year_max")
+        filtered = [
+            (y, v)
+            for y, v in zip(years, values)
+            if (yr_min is None or y >= yr_min) and (yr_max is None or y <= yr_max)
+        ]
+        if not filtered:
+            return [], []
+        return ([float(y) for y, _ in filtered], [float(v) for _, v in filtered])
+
+    mock_client.fetch_timeseries = _fetch_ts
+    self._client = mock_client
+
+
+def test_calibrate_default():
+    with patch(
+        "pyworld3.application.calibrate.CalibrationService.__init__",
+        _mock_calibrate_service_init,
+    ):
+        resp = client.post("/calibrate", json={})
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["reference_year"] == 1970
+    assert data["entity"] == "World"
+    assert "constants" in data
+
+
+def test_calibrate_with_parameters():
+    with patch(
+        "pyworld3.application.calibrate.CalibrationService.__init__",
+        _mock_calibrate_service_init,
+    ):
+        resp = client.post("/calibrate", json={"parameters": ["p1i"]})
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "constants" in data
+    assert "p1i" in data["constants"]
+
+
+def test_calibrate_no_body():
+    with patch(
+        "pyworld3.application.calibrate.CalibrationService.__init__",
+        _mock_calibrate_service_init,
+    ):
+        resp = client.post("/calibrate")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "constants" in data
+
+
+# --- Validate endpoint ---
+
+
+def test_validate_default():
+    with patch(
+        "pyworld3.application.validate.ValidationService.__init__",
+        _mock_validate_service_init,
+    ):
+        resp = client.post("/validate")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["entity"] == "World"
+    assert "metrics" in data
+    assert "overlap_start" in data
+    assert "overlap_end" in data
+
+
+def test_validate_with_variables():
+    with patch(
+        "pyworld3.application.validate.ValidationService.__init__",
+        _mock_validate_service_init,
+    ):
+        resp = client.post(
+            "/validate",
+            json={"validation_request": {"variables": ["pop"]}},
+        )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "metrics" in data
+
+
+def test_validate_metrics_structure():
+    with patch(
+        "pyworld3.application.validate.ValidationService.__init__",
+        _mock_validate_service_init,
+    ):
+        resp = client.post("/validate")
+    assert resp.status_code == 200
+    data = resp.json()
+    for _name, metric in data["metrics"].items():
+        assert "rmse" in metric
+        assert "mape" in metric
+        assert "correlation" in metric
+        assert "n_points" in metric
+        assert "confidence" in metric
+
+
+def test_year_max_less_than_year_min_returns_422():
+    resp = client.post("/simulate", json={"year_min": 2000, "year_max": 1950})
+    assert resp.status_code == 422
+
+
+# --- ScenarioFile.to_simulation_request override tests ---
+
+
+def test_scenario_cli_override_precedence():
+    """CLI overrides take priority over file values."""
+    scenario = ScenarioFile(name="Test", year_min=1950, pyear=1980, iphst=1950)
+    request = scenario.to_simulation_request(year_min=1900, pyear=1975, iphst=1940)
+    assert request.year_min == 1900
+    assert request.pyear == 1975
+    assert request.iphst == 1940
+
+
+def test_scenario_constants_merging():
+    """File + CLI constants merge correctly, with CLI winning on conflicts."""
+    scenario = ScenarioFile(name="Test", constants={"nri": 2e12, "ici": 1e11})
+    request = scenario.to_simulation_request(constants={"nri": 3e12, "sci": 5e10})
+    assert request.constants["nri"] == 3e12
+    assert request.constants["ici"] == 1e11
+    assert request.constants["sci"] == 5e10
+
+
+def test_scenario_output_variables_override():
+    """CLI output_variables override file values."""
+    scenario = ScenarioFile(name="Test", output_variables=["pop", "nr"])
+    request = scenario.to_simulation_request(output_variables=["le", "fpc"])
+    assert request.output_variables == ["le", "fpc"]
+
+
+def test_scenario_file_values_used_when_no_cli():
+    """File values are used when CLI provides None."""
+    scenario = ScenarioFile(
+        name="Test",
+        year_min=1900,
+        year_max=2050,
+        constants={"nri": 2e12},
+        output_variables=["pop"],
+    )
+    request = scenario.to_simulation_request()
+    assert request.year_min == 1900
+    assert request.year_max == 2050
+    assert request.constants["nri"] == 2e12
+    assert request.output_variables == ["pop"]

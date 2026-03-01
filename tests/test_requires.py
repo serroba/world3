@@ -74,3 +74,14 @@ class TestRequires:
     def test_decorated_function_preserves_name(self):
         s = FakeSector()
         assert s.update_pop_only.__name__ == "update_pop_only"
+
+    def test_verbose_logs_warning_on_nan(self, capsys):
+        s = FakeSector()
+        s.verbose = True
+        # k=1 → pop[1] is NaN, verbose should print warning
+        s.update_pop_only(1)
+        assert s.redo_loop is True
+        captured = capsys.readouterr()
+        assert "Warning" in captured.out
+        assert "POP" in captured.out
+        assert "Rescheduling" in captured.out
