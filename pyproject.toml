@@ -52,6 +52,7 @@ dev = [
     "httpx",
     "mypy",
     "pre-commit",
+    "scipy-stubs~=1.17.1",
 ]
 
 [tool.hatch.version]
