@@ -132,6 +132,7 @@ class TestFractionBounds:
         ({"year_min": 1000}, "greater than or equal to 1900"),
         ({"year_max": 3000}, "less than or equal to 2500"),
         ({"dt": 200}, "less than or equal to 100"),
+        ({"year_min": 2000, "year_max": 1950}, "year_max.*must be >= year_min"),
     ],
     ids=[
         "pyear_above_range",
@@ -140,6 +141,7 @@ class TestFractionBounds:
         "year_min_too_low",
         "year_max_too_high",
         "dt_too_large",
+        "year_max_below_year_min",
     ],
 )
 def test_request_schema_validation(kwargs, match):

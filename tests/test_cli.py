@@ -1,4 +1,5 @@
 import json
+from unittest.mock import patch
 
 from typer.testing import CliRunner
 
@@ -320,3 +321,174 @@ def test_compare_with_plot(tmp_path):
     assert result.exit_code == 0
     assert plot_file.exists()
     assert plot_file.stat().st_size > 0
+
+
+# --- Calibrate command tests ---
+
+
+def _mock_calibrate_init(self, client=None):
+    from pyworld3.adapters.owid.client import OWIDClient
+
+    mock_client = OWIDClient.__new__(OWIDClient)
+    mock_values = {
+        "sp_pop_totl": 3.7e9,
+        "sp_pop_0014_to_zs": 37.1,
+        "sp_pop_1564_to_zs": 57.6,
+        "sp_pop_65up_to_zs": 5.3,
+        "sp_dyn_tfrt_in": 4.74,
+        "ny_gdp_mktp_cd": 2.9e12,
+        "nv_ind_totl_zs": 38.0,
+        "ne_gdi_totl_zs": 25.0,
+        "en_atm_co2e_pp_gd": 0.95,
+    }
+    mock_client.fetch_value = lambda parquet_url, column, year, **kw: mock_values.get(
+        column
+    )
+    self._client = mock_client
+
+
+def _mock_validate_init(self, client=None):
+    from pyworld3.adapters.owid.client import OWIDClient
+
+    mock_client = OWIDClient.__new__(OWIDClient)
+    mock_ts = {
+        "sp_pop_totl": (
+            [1960, 1970, 1980, 1990, 2000, 2010, 2020],
+            [3.0e9, 3.7e9, 4.4e9, 5.3e9, 6.1e9, 6.9e9, 7.8e9],
+        ),
+        "sp_dyn_le00_in": (
+            [1960, 1970, 1980, 1990, 2000, 2010, 2020],
+            [52.6, 58.8, 63.0, 65.4, 67.7, 70.6, 72.7],
+        ),
+        "sp_dyn_cbrt_in": (
+            [1960, 1970, 1980, 1990, 2000, 2010, 2020],
+            [34.9, 32.5, 28.3, 26.0, 21.5, 19.4, 17.9],
+        ),
+        "sp_dyn_cdrt_in": (
+            [1960, 1970, 1980, 1990, 2000, 2010, 2020],
+            [17.7, 12.4, 10.7, 9.4, 8.7, 7.9, 7.6],
+        ),
+    }
+
+    def _fetch_ts(parquet_url, column, **kwargs):
+        data = mock_ts.get(column)
+        if data is None:
+            return [], []
+        years, values = data
+        yr_min = kwargs.get("year_min")
+        yr_max = kwargs.get("year_max")
+        filtered = [
+            (y, v)
+            for y, v in zip(years, values)
+            if (yr_min is None or y >= yr_min) and (yr_max is None or y <= yr_max)
+        ]
+        if not filtered:
+            return [], []
+        return ([float(y) for y, _ in filtered], [float(v) for _, v in filtered])
+
+    mock_client.fetch_timeseries = _fetch_ts
+    self._client = mock_client
+
+
+_PATCH_CALIBRATE = patch(
+    "pyworld3.application.calibrate.CalibrationService.__init__",
+    _mock_calibrate_init,
+)
+_PATCH_VALIDATE = patch(
+    "pyworld3.application.validate.ValidationService.__init__",
+    _mock_validate_init,
+)
+
+
+def test_calibrate_default():
+    with _PATCH_CALIBRATE:
+        result = runner.invoke(app, ["calibrate"])
+    assert result.exit_code == 0
+    data = json.loads(result.stdout)
+    assert data["reference_year"] == 1970
+    assert "constants" in data
+
+
+def test_calibrate_with_param():
+    with _PATCH_CALIBRATE:
+        result = runner.invoke(app, ["calibrate", "--param", "p1i"])
+    assert result.exit_code == 0
+    data = json.loads(result.stdout)
+    assert "constants" in data
+
+
+def test_calibrate_pretty():
+    with _PATCH_CALIBRATE:
+        result = runner.invoke(app, ["calibrate", "--pretty"])
+    assert result.exit_code == 0
+    data = json.loads(result.stdout)
+    assert "constants" in data
+
+
+def test_calibrate_output_file(tmp_path):
+    outfile = tmp_path / "calibration.json"
+    with _PATCH_CALIBRATE:
+        result = runner.invoke(app, ["calibrate", "--output", str(outfile)])
+    assert result.exit_code == 0
+    data = json.loads(outfile.read_text())
+    assert "constants" in data
+
+
+# --- Validate command tests ---
+
+
+def test_validate_default():
+    with _PATCH_VALIDATE:
+        result = runner.invoke(app, ["validate"])
+    assert result.exit_code == 0
+    data = json.loads(result.stdout)
+    assert "metrics" in data
+    assert "entity" in data
+
+
+def test_validate_with_preset():
+    with _PATCH_VALIDATE:
+        result = runner.invoke(app, ["validate", "--preset", "standard-run"])
+    assert result.exit_code == 0
+    data = json.loads(result.stdout)
+    assert "metrics" in data
+
+
+def test_validate_summary():
+    with _PATCH_VALIDATE:
+        result = runner.invoke(app, ["validate", "--summary"])
+    assert result.exit_code == 0
+    assert "Validation Summary" in result.stdout
+
+
+def test_validate_with_var():
+    with _PATCH_VALIDATE:
+        result = runner.invoke(app, ["validate", "--var", "pop"])
+    assert result.exit_code == 0
+    data = json.loads(result.stdout)
+    assert "metrics" in data
+
+
+def test_validate_output_file(tmp_path):
+    outfile = tmp_path / "validation.json"
+    with _PATCH_VALIDATE:
+        result = runner.invoke(app, ["validate", "--output", str(outfile)])
+    assert result.exit_code == 0
+    data = json.loads(outfile.read_text())
+    assert "metrics" in data
+
+
+def test_validate_from_and_preset_mutually_exclusive(tmp_path):
+    scenario = tmp_path / "test.toml"
+    scenario.write_text('name = "Test"\n[constants]\n')
+    result = runner.invoke(
+        app, ["validate", "--from", str(scenario), "--preset", "standard-run"]
+    )
+    assert result.exit_code == 1
+    assert "mutually exclusive" in result.output
+
+
+def test_validate_unknown_preset():
+    result = runner.invoke(app, ["validate", "--preset", "nonexistent"])
+    assert result.exit_code == 1
+    assert "nonexistent" in result.output
