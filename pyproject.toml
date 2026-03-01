@@ -53,11 +53,17 @@ Repository = "https://github.com/serroba/pyworld3"
 dev = [
     "pytest",
     "pytest-cov",
+    "pytest-playwright",
     "ruff",
     "httpx",
     "mypy",
     "pre-commit",
     "scipy-stubs~=1.17.1",
+]
+e2e = [
+    "pytest",
+    "pytest-playwright",
+    "pyworld3[app]",
 ]
 
 [tool.hatch.version]
@@ -67,7 +73,10 @@ path = "pyworld3/__init__.py"
 packages = ["pyworld3"]
 
 [tool.pytest.ini_options]
-addopts = "--cov=pyworld3 --cov-report=term-missing"
+addopts = "--cov=pyworld3 --cov-report=term-missing --ignore=tests/e2e"
+markers = [
+    "e2e: end-to-end browser tests",
+]
 
 [tool.coverage.run]
 source = ["pyworld3"]
