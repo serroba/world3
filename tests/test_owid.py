@@ -13,6 +13,18 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+try:
+    import pandas  # noqa: F401
+    import pyarrow  # noqa: F401
+
+    _has_pandas = True
+except ModuleNotFoundError:
+    _has_pandas = False
+
+requires_pandas = pytest.mark.skipif(
+    not _has_pandas, reason="pandas/pyarrow required for OWID client tests"
+)
+
 # ---------------------------------------------------------------------------
 # Helpers to build mock parquet data
 # ---------------------------------------------------------------------------
@@ -127,6 +139,7 @@ def mock_wdi_parquet(tmp_cache: Path) -> Path:
 # ---------------------------------------------------------------------------
 
 
+@requires_pandas
 class TestOWIDClient:
     def test_fetch_indicator_filters_by_entity_and_year(
         self, tmp_cache, mock_wdi_parquet
