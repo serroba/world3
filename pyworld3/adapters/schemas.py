@@ -1,3 +1,4 @@
+import importlib.resources
 import tomllib
 from pathlib import Path
 from typing import Any
@@ -145,3 +146,72 @@ class SimulationResponse(BaseModel):
                 for name, ts in result.series.items()
             },
         )
+
+
+# ---------------------------------------------------------------------------
+# Preset helpers (shared by CLI + API)
+# ---------------------------------------------------------------------------
+
+_PRESET_PACKAGE = "pyworld3.domain.presets"
+
+
+def list_presets() -> list[str]:
+    """Return sorted list of available preset names (without .toml extension)."""
+    files = importlib.resources.files(_PRESET_PACKAGE)
+    return sorted(
+        p.name.removesuffix(".toml")
+        for p in files.iterdir()
+        if p.name.endswith(".toml")
+    )
+
+
+def load_preset(name: str) -> ScenarioFile:
+    """Load a built-in preset by name."""
+    ref = importlib.resources.files(_PRESET_PACKAGE).joinpath(f"{name}.toml")
+    with importlib.resources.as_file(ref) as path:
+        return ScenarioFile.from_toml(path)
+
+
+# ---------------------------------------------------------------------------
+# API-specific schemas
+# ---------------------------------------------------------------------------
+
+
+class PresetInfo(BaseModel):
+    name: str
+    description: str
+    constants: dict[str, float]
+
+
+class ScenarioSpec(BaseModel):
+    """One side of a comparison: either a preset name or an inline request."""
+
+    preset: str | None = None
+    request: SimulationRequest | None = None
+
+    @model_validator(mode="after")
+    def _at_least_one(self):
+        if self.preset is None and self.request is None:
+            raise ValueError("Either 'preset' or 'request' must be provided")
+        return self
+
+
+class CompareRequest(BaseModel):
+    scenario_a: ScenarioSpec
+    scenario_b: ScenarioSpec | None = None
+
+
+class CompareMetric(BaseModel):
+    label: str
+    variable: str
+    value_a: float
+    value_b: float
+    delta_pct: float | None
+
+
+class CompareResponse(BaseModel):
+    scenario_a: str
+    scenario_b: str
+    results_a: SimulationResponse
+    results_b: SimulationResponse
+    metrics: list[CompareMetric]

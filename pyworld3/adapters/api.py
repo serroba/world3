@@ -1,17 +1,74 @@
 import logging
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 
 from pyworld3.application.container import get_service
 from pyworld3.domain.constants import CONSTANT_DEFAULTS, DEFAULT_OUTPUT_VARIABLES
 from pyworld3.domain.exceptions import SimulationValidationError
 
-from .schemas import SimulationRequest, SimulationResponse
+from .schemas import (
+    CompareMetric,
+    CompareRequest,
+    CompareResponse,
+    PresetInfo,
+    ScenarioSpec,
+    SimulationRequest,
+    SimulationResponse,
+    list_presets,
+    load_preset,
+)
 
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="PyWorld3 API", description="Run World3 what-if simulations")
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+_COMPARE_METRICS = [
+    ("Population", "pop"),
+    ("Industrial output/cap", "iopc"),
+    ("Food/capita", "fpc"),
+    ("Pollution index", "ppolx"),
+    ("Resources remaining", "nrfr"),
+    ("Life expectancy", "le"),
+]
+
+
+def _run(request: SimulationRequest) -> SimulationResponse:
+    service = get_service()
+    result = service.run(request.to_params())
+    return SimulationResponse.from_result(result)
+
+
+def _resolve_spec(spec: ScenarioSpec) -> tuple[str, SimulationRequest]:
+    """Resolve a ScenarioSpec into a label and SimulationRequest."""
+    if spec.preset is not None:
+        available = list_presets()
+        if spec.preset not in available:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Unknown preset '{spec.preset}'. Available: {', '.join(available)}",
+            )
+        scenario = load_preset(spec.preset)
+        base_request = scenario.to_simulation_request()
+        if spec.request is not None:
+            # Merge overrides from the inline request
+            overrides = spec.request.model_dump(exclude_defaults=True)
+            base_request = SimulationRequest(
+                **{**base_request.model_dump(), **overrides}
+            )
+        return scenario.name, base_request
+    # inline request only
+    return "Custom", spec.request or SimulationRequest()
+
+
+# ---------------------------------------------------------------------------
+# Endpoints
+# ---------------------------------------------------------------------------
 
 
 @app.post("/simulate", response_model=SimulationResponse)
@@ -19,9 +76,7 @@ def simulate(request: SimulationRequest | None = None):
     if request is None:
         request = SimulationRequest()
     try:
-        service = get_service()
-        result = service.run(request.to_params())
-        return SimulationResponse.from_result(result)
+        return _run(request)
     except SimulationValidationError as exc:
         return JSONResponse(status_code=422, content={"detail": exc.safe_message})
     except Exception:
@@ -40,3 +95,97 @@ def constants() -> dict[str, float]:
 @app.get("/variables")
 def variables() -> list[str]:
     return DEFAULT_OUTPUT_VARIABLES
+
+
+@app.get("/presets", response_model=list[PresetInfo])
+def get_presets():
+    """List available built-in scenario presets."""
+    result = []
+    for name in list_presets():
+        scenario = load_preset(name)
+        result.append(
+            PresetInfo(
+                name=name,
+                description=scenario.description,
+                constants=scenario.constants,
+            )
+        )
+    return result
+
+
+@app.post("/simulate/preset/{preset_name}", response_model=SimulationResponse)
+def simulate_preset(
+    preset_name: str,
+    overrides: SimulationRequest | None = None,
+):
+    """Run a simulation using a built-in preset, with optional overrides."""
+    available = list_presets()
+    if preset_name not in available:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Unknown preset '{preset_name}'. Available: {', '.join(available)}",
+        )
+    scenario = load_preset(preset_name)
+    request = scenario.to_simulation_request()
+    if overrides is not None:
+        override_data = overrides.model_dump(exclude_defaults=True)
+        request = SimulationRequest(**{**request.model_dump(), **override_data})
+    try:
+        return _run(request)
+    except SimulationValidationError as exc:
+        return JSONResponse(status_code=422, content={"detail": exc.safe_message})
+    except Exception:
+        logger.exception("Unexpected error during simulation")
+        return JSONResponse(
+            status_code=500,
+            content={"detail": "Internal server error"},
+        )
+
+
+@app.post("/compare", response_model=CompareResponse)
+def compare(body: CompareRequest):
+    """Compare two scenarios side by side."""
+    label_a, req_a = _resolve_spec(body.scenario_a)
+    if body.scenario_b is not None:
+        label_b, req_b = _resolve_spec(body.scenario_b)
+    else:
+        label_b, req_b = "Standard Run", SimulationRequest()
+
+    try:
+        resp_a = _run(req_a)
+        resp_b = _run(req_b)
+    except SimulationValidationError as exc:
+        return JSONResponse(status_code=422, content={"detail": exc.safe_message})
+    except Exception:
+        logger.exception("Unexpected error during comparison")
+        return JSONResponse(
+            status_code=500,
+            content={"detail": "Internal server error"},
+        )
+
+    metrics: list[CompareMetric] = []
+    for label, var in _COMPARE_METRICS:
+        series_a = resp_a.series.get(var)
+        series_b = resp_b.series.get(var)
+        if not series_a or not series_b:
+            continue
+        val_a = series_a.values[-1]
+        val_b = series_b.values[-1]
+        delta_pct = ((val_b - val_a) / abs(val_a) * 100) if val_a != 0 else None
+        metrics.append(
+            CompareMetric(
+                label=label,
+                variable=var,
+                value_a=val_a,
+                value_b=val_b,
+                delta_pct=delta_pct,
+            )
+        )
+
+    return CompareResponse(
+        scenario_a=label_a,
+        scenario_b=label_b,
+        results_a=resp_a,
+        results_b=resp_b,
+        metrics=metrics,
+    )

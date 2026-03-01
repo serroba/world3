@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 
 from pyworld3.adapters.api import app
+from pyworld3.adapters.schemas import list_presets
 from pyworld3.domain.constants import CONSTANT_DEFAULTS, DEFAULT_OUTPUT_VARIABLES
 
 client = TestClient(app)
@@ -106,3 +107,95 @@ def test_simulate_internal_error_no_leak():
     assert resp.status_code == 422
     # The detail should be our validation message, not a stack trace
     assert "Unknown constants" in resp.json()["detail"]
+
+
+# --- Preset endpoints ---
+
+
+def test_get_presets():
+    resp = client.get("/presets")
+    assert resp.status_code == 200
+    data = resp.json()
+    names = [p["name"] for p in data]
+    assert len(data) == len(list_presets())
+    assert "standard-run" in names
+    assert "doubled-resources" in names
+    for p in data:
+        assert "description" in p
+        assert "constants" in p
+
+
+def test_simulate_preset():
+    resp = client.post("/simulate/preset/standard-run")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "series" in data
+    assert data["year_min"] == 1900
+
+
+def test_simulate_preset_with_overrides():
+    resp = client.post(
+        "/simulate/preset/standard-run",
+        json={"constants": {"nri": 2e12}},
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["constants_used"]["nri"] == 2e12
+
+
+def test_simulate_unknown_preset():
+    resp = client.post("/simulate/preset/does-not-exist")
+    assert resp.status_code == 404
+    assert "Unknown preset" in resp.json()["detail"]
+
+
+# --- Compare endpoint ---
+
+
+def test_compare_two_presets():
+    resp = client.post(
+        "/compare",
+        json={
+            "scenario_a": {"preset": "standard-run"},
+            "scenario_b": {"preset": "doubled-resources"},
+        },
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["scenario_a"] == "Standard Run"
+    assert data["scenario_b"] == "Doubled Resources"
+    assert "results_a" in data
+    assert "results_b" in data
+    assert len(data["metrics"]) > 0
+    metric_vars = [m["variable"] for m in data["metrics"]]
+    assert "pop" in metric_vars
+
+
+def test_compare_single_preset_vs_defaults():
+    resp = client.post(
+        "/compare",
+        json={"scenario_a": {"preset": "doubled-resources"}},
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["scenario_b"] == "Standard Run"
+    assert len(data["metrics"]) > 0
+
+
+def test_compare_inline_requests():
+    resp = client.post(
+        "/compare",
+        json={
+            "scenario_a": {"request": {"constants": {"nri": 2e12}}},
+            "scenario_b": {"request": {}},
+        },
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["scenario_a"] == "Custom"
+    assert data["results_a"]["constants_used"]["nri"] == 2e12
+
+
+def test_compare_must_specify_scenario_a():
+    resp = client.post("/compare", json={})
+    assert resp.status_code == 422
