@@ -57,7 +57,7 @@ jobs:
 
       - name: Container logs on failure
         if: failure()
-        run: docker logs w3
+        run: docker logs w3 2>/dev/null || true
 
       - name: Teardown
         if: always()
