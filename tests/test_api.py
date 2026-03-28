@@ -248,6 +248,13 @@ def test_static_js_served():
     assert "State" in resp.text
 
 
+def test_static_model_data_served():
+    resp = client.get("/js/model-data.js")
+    assert resp.status_code == 200
+    assert "const ModelData" in resp.text
+    assert "standard-run" in resp.text
+
+
 def test_static_css_served():
     resp = client.get("/css/variables.css")
     assert resp.status_code == 200
