@@ -4,6 +4,7 @@ import { ModelData } from "../ts/model-data.ts";
 import {
   LOCAL_PROVIDER_ERROR,
   createLocalSimulationCore,
+  createRuntimeBackedLocalSimulationCore,
   hasExplicitOverrides,
 } from "../ts/core/local-simulation-core.ts";
 import type { SimulationResult } from "../ts/simulation-contracts.ts";
@@ -70,5 +71,22 @@ describe("local simulation core", () => {
     await expect(
       core.compare({ preset: "standard-run" }),
     ).rejects.toThrow(LOCAL_PROVIDER_ERROR);
+  });
+
+  test("can run through the runtime-backed seam for standard-run", async () => {
+    const runtime = {
+      prepareStandardRun: vi.fn(async () => ({
+        request: {},
+        outputVariables: ["pop"],
+        time: new Float64Array([1900, 1900.5]),
+        lookupLibrary: new Map(),
+      })),
+      simulateStandardRun: vi.fn(async () => fixture),
+    };
+    const core = createRuntimeBackedLocalSimulationCore(ModelData, runtime);
+
+    await expect(core.simulatePreset("standard-run")).resolves.toEqual(fixture);
+    expect(runtime.prepareStandardRun).toHaveBeenCalledTimes(1);
+    expect(runtime.simulateStandardRun).toHaveBeenCalledTimes(1);
   });
 });

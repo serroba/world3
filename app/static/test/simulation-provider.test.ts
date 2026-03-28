@@ -26,6 +26,16 @@ type TestWindow = Window &
     SimulationProvider?: SimulationProviderApi;
   };
 
+const world3TablesFixture = [
+  {
+    sector: "Population",
+    "x.name": "LE",
+    "x.values": [20, 40],
+    "y.name": "M1",
+    "y.values": [0.05, 0.03],
+  },
+];
+
 const fixture: MockSimulationResult = {
   year_min: 1900,
   year_max: 2100,
@@ -114,10 +124,15 @@ describe("simulation provider", () => {
 
   test("serves the local standard-run fixture and caches the fetch", async () => {
     window.__PYWORLD3_PROVIDER_MODE__ = "local";
-    vi.mocked(globalThis.fetch).mockResolvedValue({
-      ok: true,
-      json: async () => fixture,
-    } as Response);
+    vi.mocked(globalThis.fetch)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => world3TablesFixture,
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => fixture,
+      } as Response);
 
     const { ModelData, createSimulationProvider } = await loadProviderSuite();
     const simulationProvider = createSimulationProvider(ModelData);
@@ -126,17 +141,22 @@ describe("simulation provider", () => {
     const second = await simulationProvider.simulate();
 
     expect(simulationProvider.mode).toBe("local");
-    expect(globalThis.fetch).toHaveBeenCalledTimes(1);
+    expect(globalThis.fetch).toHaveBeenCalledTimes(2);
     expect(first).toEqual(fixture);
     expect(second).toEqual(fixture);
   });
 
   test("passes through an abort signal for the local fixture fetch", async () => {
     window.__PYWORLD3_PROVIDER_MODE__ = "local";
-    vi.mocked(globalThis.fetch).mockResolvedValue({
-      ok: true,
-      json: async () => fixture,
-    } as Response);
+    vi.mocked(globalThis.fetch)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => world3TablesFixture,
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => fixture,
+      } as Response);
     const signal = new AbortController().signal;
 
     const { ModelData, createSimulationProvider } = await loadProviderSuite();
@@ -145,7 +165,13 @@ describe("simulation provider", () => {
     await expect(
       simulationProvider.simulate(undefined, { signal }),
     ).resolves.toEqual(fixture);
-    expect(globalThis.fetch).toHaveBeenCalledWith(
+    expect(globalThis.fetch).toHaveBeenNthCalledWith(
+      1,
+      "/data/functions-table-world3.json",
+      {},
+    );
+    expect(globalThis.fetch).toHaveBeenNthCalledWith(
+      2,
       "/data/standard-run-explore.json",
       { signal },
     );
@@ -204,6 +230,10 @@ describe("simulation provider", () => {
     window.__PYWORLD3_PROVIDER_MODE__ = "local";
     vi.mocked(globalThis.fetch)
       .mockResolvedValueOnce({
+        ok: true,
+        json: async () => world3TablesFixture,
+      } as Response)
+      .mockResolvedValueOnce({
         ok: false,
         status: 503,
       } as Response)
@@ -221,15 +251,20 @@ describe("simulation provider", () => {
     await expect(
       simulationProvider.simulatePreset("standard-run"),
     ).resolves.toEqual(fixture);
-    expect(globalThis.fetch).toHaveBeenCalledTimes(2);
+    expect(globalThis.fetch).toHaveBeenCalledTimes(3);
   });
 
   test("browser-native bridge populates window globals", async () => {
     window.__PYWORLD3_PROVIDER_MODE__ = "local";
-    vi.mocked(globalThis.fetch).mockResolvedValue({
-      ok: true,
-      json: async () => fixture,
-    } as Response);
+    vi.mocked(globalThis.fetch)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => world3TablesFixture,
+      } as Response)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => fixture,
+      } as Response);
 
     const { ModelData } = await loadProviderSuite();
 
