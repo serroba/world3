@@ -10,6 +10,12 @@ type MockSimulationResult = {
 };
 
 declare global {
+  type ApiMock = {
+    simulatePreset: ReturnType<typeof vi.fn>;
+    simulate: ReturnType<typeof vi.fn>;
+    compare: ReturnType<typeof vi.fn>;
+  };
+
   interface Window {
     __PYWORLD3_PROVIDER_MODE__?: "http" | "local";
     SimulationProvider?: {
@@ -33,11 +39,7 @@ declare global {
     }) => Record<string, unknown>;
   }
 
-  var API: {
-    simulatePreset: ReturnType<typeof vi.fn>;
-    simulate: ReturnType<typeof vi.fn>;
-    compare: ReturnType<typeof vi.fn>;
-  };
+  var API: ApiMock;
 }
 
 const fixture: MockSimulationResult = {
@@ -63,7 +65,7 @@ describe("simulation provider", () => {
     delete window.__PYWORLD3_PROVIDER_MODE__;
     delete window.SimulationProvider;
     delete window.resolveScenarioRequest;
-    globalThis.API = {
+    (globalThis as typeof globalThis & { API: ApiMock }).API = {
       simulatePreset: vi.fn(),
       simulate: vi.fn(),
       compare: vi.fn(),
@@ -72,13 +74,14 @@ describe("simulation provider", () => {
   });
 
   test("defaults to the HTTP provider and delegates API calls", async () => {
-    globalThis.API.simulatePreset.mockResolvedValue(fixture);
+    const api = (globalThis as typeof globalThis & { API: ApiMock }).API;
+    api.simulatePreset.mockResolvedValue(fixture);
     await loadProviderSuite();
 
     const result = await window.SimulationProvider!.simulatePreset("standard-run");
 
     expect(window.SimulationProvider!.mode).toBe("http");
-    expect(globalThis.API.simulatePreset).toHaveBeenCalledWith(
+    expect(api.simulatePreset).toHaveBeenCalledWith(
       "standard-run",
       undefined,
     );
@@ -86,8 +89,9 @@ describe("simulation provider", () => {
   });
 
   test("delegates generic simulate and compare calls in HTTP mode", async () => {
-    globalThis.API.simulate.mockResolvedValue(fixture);
-    globalThis.API.compare.mockResolvedValue({ metrics: [] });
+    const api = (globalThis as typeof globalThis & { API: ApiMock }).API;
+    api.simulate.mockResolvedValue(fixture);
+    api.compare.mockResolvedValue({ metrics: [] });
     const signal = new AbortController().signal;
 
     await loadProviderSuite();
@@ -102,11 +106,11 @@ describe("simulation provider", () => {
       ),
     ).resolves.toEqual({ metrics: [] });
 
-    expect(globalThis.API.simulate).toHaveBeenCalledWith(
+    expect(api.simulate).toHaveBeenCalledWith(
       { output_variables: ["pop"] },
       { signal },
     );
-    expect(globalThis.API.compare).toHaveBeenCalledWith(
+    expect(api.compare).toHaveBeenCalledWith(
       { preset: "standard-run" },
       { request: { year_max: 2050 } },
     );
@@ -130,6 +134,25 @@ describe("simulation provider", () => {
     expect(second).toEqual(fixture);
   });
 
+  test("passes through an abort signal for the local fixture fetch", async () => {
+    window.__PYWORLD3_PROVIDER_MODE__ = "local";
+    vi.mocked(globalThis.fetch).mockResolvedValue({
+      ok: true,
+      json: async () => fixture,
+    } as Response);
+    const signal = new AbortController().signal;
+
+    await loadProviderSuite();
+
+    await expect(
+      window.SimulationProvider!.simulate(undefined, { signal }),
+    ).resolves.toEqual(fixture);
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      "/data/standard-run-explore.json",
+      { signal },
+    );
+  });
+
   test("rejects unsupported local presets with a clear error", async () => {
     window.__PYWORLD3_PROVIDER_MODE__ = "local";
     await loadProviderSuite();
@@ -145,6 +168,17 @@ describe("simulation provider", () => {
 
     await expect(
       window.SimulationProvider!.simulate({ output_variables: ["pop"] }),
+    ).rejects.toThrow("supports only the standard-run preset without overrides");
+  });
+
+  test("treats populated constant overrides as explicit local overrides", async () => {
+    window.__PYWORLD3_PROVIDER_MODE__ = "local";
+    await loadProviderSuite();
+
+    await expect(
+      window.SimulationProvider!.simulatePreset("standard-run", {
+        constants: { nri: 2_000_000_000_000 },
+      }),
     ).rejects.toThrow("supports only the standard-run preset without overrides");
   });
 

@@ -112,16 +112,37 @@ function buildSimulationRequestFromPreset(
     ...preset.constants,
     ...(overrides.constants || {}),
   };
+  const request: SimulationRequest = {};
+  const yearMin = overrides.year_min ?? preset.year_min;
+  const yearMax = overrides.year_max ?? preset.year_max;
+  const dt = overrides.dt ?? preset.dt;
+  const pyear = overrides.pyear ?? preset.pyear;
+  const iphst = overrides.iphst ?? preset.iphst;
+  const outputVariables = overrides.output_variables ?? preset.output_variables;
 
-  return {
-    year_min: overrides.year_min ?? preset.year_min,
-    year_max: overrides.year_max ?? preset.year_max,
-    dt: overrides.dt ?? preset.dt,
-    pyear: overrides.pyear ?? preset.pyear,
-    iphst: overrides.iphst ?? preset.iphst,
-    constants: Object.keys(mergedConstants).length > 0 ? mergedConstants : undefined,
-    output_variables: overrides.output_variables ?? preset.output_variables,
-  };
+  if (yearMin !== undefined) {
+    request.year_min = yearMin;
+  }
+  if (yearMax !== undefined) {
+    request.year_max = yearMax;
+  }
+  if (dt !== undefined) {
+    request.dt = dt;
+  }
+  if (pyear !== undefined) {
+    request.pyear = pyear;
+  }
+  if (iphst !== undefined) {
+    request.iphst = iphst;
+  }
+  if (Object.keys(mergedConstants).length > 0) {
+    request.constants = mergedConstants;
+  }
+  if (outputVariables !== undefined) {
+    request.output_variables = outputVariables;
+  }
+
+  return request;
 }
 
 function resolveScenarioRequest(spec: ScenarioSpec): SimulationRequest {

@@ -36,7 +36,11 @@ function hasExplicitOverrides(request) {
 }
 async function loadLocalStandardRunFixture(signal) {
     if (!localStandardRunFixturePromise) {
-        localStandardRunFixturePromise = fetch(LOCAL_STANDARD_RUN_FIXTURE_URL, { signal })
+        const init = {};
+        if (signal !== undefined) {
+            init.signal = signal;
+        }
+        localStandardRunFixturePromise = fetch(LOCAL_STANDARD_RUN_FIXTURE_URL, init)
             .then(async (response) => {
             if (!response.ok) {
                 throw new Error(`Failed to load local simulation fixture (${response.status})`);

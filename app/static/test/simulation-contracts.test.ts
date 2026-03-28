@@ -76,6 +76,22 @@ describe("simulation contracts", () => {
     expect(request).toMatchObject({ year_max: 2050 });
   });
 
+  test("preserves optional scalar overrides when they are provided", async () => {
+    await loadContractsSuite();
+
+    const request = window.buildSimulationRequestFromPreset!("standard-run", {
+      dt: 1,
+      pyear: 2000,
+      iphst: 1980,
+    });
+
+    expect(request).toMatchObject({
+      dt: 1,
+      pyear: 2000,
+      iphst: 1980,
+    });
+  });
+
   test("throws a clear error for unknown presets", async () => {
     await loadContractsSuite();
 
