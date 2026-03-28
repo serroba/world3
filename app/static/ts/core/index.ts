@@ -26,6 +26,7 @@ export {
   createRuntimeStateFrame,
   listRuntimeObservations,
   observeRuntimeStateAt,
+  populateSeriesBufferFromStepper,
   runtimeStateFrameToSimulationResult,
 } from "./runtime-state-frame.js";
 export {
@@ -43,6 +44,7 @@ export type {
 } from "./browser-native-runtime.js";
 export type {
   RuntimeObservation,
+  RuntimeSeriesDeriver,
   RuntimeStateFrame,
   RuntimeStepper,
 } from "./runtime-state-frame.js";
