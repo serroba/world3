@@ -22,6 +22,11 @@ export {
 } from "./simulation-artifacts.js";
 export { projectSimulationResult } from "./simulation-results.js";
 export {
+  createIoDerivedDefinition,
+  extendCapitalSourceVariables,
+  maybePopulateCapitalOutputSeries,
+} from "./capital-sector.js";
+export {
   createFcaorDerivedDefinition,
   createNrfrDerivedDefinition,
   createNrResourceUsageRateDefinition,
