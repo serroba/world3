@@ -65,9 +65,9 @@ const LocalSimulationProvider = {
         throw new Error(LOCAL_PROVIDER_ERROR);
     },
     async compare(scenarioA, scenarioB) {
-        resolveScenarioRequest(scenarioA);
+        window.resolveScenarioRequest(scenarioA);
         if (scenarioB) {
-            resolveScenarioRequest(scenarioB);
+            window.resolveScenarioRequest(scenarioB);
         }
         throw new Error(LOCAL_PROVIDER_ERROR);
     },

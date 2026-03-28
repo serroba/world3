@@ -34,3 +34,5 @@ function resolveScenarioRequest(spec) {
     }
     return spec.request || {};
 }
+window.buildSimulationRequestFromPreset = buildSimulationRequestFromPreset;
+window.resolveScenarioRequest = resolveScenarioRequest;

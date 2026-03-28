@@ -88,6 +88,11 @@ type ModelDataPayload = {
 
 interface Window {
   ModelData: ModelDataPayload;
+  buildSimulationRequestFromPreset: (
+    name: string,
+    overrides?: SimulationRequest,
+  ) => SimulationRequest;
+  resolveScenarioRequest: (spec: ScenarioSpec) => SimulationRequest;
 }
 
 function getPresetByName(name: string): PresetInfo {
@@ -125,3 +130,6 @@ function resolveScenarioRequest(spec: ScenarioSpec): SimulationRequest {
   }
   return spec.request || {};
 }
+
+window.buildSimulationRequestFromPreset = buildSimulationRequestFromPreset;
+window.resolveScenarioRequest = resolveScenarioRequest;

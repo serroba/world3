@@ -41,6 +41,11 @@ declare const API: {
 interface Window {
   SimulationProvider: SimulationProviderApi;
   __PYWORLD3_PROVIDER_MODE__?: ProviderMode;
+  buildSimulationRequestFromPreset: (
+    name: string,
+    overrides?: SimulationRequest,
+  ) => SimulationRequest;
+  resolveScenarioRequest: (spec: ScenarioSpec) => SimulationRequest;
 }
 
 const HttpSimulationProvider: SimulationProviderApi = {
@@ -121,9 +126,9 @@ const LocalSimulationProvider: SimulationProviderApi = {
   },
 
   async compare(scenarioA, scenarioB) {
-    resolveScenarioRequest(scenarioA);
+    window.resolveScenarioRequest(scenarioA);
     if (scenarioB) {
-      resolveScenarioRequest(scenarioB);
+      window.resolveScenarioRequest(scenarioB);
     }
     throw new Error(LOCAL_PROVIDER_ERROR);
   },

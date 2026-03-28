@@ -33,6 +33,10 @@ jobs:
         working-directory: app/static
         run: npm run typecheck
 
+      - name: Run TypeScript tests with coverage
+        working-directory: app/static
+        run: npm run test:coverage
+
       - name: Verify generated UI assets are up to date
         working-directory: app/static
         run: |
