@@ -9,6 +9,8 @@ export default defineConfig({
       reporter: ["text", "lcov"],
       include: [
         "ts/browser-native.ts",
+        "ts/core/local-simulation-core.ts",
+        "ts/core/simulation-artifacts.ts",
         "ts/simulation-contracts.ts",
         "ts/simulation-provider.ts",
       ],

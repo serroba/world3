@@ -1,15 +1,19 @@
 {
   "name": "pyworld3-static-ui",
+  "type": "module",
   "private": true,
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json --noEmit",
+    "build": "tsc -p tsconfig.build.json && tsc -p tsconfig.cli.json",
+    "browser-native:cli": "node js/cli/browser-native-cli.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.cli.json --noEmit && tsc -p tsconfig.test.json --noEmit",
     "typecheck:src": "tsc -p tsconfig.json --noEmit",
+    "typecheck:cli": "tsc -p tsconfig.cli.json --noEmit",
     "typecheck:test": "tsc -p tsconfig.test.json --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage"
   },
   "devDependencies": {
+    "@types/node": "^24.5.2",
     "@vitest/coverage-v8": "^4.1.2",
     "jsdom": "^29.0.1",
     "typescript": "^5.8.2",
