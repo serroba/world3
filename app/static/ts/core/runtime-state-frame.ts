@@ -46,6 +46,7 @@ export type RuntimeDerivedDefinition = {
 const NR_RATE_SERIES = "__nr_rate";
 const NRUF_SERIES = "__nruf";
 const PCRUM_SERIES = "__pcrum";
+
 function toTimeKey(value: number): string {
   return value.toFixed(TIME_KEY_PRECISION);
 }
@@ -239,6 +240,32 @@ export function createNrResourceUsageRateDefinition(): RuntimeDerivedDefinition 
   });
 }
 
+export function createFcaorDerivedDefinition(
+  constantsUsed: ConstantMap,
+  fcaor1Lookup: LookupInterpolator,
+  fcaor2Lookup: LookupInterpolator,
+  policyYear = DEFAULT_POLICY_YEAR,
+): RuntimeDerivedDefinition {
+  return createDerivedSeriesDefinition("fcaor", (observation) => {
+    const nr = observation.values.nr;
+    const nri = constantsUsed.nri;
+    if (nr === undefined) {
+      throw new Error(
+        "Fixture-backed runtime cannot derive 'fcaor' because the source variable 'nr' is missing.",
+      );
+    }
+    if (nri === undefined || nri === 0) {
+      throw new Error(
+        "Fixture-backed runtime cannot derive 'fcaor' because constant 'nri' is missing or zero.",
+      );
+    }
+    const nrfr = nr / nri;
+    const beforePolicy = fcaor1Lookup.evaluate(nrfr);
+    const afterPolicy = fcaor2Lookup.evaluate(nrfr);
+    return clipAtPolicyYear(beforePolicy, afterPolicy, observation.time, policyYear);
+  });
+}
+
 const STEPPED_SOURCE_STATE_DEFINITIONS = new Map<string, RuntimeStateDefinition>(
   [
     ["nr", createEulerStateDefinition("nr", NR_RATE_SERIES, -1)],
@@ -325,9 +352,14 @@ export function createRuntimeStateFrame(
   };
 
   const sourceVariables = new Set(
-    prepared.outputVariables.filter((variable) => variable !== "nrfr"),
+    prepared.outputVariables.filter(
+      (variable) => variable !== "nrfr" && variable !== "fcaor",
+    ),
   );
-  if (prepared.outputVariables.includes("nrfr")) {
+  if (
+    prepared.outputVariables.includes("nrfr") ||
+    prepared.outputVariables.includes("fcaor")
+  ) {
     sourceVariables.add("nr");
   }
   const shouldComputeNativeNrFlow = sourceVariables.has("nr");
@@ -425,6 +457,32 @@ export function createRuntimeStateFrame(
         createNrfrDerivedDefinition(constantsUsed),
       );
       continue;
+    }
+    if (variable === "fcaor") {
+      const fcaor1Lookup = prepared.lookupLibrary.get("FCAOR1");
+      const fcaor2Lookup = prepared.lookupLibrary.get("FCAOR2");
+      if (fcaor1Lookup && fcaor2Lookup) {
+        populateDerivedBufferFromDefinition(
+          sourceFrame,
+          series,
+          createFcaorDerivedDefinition(
+            constantsUsed,
+            fcaor1Lookup,
+            fcaor2Lookup,
+            prepared.request.pyear ?? DEFAULT_POLICY_YEAR,
+          ),
+        );
+        continue;
+      }
+
+      if (fixture.series.fcaor) {
+        series.set("fcaor", resolveSourceSeriesValues("fcaor", fixture, projectedIndices));
+        continue;
+      }
+
+      throw new Error(
+        "Fixture-backed runtime cannot derive 'fcaor' because lookup tables 'FCAOR1' and 'FCAOR2' are missing.",
+      );
     }
 
     const values = sourceSeries.get(variable);
