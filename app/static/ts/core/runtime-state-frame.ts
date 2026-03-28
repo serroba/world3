@@ -26,6 +26,8 @@ export type RuntimeStepper = {
   length: () => number;
 };
 
+export type RuntimeSeriesDeriver = (observation: RuntimeObservation) => number;
+
 function toTimeKey(value: number): string {
   return value.toFixed(TIME_KEY_PRECISION);
 }
@@ -65,39 +67,11 @@ function projectSeriesValues(values: number[], indices: number[], name: string):
   );
 }
 
-function deriveNrfrSeries(
-  fixture: SimulationResult,
-  indices: number[],
-  constantsUsed: ConstantMap,
-): Float64Array {
-  const nrSeries = fixture.series.nr;
-  if (!nrSeries) {
-    throw new Error(
-      "Fixture-backed runtime cannot derive 'nrfr' because the source variable 'nr' is missing.",
-    );
-  }
-
-  const nri = constantsUsed.nri;
-  if (nri === undefined || nri === 0) {
-    throw new Error(
-      "Fixture-backed runtime cannot derive 'nrfr' because constant 'nri' is missing or zero.",
-    );
-  }
-
-  const projectedNr = projectSeriesValues(nrSeries.values, indices, nrSeries.name);
-  return Float64Array.from(projectedNr, (value) => value / nri);
-}
-
-function resolveSeriesValues(
+function resolveSourceSeriesValues(
   variable: string,
   fixture: SimulationResult,
   indices: number[],
-  constantsUsed: ConstantMap,
 ): Float64Array {
-  if (variable === "nrfr") {
-    return deriveNrfrSeries(fixture, indices, constantsUsed);
-  }
-
   const source = fixture.series[variable];
   if (!source) {
     throw new Error(
@@ -118,17 +92,69 @@ export function createRuntimeStateFrame(
     ...(prepared.request.constants ?? {}),
   };
 
+  const sourceVariables = new Set(
+    prepared.outputVariables.filter((variable) => variable !== "nrfr"),
+  );
+  if (prepared.outputVariables.includes("nrfr")) {
+    sourceVariables.add("nr");
+  }
+
+  const sourceSeries = new Map<string, Float64Array>();
+  for (const variable of sourceVariables) {
+    if (variable === "nr" && !fixture.series.nr) {
+      throw new Error(
+        "Fixture-backed runtime cannot derive 'nrfr' because the source variable 'nr' is missing.",
+      );
+    }
+    sourceSeries.set(
+      variable,
+      resolveSourceSeriesValues(variable, fixture, projectedIndices),
+    );
+  }
+
+  const sourceFrame: RuntimeStateFrame = {
+    request: prepared.request,
+    time: Float64Array.from(prepared.time),
+    constantsUsed,
+    series: sourceSeries,
+  };
+
   const series = new Map<string, Float64Array>();
   for (const variable of prepared.outputVariables) {
-    series.set(
-      variable,
-      resolveSeriesValues(variable, fixture, projectedIndices, constantsUsed),
-    );
+    if (variable === "nrfr") {
+      series.set(
+        variable,
+        populateSeriesBufferFromStepper(sourceFrame, (observation) => {
+          const nr = observation.values.nr;
+          const nri = constantsUsed.nri;
+          if (nr === undefined) {
+            throw new Error(
+              "Fixture-backed runtime cannot derive 'nrfr' because the source variable 'nr' is missing.",
+            );
+          }
+          if (nri === undefined || nri === 0) {
+            throw new Error(
+              "Fixture-backed runtime cannot derive 'nrfr' because constant 'nri' is missing or zero.",
+            );
+          }
+          return nr / nri;
+        }),
+      );
+      continue;
+    }
+
+    const values = sourceSeries.get(variable);
+    if (!values) {
+      throw new Error(
+        `Fixture-backed runtime is missing the requested output variable '${variable}'.`,
+      );
+    }
+    series.set(variable, values);
   }
 
   return {
     request: prepared.request,
-    time: Float64Array.from(prepared.time),
+    time: sourceFrame.time,
     constantsUsed,
     series,
   };
@@ -231,4 +257,22 @@ export function createRuntimeStepper(frame: RuntimeStateFrame): RuntimeStepper {
       return frame.time.length;
     },
   };
+}
+
+export function populateSeriesBufferFromStepper(
+  frame: RuntimeStateFrame,
+  deriveValue: RuntimeSeriesDeriver,
+): Float64Array {
+  const stepper = createRuntimeStepper(frame);
+  const values = new Float64Array(frame.time.length);
+
+  while (!stepper.isDone()) {
+    const observation = stepper.next();
+    if (!observation) {
+      break;
+    }
+    values[observation.index] = deriveValue(observation);
+  }
+
+  return values;
 }

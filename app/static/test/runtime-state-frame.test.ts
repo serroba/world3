@@ -5,6 +5,7 @@ import {
   createRuntimeStateFrame,
   listRuntimeObservations,
   observeRuntimeStateAt,
+  populateSeriesBufferFromStepper,
   prepareRuntime,
   runtimeStateFrameToSimulationResult,
 } from "../ts/core/index.ts";
@@ -54,6 +55,7 @@ describe("runtime state frame", () => {
     expect(frame.constantsUsed).toEqual({ nri: 100 });
     expect(Array.from(frame.series.get("pop") ?? [])).toEqual([10, 14, 18]);
     expect(Array.from(frame.series.get("nrfr") ?? [])).toEqual([1, 0.9, 0.8]);
+    expect(frame.series.has("nr")).toBe(false);
   });
 
   test("can convert the state frame back to the public simulation result shape", () => {
@@ -223,5 +225,32 @@ describe("runtime state frame", () => {
       time: 1900,
       values: { pop: 10 },
     });
+  });
+
+  test("can populate a derived series buffer by stepping through the frame", () => {
+    const prepared = prepareRuntime(
+      ModelData,
+      {
+        year_min: 1900,
+        year_max: 1902,
+        dt: 1,
+        output_variables: ["pop", "nrfr"],
+      },
+      tables,
+    );
+    const frame = createRuntimeStateFrame(prepared, fixture);
+
+    const doubledPopulation = populateSeriesBufferFromStepper(
+      frame,
+      (observation) => {
+        const pop = observation.values.pop;
+        if (pop === undefined) {
+          throw new Error("Missing pop during derived buffer population.");
+        }
+        return pop * 2;
+      },
+    );
+
+    expect(Array.from(doubledPopulation)).toEqual([20, 28, 36]);
   });
 });
