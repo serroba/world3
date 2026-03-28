@@ -13,9 +13,11 @@ import {
   type SimulationResult,
 } from "./simulation-contracts.js";
 import {
-  createLocalSimulationCore,
+  createRuntimeBackedLocalSimulationCore,
   type LocalSimulationLoader,
 } from "./core/local-simulation-core.js";
+import { createFixtureBackedRuntime } from "./core/browser-native-runtime.js";
+import type { RawLookupTable } from "./core/world3-tables.js";
 
 export type ProviderMode = "http" | "local";
 
@@ -75,7 +77,9 @@ const HttpSimulationProvider: SimulationProviderApi = {
 };
 
 const LOCAL_STANDARD_RUN_FIXTURE_URL = "/data/standard-run-explore.json";
+const WORLD3_TABLES_URL = "/data/functions-table-world3.json";
 let localStandardRunFixturePromise: Promise<SimulationResult> | null = null;
+let world3TablesPromise: Promise<RawLookupTable[]> | null = null;
 
 function getApi(): HttpApi {
   if (!window.API) {
@@ -115,13 +119,42 @@ function createBrowserFixtureLoader(): LocalSimulationLoader {
   return async (options) => loadLocalStandardRunFixture(options?.signal);
 }
 
+async function loadWorld3Tables(signal?: AbortSignal): Promise<RawLookupTable[]> {
+  if (!world3TablesPromise) {
+    const init: RequestInit = {};
+    if (signal !== undefined) {
+      init.signal = signal;
+    }
+
+    world3TablesPromise = fetch(WORLD3_TABLES_URL, init)
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error(`Failed to load World3 tables (${response.status})`);
+        }
+        return response.json() as Promise<RawLookupTable[]>;
+      })
+      .catch((error: unknown) => {
+        world3TablesPromise = null;
+        throw error;
+      });
+  }
+
+  return world3TablesPromise;
+}
+
+function createBrowserTablesLoader(): () => Promise<RawLookupTable[]> {
+  return async () => loadWorld3Tables();
+}
+
 function createLocalSimulationProvider(
   modelData: ModelDataPayload,
 ): SimulationProviderApi {
-  const localCore = createLocalSimulationCore(
+  const runtime = createFixtureBackedRuntime(
     modelData,
+    createBrowserTablesLoader(),
     createBrowserFixtureLoader(),
   );
+  const localCore = createRuntimeBackedLocalSimulationCore(modelData, runtime);
   return {
     mode: "local",
     simulatePreset: localCore.simulatePreset,

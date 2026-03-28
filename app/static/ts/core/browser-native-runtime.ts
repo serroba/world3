@@ -1,0 +1,95 @@
+import {
+  type ModelDataPayload,
+  type SimulationRequest,
+  type SimulationResult,
+  buildSimulationRequestFromPreset,
+} from "../simulation-contracts.js";
+import { createTimeGrid } from "./runtime-primitives.js";
+import {
+  type LookupInterpolator,
+  type RawLookupTable,
+  createLookupLibrary,
+} from "./world3-tables.js";
+
+export type RuntimePreparation = {
+  request: SimulationRequest;
+  outputVariables: string[];
+  time: Float64Array;
+  lookupLibrary: Map<string, LookupInterpolator>;
+};
+
+export type RuntimeTablesLoader = () => Promise<RawLookupTable[]>;
+
+export type RuntimeFixtureLoader = (
+  options?: { signal?: AbortSignal },
+) => Promise<SimulationResult>;
+
+export type BrowserNativeRuntime = {
+  prepareStandardRun: (overrides?: SimulationRequest) => Promise<RuntimePreparation>;
+  simulateStandardRun: (
+    overrides?: SimulationRequest,
+    options?: { signal?: AbortSignal },
+  ) => Promise<SimulationResult>;
+};
+
+export function prepareRuntime(
+  modelData: ModelDataPayload,
+  request: SimulationRequest,
+  rawTables: RawLookupTable[],
+): RuntimePreparation {
+  const yearMin = request.year_min ?? 1900;
+  const yearMax = request.year_max ?? 2100;
+  const dt = request.dt ?? 0.5;
+  const outputVariables = request.output_variables ?? modelData.defaultVariables;
+
+  return {
+    request,
+    outputVariables,
+    time: createTimeGrid(yearMin, yearMax, dt),
+    lookupLibrary: createLookupLibrary(rawTables),
+  };
+}
+
+export function createFixtureBackedRuntime(
+  modelData: ModelDataPayload,
+  loadTables: RuntimeTablesLoader,
+  loadStandardRunFixture: RuntimeFixtureLoader,
+): BrowserNativeRuntime {
+  let tablesPromise: Promise<RawLookupTable[]> | null = null;
+  let fixturePromise: Promise<SimulationResult> | null = null;
+
+  async function getTables(): Promise<RawLookupTable[]> {
+    if (!tablesPromise) {
+      tablesPromise = loadTables();
+    }
+    return tablesPromise;
+  }
+
+  async function getFixture(
+    options?: { signal?: AbortSignal },
+  ): Promise<SimulationResult> {
+    if (!fixturePromise) {
+      fixturePromise = loadStandardRunFixture(options).catch((error: unknown) => {
+        fixturePromise = null;
+        throw error;
+      });
+    }
+    return fixturePromise;
+  }
+
+  return {
+    async prepareStandardRun(overrides = {}) {
+      const request = buildSimulationRequestFromPreset(
+        modelData,
+        "standard-run",
+        overrides,
+      );
+      const tables = await getTables();
+      return prepareRuntime(modelData, request, tables);
+    },
+
+    async simulateStandardRun(_overrides, options) {
+      return getFixture(options);
+    },
+  };
+}

@@ -4,7 +4,8 @@
  * HTTP remains the default implementation for now. This lets us move the UI
  * onto a stable abstraction before introducing a browser-native engine.
  */
-import { createLocalSimulationCore, } from "./core/local-simulation-core.js";
+import { createRuntimeBackedLocalSimulationCore, } from "./core/local-simulation-core.js";
+import { createFixtureBackedRuntime } from "./core/browser-native-runtime.js";
 const HttpSimulationProvider = {
     mode: "http",
     async simulatePreset(name, overrides) {
@@ -18,7 +19,9 @@ const HttpSimulationProvider = {
     },
 };
 const LOCAL_STANDARD_RUN_FIXTURE_URL = "/data/standard-run-explore.json";
+const WORLD3_TABLES_URL = "/data/functions-table-world3.json";
 let localStandardRunFixturePromise = null;
+let world3TablesPromise = null;
 function getApi() {
     if (!window.API) {
         throw new Error("HTTP API client is not available on window.");
@@ -48,8 +51,32 @@ async function loadLocalStandardRunFixture(signal) {
 function createBrowserFixtureLoader() {
     return async (options) => loadLocalStandardRunFixture(options?.signal);
 }
+async function loadWorld3Tables(signal) {
+    if (!world3TablesPromise) {
+        const init = {};
+        if (signal !== undefined) {
+            init.signal = signal;
+        }
+        world3TablesPromise = fetch(WORLD3_TABLES_URL, init)
+            .then(async (response) => {
+            if (!response.ok) {
+                throw new Error(`Failed to load World3 tables (${response.status})`);
+            }
+            return response.json();
+        })
+            .catch((error) => {
+            world3TablesPromise = null;
+            throw error;
+        });
+    }
+    return world3TablesPromise;
+}
+function createBrowserTablesLoader() {
+    return async () => loadWorld3Tables();
+}
 function createLocalSimulationProvider(modelData) {
-    const localCore = createLocalSimulationCore(modelData, createBrowserFixtureLoader());
+    const runtime = createFixtureBackedRuntime(modelData, createBrowserTablesLoader(), createBrowserFixtureLoader());
+    const localCore = createRuntimeBackedLocalSimulationCore(modelData, runtime);
     return {
         mode: "local",
         simulatePreset: localCore.simulatePreset,

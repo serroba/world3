@@ -4,14 +4,16 @@ import { readFile, writeFile } from "node:fs/promises";
 import process from "node:process";
 
 import { ModelData } from "../model-data.js";
-import { createLocalSimulationCore } from "../core/local-simulation-core.js";
+import { createFixtureBackedRuntime } from "../core/browser-native-runtime.js";
 import {
   formatSimulationSummary,
   renderSimulationSvg,
 } from "../core/simulation-artifacts.js";
+import type { RawLookupTable } from "../core/world3-tables.js";
 import type { SimulationResult } from "../simulation-contracts.js";
 
 const FIXTURE_PATH = new URL("../../data/standard-run-explore.json", import.meta.url);
+const TABLES_PATH = new URL("../../data/functions-table-world3.json", import.meta.url);
 
 function parseArgs(argv: string[]) {
   const options: {
@@ -64,10 +66,20 @@ async function loadStandardRunFixture(): Promise<SimulationResult> {
   return JSON.parse(raw) as SimulationResult;
 }
 
+async function loadWorld3Tables(): Promise<RawLookupTable[]> {
+  const raw = await readFile(TABLES_PATH, "utf8");
+  return JSON.parse(raw) as RawLookupTable[];
+}
+
 async function main() {
   const options = parseArgs(process.argv.slice(2));
-  const localCore = createLocalSimulationCore(ModelData, loadStandardRunFixture);
-  const result = await localCore.simulatePreset(options.preset);
+  const runtime = createFixtureBackedRuntime(
+    ModelData,
+    loadWorld3Tables,
+    loadStandardRunFixture,
+  );
+  await runtime.prepareStandardRun();
+  const result = await runtime.simulateStandardRun();
 
   if (options.summary) {
     process.stdout.write(`${formatSimulationSummary(result, ModelData)}\n`);

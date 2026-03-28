@@ -37,3 +37,28 @@ export function createLocalSimulationCore(modelData, loadStandardRunFixture) {
         },
     };
 }
+export function createRuntimeBackedLocalSimulationCore(modelData, runtime) {
+    return {
+        async simulatePreset(name, overrides) {
+            if (name === "standard-run" && !hasExplicitOverrides(overrides)) {
+                await runtime.prepareStandardRun(overrides);
+                return runtime.simulateStandardRun(overrides);
+            }
+            throw new Error(`${LOCAL_PROVIDER_ERROR} Requested preset: ${name}.`);
+        },
+        async simulate(request, options) {
+            if (!hasExplicitOverrides(request)) {
+                await runtime.prepareStandardRun(request);
+                return runtime.simulateStandardRun(request, options);
+            }
+            throw new Error(LOCAL_PROVIDER_ERROR);
+        },
+        async compare(scenarioA, scenarioB) {
+            resolveScenarioRequest(modelData, scenarioA);
+            if (scenarioB) {
+                resolveScenarioRequest(modelData, scenarioB);
+            }
+            throw new Error(LOCAL_PROVIDER_ERROR);
+        },
+    };
+}

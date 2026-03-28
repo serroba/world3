@@ -6,6 +6,7 @@ import {
   type SimulationResult,
   resolveScenarioRequest,
 } from "../simulation-contracts.js";
+import type { BrowserNativeRuntime } from "./browser-native-runtime.js";
 
 export const LOCAL_PROVIDER_ERROR =
   "Local simulation currently supports only the standard-run preset without overrides. Switch back to HTTP mode for other scenarios.";
@@ -60,6 +61,37 @@ export function createLocalSimulationCore(
     async simulate(request, options) {
       if (!hasExplicitOverrides(request)) {
         return loadStandardRunFixture(options);
+      }
+      throw new Error(LOCAL_PROVIDER_ERROR);
+    },
+
+    async compare(scenarioA, scenarioB) {
+      resolveScenarioRequest(modelData, scenarioA);
+      if (scenarioB) {
+        resolveScenarioRequest(modelData, scenarioB);
+      }
+      throw new Error(LOCAL_PROVIDER_ERROR);
+    },
+  };
+}
+
+export function createRuntimeBackedLocalSimulationCore(
+  modelData: ModelDataPayload,
+  runtime: BrowserNativeRuntime,
+): LocalSimulationCore {
+  return {
+    async simulatePreset(name, overrides) {
+      if (name === "standard-run" && !hasExplicitOverrides(overrides)) {
+        await runtime.prepareStandardRun(overrides);
+        return runtime.simulateStandardRun(overrides);
+      }
+      throw new Error(`${LOCAL_PROVIDER_ERROR} Requested preset: ${name}.`);
+    },
+
+    async simulate(request, options) {
+      if (!hasExplicitOverrides(request)) {
+        await runtime.prepareStandardRun(request);
+        return runtime.simulateStandardRun(request, options);
       }
       throw new Error(LOCAL_PROVIDER_ERROR);
     },
