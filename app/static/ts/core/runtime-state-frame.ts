@@ -87,6 +87,40 @@ function resolveSourceSeriesValues(
   return projectSeriesValues(source.values, indices, source.name);
 }
 
+function replaySourceSeriesThroughStepper(
+  sourceSeries: Map<string, Float64Array>,
+  oracleFrame: RuntimeStateFrame,
+  variable: string,
+): void {
+  const projectedValues = sourceSeries.get(variable);
+  if (!projectedValues) {
+    throw new Error(
+      `Fixture-backed runtime cannot populate the source variable '${variable}' because it is missing.`,
+    );
+  }
+
+  sourceSeries.set(
+    variable,
+    populateStateBufferFromStepper(
+      oracleFrame,
+      projectedValues[0] ?? 0,
+      (currentValue, observation, nextObservation) => {
+        const observed = observation.values[variable];
+        const nextObserved = nextObservation?.values[variable];
+        if (observed === undefined) {
+          throw new Error(
+            `Runtime state advance is missing the observed '${variable}' value.`,
+          );
+        }
+        if (nextObserved === undefined) {
+          return currentValue;
+        }
+        return currentValue + (nextObserved - observed);
+      },
+    ),
+  );
+}
+
 export function createRuntimeStateFrame(
   prepared: RuntimePreparation,
   fixture: SimulationResult,
@@ -125,93 +159,19 @@ export function createRuntimeStateFrame(
   };
 
   if (sourceVariables.has("nr")) {
-    const projectedNr = sourceSeries.get("nr");
-    if (!projectedNr) {
-      throw new Error(
-        "Fixture-backed runtime cannot derive 'nrfr' because the source variable 'nr' is missing.",
-      );
-    }
-
-    sourceSeries.set(
-      "nr",
-      populateStateBufferFromStepper(
-        oracleFrame,
-        projectedNr[0] ?? 0,
-        (currentValue, observation, nextObservation) => {
-          const observed = observation.values.nr;
-          const nextObserved = nextObservation?.values.nr;
-          if (observed === undefined) {
-            throw new Error(
-              "Runtime state advance is missing the observed 'nr' value.",
-            );
-          }
-          if (nextObserved === undefined) {
-            return currentValue;
-          }
-          return currentValue + (nextObserved - observed);
-        },
-      ),
-    );
+    replaySourceSeriesThroughStepper(sourceSeries, oracleFrame, "nr");
   }
 
   if (sourceVariables.has("pop")) {
-    const projectedPop = sourceSeries.get("pop");
-    if (!projectedPop) {
-      throw new Error(
-        "Fixture-backed runtime cannot populate the source variable 'pop' because it is missing.",
-      );
-    }
-
-    sourceSeries.set(
-      "pop",
-      populateStateBufferFromStepper(
-        oracleFrame,
-        projectedPop[0] ?? 0,
-        (currentValue, observation, nextObservation) => {
-          const observed = observation.values.pop;
-          const nextObserved = nextObservation?.values.pop;
-          if (observed === undefined) {
-            throw new Error(
-              "Runtime state advance is missing the observed 'pop' value.",
-            );
-          }
-          if (nextObserved === undefined) {
-            return currentValue;
-          }
-          return currentValue + (nextObserved - observed);
-        },
-      ),
-    );
+    replaySourceSeriesThroughStepper(sourceSeries, oracleFrame, "pop");
   }
 
   if (sourceVariables.has("iopc")) {
-    const projectedIopc = sourceSeries.get("iopc");
-    if (!projectedIopc) {
-      throw new Error(
-        "Fixture-backed runtime cannot populate the source variable 'iopc' because it is missing.",
-      );
-    }
+    replaySourceSeriesThroughStepper(sourceSeries, oracleFrame, "iopc");
+  }
 
-    sourceSeries.set(
-      "iopc",
-      populateStateBufferFromStepper(
-        oracleFrame,
-        projectedIopc[0] ?? 0,
-        (currentValue, observation, nextObservation) => {
-          const observed = observation.values.iopc;
-          const nextObserved = nextObservation?.values.iopc;
-          if (observed === undefined) {
-            throw new Error(
-              "Runtime state advance is missing the observed 'iopc' value.",
-            );
-          }
-          if (nextObserved === undefined) {
-            return currentValue;
-          }
-          return currentValue + (nextObserved - observed);
-        },
-      ),
-    );
+  if (sourceVariables.has("fpc")) {
+    replaySourceSeriesThroughStepper(sourceSeries, oracleFrame, "fpc");
   }
 
   const sourceFrame: RuntimeStateFrame = {

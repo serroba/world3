@@ -35,6 +35,7 @@ const fixture: SimulationResult = {
     nr: { name: "nr", values: [100, 95, 90, 85, 80] },
     pop: { name: "pop", values: [10, 12, 14, 16, 18] },
     iopc: { name: "iopc", values: [1, 1.5, 2, 2.5, 3] },
+    fpc: { name: "fpc", values: [300, 290, 280, 270, 260] },
     nrfr: { name: "nrfr", values: [99, 99, 99, 99, 99] },
   },
 };
@@ -384,5 +385,39 @@ describe("runtime state frame", () => {
     );
 
     expect(Array.from(replayedIopc)).toEqual([1, 2, 3]);
+  });
+
+  test("can populate the fpc source series through the stepped state path", () => {
+    const prepared = prepareRuntime(
+      ModelData,
+      {
+        year_min: 1900,
+        year_max: 1902,
+        dt: 1,
+        output_variables: ["fpc"],
+      },
+      tables,
+    );
+    const frame = createRuntimeStateFrame(prepared, fixture);
+
+    expect(Array.from(frame.series.get("fpc") ?? [])).toEqual([300, 280, 260]);
+
+    const replayedFpc = populateStateBufferFromStepper(
+      frame,
+      frame.series.get("fpc")?.[0] ?? 0,
+      (currentValue, observation, nextObservation) => {
+        const observed = observation.values.fpc;
+        const nextObserved = nextObservation?.values.fpc;
+        if (observed === undefined) {
+          throw new Error("Missing fpc during state buffer population.");
+        }
+        if (nextObserved === undefined) {
+          return currentValue;
+        }
+        return currentValue + (nextObserved - observed);
+      },
+    );
+
+    expect(Array.from(replayedFpc)).toEqual([300, 280, 260]);
   });
 });
