@@ -83,6 +83,9 @@ export function createRuntimeStateFrame(prepared, fixture) {
     if (sourceVariables.has("fpc")) {
         replaySourceSeriesThroughStepper(sourceSeries, oracleFrame, "fpc");
     }
+    if (sourceVariables.has("ppolx")) {
+        replaySourceSeriesThroughStepper(sourceSeries, oracleFrame, "ppolx");
+    }
     const sourceFrame = {
         request: prepared.request,
         time: oracleFrame.time,

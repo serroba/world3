@@ -174,6 +174,10 @@ export function createRuntimeStateFrame(
     replaySourceSeriesThroughStepper(sourceSeries, oracleFrame, "fpc");
   }
 
+  if (sourceVariables.has("ppolx")) {
+    replaySourceSeriesThroughStepper(sourceSeries, oracleFrame, "ppolx");
+  }
+
   const sourceFrame: RuntimeStateFrame = {
     request: prepared.request,
     time: oracleFrame.time,
