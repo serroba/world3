@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "rootDir": "ts",
+    "outDir": "js",
+    "noEmit": false
+  },
+  "include": [
+    "ts/cli/**/*.ts",
+    "ts/core/**/*.ts",
+    "ts/model-data.ts",
+    "ts/simulation-contracts.ts"
+  ]
+}

@@ -3,10 +3,10 @@
   "compilerOptions": {
     "module": "ES2022"
   },
-  "files": [
-    "ts/simulation-contracts.ts",
-    "ts/model-data.ts",
-    "ts/simulation-provider.ts",
-    "ts/browser-native.ts"
+  "include": [
+    "ts/**/*.ts"
+  ],
+  "exclude": [
+    "ts/cli/**/*.ts"
   ]
 }
