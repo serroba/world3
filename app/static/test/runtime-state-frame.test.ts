@@ -36,6 +36,7 @@ const fixture: SimulationResult = {
     pop: { name: "pop", values: [10, 12, 14, 16, 18] },
     iopc: { name: "iopc", values: [1, 1.5, 2, 2.5, 3] },
     fpc: { name: "fpc", values: [300, 290, 280, 270, 260] },
+    ppolx: { name: "ppolx", values: [0.1, 0.15, 0.2, 0.25, 0.3] },
     nrfr: { name: "nrfr", values: [99, 99, 99, 99, 99] },
   },
 };
@@ -419,5 +420,39 @@ describe("runtime state frame", () => {
     );
 
     expect(Array.from(replayedFpc)).toEqual([300, 280, 260]);
+  });
+
+  test("can populate the ppolx source series through the stepped state path", () => {
+    const prepared = prepareRuntime(
+      ModelData,
+      {
+        year_min: 1900,
+        year_max: 1902,
+        dt: 1,
+        output_variables: ["ppolx"],
+      },
+      tables,
+    );
+    const frame = createRuntimeStateFrame(prepared, fixture);
+
+    expect(Array.from(frame.series.get("ppolx") ?? [])).toEqual([0.1, 0.2, 0.3]);
+
+    const replayedPpolx = populateStateBufferFromStepper(
+      frame,
+      frame.series.get("ppolx")?.[0] ?? 0,
+      (currentValue, observation, nextObservation) => {
+        const observed = observation.values.ppolx;
+        const nextObserved = nextObservation?.values.ppolx;
+        if (observed === undefined) {
+          throw new Error("Missing ppolx during state buffer population.");
+        }
+        if (nextObserved === undefined) {
+          return currentValue;
+        }
+        return currentValue + (nextObserved - observed);
+      },
+    );
+
+    expect(Array.from(replayedPpolx)).toEqual([0.1, 0.2, 0.3]);
   });
 });
