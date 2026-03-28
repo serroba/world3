@@ -23,6 +23,7 @@ export {
 export { projectSimulationResult } from "./simulation-results.js";
 export {
   assembleSimulationResultFromStepper,
+  createFcaorDerivedDefinition,
   createNrResourceUsageRateDefinition,
   createEulerStateDefinition,
   createReplayStateDefinition,

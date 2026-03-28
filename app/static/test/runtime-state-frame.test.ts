@@ -3,6 +3,7 @@ import { describe, expect, test } from "vitest";
 import {
   assembleSimulationResultFromStepper,
   createEulerStateDefinition,
+  createFcaorDerivedDefinition,
   createNrResourceUsageRateDefinition,
   createReplayStateDefinition,
   createNrfrDerivedDefinition,
@@ -30,6 +31,20 @@ const tables: RawLookupTable[] = [
     "x.values": [1, 2, 3],
     "y.name": "PCRUM",
     "y.values": [2, 3, 4],
+  },
+  {
+    sector: "Resources",
+    "x.name": "NRFR",
+    "x.values": [0, 1],
+    "y.name": "FCAOR1",
+    "y.values": [1, 0],
+  },
+  {
+    sector: "Resources",
+    "x.name": "NRFR",
+    "x.values": [0, 1],
+    "y.name": "FCAOR2",
+    "y.values": [0.5, 0.2],
   },
   {
     sector: "Population",
@@ -104,6 +119,33 @@ describe("runtime state frame", () => {
         nrfr: { name: "nrfr", values: [0.5, 0.4, 0.19] },
       },
     });
+  });
+
+  test("can derive fcaor natively from stepped nr", () => {
+    const prepared = prepareRuntime(
+      ModelData,
+      {
+        year_min: 1900,
+        year_max: 1902,
+        dt: 1,
+        output_variables: ["fcaor"],
+      },
+      tables,
+    );
+
+    const frame = createRuntimeStateFrame(prepared, fixture);
+
+    const result = runtimeStateFrameToSimulationResult(frame);
+
+    expect(result.year_min).toBe(1900);
+    expect(result.year_max).toBe(1902);
+    expect(result.dt).toBe(1);
+    expect(result.time).toEqual([1900, 1901, 1902]);
+    expect(result.constants_used).toEqual({ nri: 100, nruf1: 1, nruf2: 0.5 });
+    expect(result.series.fcaor?.name).toBe("fcaor");
+    expect(result.series.fcaor?.values[0]).toBeCloseTo(0, 8);
+    expect(result.series.fcaor?.values[1]).toBeCloseTo(0.2, 8);
+    expect(result.series.fcaor?.values[2]).toBeCloseTo(0.62, 8);
   });
 
   test("can assemble the public simulation result by stepping observations", () => {
@@ -682,6 +724,46 @@ describe("runtime state frame", () => {
     );
 
     expect(Array.from(series.get("__nr_rate") ?? [])).toEqual([20, 42, 36]);
+  });
+
+  test("can derive fcaor from lookup tables and policy year", () => {
+    const prepared = prepareRuntime(
+      ModelData,
+      {
+        year_min: 1974,
+        year_max: 1976,
+        dt: 1,
+        pyear: 1975,
+        output_variables: ["fcaor"],
+      },
+      tables,
+    );
+    const series = new Map([
+      ["nr", Float64Array.from([100, 80, 38])],
+    ]);
+    const frame = {
+      request: prepared.request,
+      time: Float64Array.from(prepared.time),
+      constantsUsed: fixture.constants_used,
+      series,
+    };
+    const derivedSeries = new Map<string, Float64Array>();
+
+    populateDerivedBufferFromDefinition(
+      frame,
+      derivedSeries,
+      createFcaorDerivedDefinition(
+        fixture.constants_used,
+        prepared.lookupLibrary.get("FCAOR1")!,
+        prepared.lookupLibrary.get("FCAOR2")!,
+        1975,
+      ),
+    );
+
+    const values = Array.from(derivedSeries.get("fcaor") ?? []);
+    expect(values[0]).toBeCloseTo(0, 8);
+    expect(values[1]).toBeCloseTo(0.2, 8);
+    expect(values[2]).toBeCloseTo(0.386, 8);
   });
 
   test("uses native resource flow definitions when hidden dependencies are available", () => {
