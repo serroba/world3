@@ -897,7 +897,7 @@ describe("browser-native runtime", () => {
     }
   });
 
-  test("derives native cohort support and population sum through the browser seam", async () => {
+  test("derives the native population stock path through the browser seam", async () => {
     const runtime = createFixtureBackedRuntime(
       ModelData,
       async () => [
@@ -992,7 +992,7 @@ describe("browser-native runtime", () => {
           iphst: 1940,
         },
         series: {
-          pop: { name: "pop", values: [999, 999, 999, 999, 999] },
+          pop: { name: "pop", values: [10, 12, 14, 16, 18] },
           p1: { name: "p1", values: [1, 1.5, 2, 2.5, 3] },
           p2: { name: "p2", values: [2, 2.5, 3, 3.5, 4] },
           p3: { name: "p3", values: [3, 3.5, 4, 4.5, 5] },
@@ -1009,14 +1009,14 @@ describe("browser-native runtime", () => {
       year_min: 1900,
       year_max: 1902,
       dt: 1,
-      output_variables: ["pop", "mat1", "mat2", "mat3"],
+      output_variables: ["p2", "p3", "p4", "pop"],
     });
 
     const expectations = {
-      pop: [10, 14, 18],
-      mat1: [0.06439626666666667, 0.1290877952, 0.1940746816],
-      mat2: [0.06519813333333333, 0.0979079232, 0.13069140906666667],
-      mat3: [0.1433916, 0.1916316928, 0.240092736],
+      p2: [2, 1.9551421333333334, 1.9235597013333333],
+      p3: [3, 2.7896385333333334, 2.5285486197333336],
+      p4: [4, 3.7271676, 3.4095916128],
+      pop: [10, 10.471948266666666, 10.861699933866667],
     } as const;
 
     for (const [variable, expected] of Object.entries(expectations)) {

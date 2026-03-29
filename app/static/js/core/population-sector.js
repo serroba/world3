@@ -15,6 +15,7 @@ export const POPULATION_HIDDEN_SERIES = {
 const POPULATION_MORTALITY_OUTPUTS = ["m1", "m2", "m3", "m4"];
 const POPULATION_COHORT_OUTPUTS = ["mat1", "mat2", "mat3"];
 const POPULATION_DEATH_OUTPUTS = ["d1", "d2", "d3", "d4", "d", "cdr"];
+const POPULATION_STOCK_OUTPUTS = ["p2", "p3", "p4"];
 function clipAtPolicyYear(beforeValue, afterValue, time, policyYear) {
     return time > policyYear ? afterValue : beforeValue;
 }
@@ -230,6 +231,37 @@ export function createPopulationSumDerivedDefinition() {
         },
     };
 }
+export function createPopulationStockStateDefinition(variable, inflowVariable, outflowVariables) {
+    return {
+        variable,
+        advance: (currentValue, observation, nextObservation) => {
+            const inflow = observation.values[inflowVariable];
+            if (inflow === undefined) {
+                throw new Error(`Runtime population state advance is missing the inflow variable '${inflowVariable}'.`);
+            }
+            if (!nextObservation) {
+                return currentValue;
+            }
+            let netFlow = inflow;
+            for (const outflowVariable of outflowVariables) {
+                const outflow = observation.values[outflowVariable];
+                if (outflow === undefined) {
+                    throw new Error(`Runtime population state advance is missing the outflow variable '${outflowVariable}'.`);
+                }
+                netFlow -= outflow;
+            }
+            const dt = nextObservation.time - observation.time;
+            return currentValue + dt * netFlow;
+        },
+    };
+}
+export function createPopulationStockStateDefinitions() {
+    return [
+        createPopulationStockStateDefinition("p2", "mat1", ["d2", "mat2"]),
+        createPopulationStockStateDefinition("p3", "mat2", ["d3", "mat3"]),
+        createPopulationStockStateDefinition("p4", "mat3", ["d4"]),
+    ];
+}
 export function createTotalDeathsDerivedDefinition() {
     return {
         variable: "d",
@@ -264,6 +296,7 @@ export function createCdrDerivedDefinition() {
 export function extendPopulationSourceVariables(sourceVariables, outputVariables, fixture, lookupLibrary) {
     const needsLifeExpectancy = outputVariables.includes("le") ||
         outputVariables.some((variable) => POPULATION_MORTALITY_OUTPUTS.includes(variable)) ||
+        outputVariables.some((variable) => POPULATION_STOCK_OUTPUTS.includes(variable)) ||
         outputVariables.some((variable) => POPULATION_COHORT_OUTPUTS.includes(variable)) ||
         outputVariables.some((variable) => POPULATION_DEATH_OUTPUTS.includes(variable));
     const canUseNativeLifeExpectancy = needsLifeExpectancy &&
@@ -289,6 +322,7 @@ export function extendPopulationSourceVariables(sourceVariables, outputVariables
         sourceVariables.add("ppolx");
     }
     const canUseNativeMortality = outputVariables.some((variable) => POPULATION_MORTALITY_OUTPUTS.includes(variable) ||
+        POPULATION_STOCK_OUTPUTS.includes(variable) ||
         POPULATION_COHORT_OUTPUTS.includes(variable) ||
         POPULATION_DEATH_OUTPUTS.includes(variable)) &&
         canUseNativeLifeExpectancy &&
@@ -296,8 +330,8 @@ export function extendPopulationSourceVariables(sourceVariables, outputVariables
         Boolean(lookupLibrary?.has("M2")) &&
         Boolean(lookupLibrary?.has("M3")) &&
         Boolean(lookupLibrary?.has("M4"));
-    const needsNativeCohortSupport = outputVariables.includes("pop") ||
-        outputVariables.some((variable) => POPULATION_COHORT_OUTPUTS.includes(variable)) ||
+    const needsNativeCohortSupport = outputVariables.some((variable) => POPULATION_COHORT_OUTPUTS.includes(variable)) ||
+        outputVariables.includes("pop") ||
         outputVariables.some((variable) => POPULATION_DEATH_OUTPUTS.includes(variable));
     const hasCohortInputs = Boolean(fixture.series.p1) &&
         Boolean(fixture.series.p2) &&
@@ -316,14 +350,18 @@ export function extendPopulationSourceVariables(sourceVariables, outputVariables
         sourceVariables.add("p3");
         sourceVariables.add("p4");
     }
+    const canUseNativePopulationStocks = outputVariables.some((variable) => POPULATION_STOCK_OUTPUTS.includes(variable)) &&
+        canUseNativeMortality &&
+        canUseNativeCohortSupport;
     return {
         canUseNativeLifeExpectancy,
         canUseNativeMortality,
         canUseNativeCohortSupport,
         canUseNativeDeathPath,
+        canUseNativePopulationStocks,
     };
 }
-export function populatePopulationNativeSupportSeries(sourceFrame, sourceSeries, prepared, constantsUsed, canUseNativeLifeExpectancy, canUseNativeMortality = false, canUseNativeCohortSupport = false, canUseNativeDeathPath = false) {
+export function populatePopulationNativeSupportSeries(sourceFrame, sourceSeries, prepared, constantsUsed, canUseNativeLifeExpectancy, canUseNativeMortality = false, canUseNativeCohortSupport = false, canUseNativeDeathPath = false, canUseNativePopulationStocks = false) {
     if (!canUseNativeLifeExpectancy) {
         return;
     }
@@ -390,22 +428,21 @@ export function populatePopulationNativeSupportSeries(sourceFrame, sourceSeries,
         sourceSeries.set(variable, deriveSeriesValues(supportFrame, createMortalityDerivedDefinition(variable, lookup)));
     }
     if (canUseNativeCohortSupport) {
-        const cohortDefinitions = [
-            createMaturationDerivedDefinition("mat1", "p1", "m1", 15),
-            createMaturationDerivedDefinition("mat2", "p2", "m2", 30),
-            createMaturationDerivedDefinition("mat3", "p3", "m3", 20),
-        ];
         const cohortSupportFrame = {
             request: sourceFrame.request,
             time: sourceFrame.time,
             constantsUsed,
             series: sourceSeries,
         };
-        for (const definition of cohortDefinitions) {
+        for (const definition of [
+            createMaturationDerivedDefinition("mat1", "p1", "m1", 15),
+            createMaturationDerivedDefinition("mat2", "p2", "m2", 30),
+            createMaturationDerivedDefinition("mat3", "p3", "m3", 20),
+        ]) {
             sourceSeries.set(definition.variable, deriveSeriesValues(cohortSupportFrame, definition));
         }
     }
-    if (!canUseNativeDeathPath) {
+    if (!canUseNativeDeathPath && !canUseNativePopulationStocks) {
         return;
     }
     const deathDefinitions = [
@@ -423,20 +460,28 @@ export function populatePopulationNativeSupportSeries(sourceFrame, sourceSeries,
     for (const definition of deathDefinitions) {
         sourceSeries.set(definition.variable, deriveSeriesValues(deathSupportFrame, definition));
     }
-    const totalDeathsFrame = {
-        request: sourceFrame.request,
-        time: sourceFrame.time,
-        constantsUsed,
-        series: sourceSeries,
-    };
-    sourceSeries.set("d", deriveSeriesValues(totalDeathsFrame, createTotalDeathsDerivedDefinition()));
-    sourceSeries.set("cdr", deriveSeriesValues(totalDeathsFrame, createCdrDerivedDefinition()));
+    if (canUseNativeDeathPath) {
+        const totalDeathsFrame = {
+            request: sourceFrame.request,
+            time: sourceFrame.time,
+            constantsUsed,
+            series: sourceSeries,
+        };
+        sourceSeries.set("d", deriveSeriesValues(totalDeathsFrame, createTotalDeathsDerivedDefinition()));
+        sourceSeries.set("cdr", deriveSeriesValues(totalDeathsFrame, createCdrDerivedDefinition()));
+    }
 }
 export function maybePopulatePopulationOutputSeries(variable, sourceFrame, series) {
     const isCohortOutput = POPULATION_COHORT_OUTPUTS.includes(variable);
     const isMortalityOutput = POPULATION_MORTALITY_OUTPUTS.includes(variable);
     const isDeathOutput = POPULATION_DEATH_OUTPUTS.includes(variable);
-    if (variable !== "le" && variable !== "pop" && !isCohortOutput && !isMortalityOutput && !isDeathOutput) {
+    const isStockOutput = POPULATION_STOCK_OUTPUTS.includes(variable);
+    if (variable !== "le" &&
+        variable !== "pop" &&
+        !isCohortOutput &&
+        !isMortalityOutput &&
+        !isDeathOutput &&
+        !isStockOutput) {
         return false;
     }
     const values = sourceFrame.series.get(variable);

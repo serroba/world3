@@ -10,9 +10,14 @@ import {
   populateResourceNativeSupportSeries,
 } from "./resource-sector.js";
 import {
+  createPopulationStockStateDefinitions,
   extendPopulationSourceVariables,
+  createPopulationSumDerivedDefinition,
   populatePopulationNativeSupportSeries,
 } from "./population-sector.js";
+import {
+  populateDerivedBufferFromDefinition,
+} from "./runtime-state-frame.js";
 import type { RuntimeStateDefinition, RuntimeStateFrame } from "./runtime-state-frame.js";
 
 export type RuntimeExecutionPlan = {
@@ -24,6 +29,7 @@ export type RuntimeExecutionPlan = {
   readonly canUseNativeMortality: boolean;
   readonly canUseNativeCohortSupport: boolean;
   readonly canUseNativeDeathPath: boolean;
+  readonly canUseNativePopulationStocks: boolean;
 };
 
 export function createRuntimeExecutionPlan(
@@ -75,6 +81,7 @@ export function createRuntimeExecutionPlan(
     canUseNativeMortality,
     canUseNativeCohortSupport,
     canUseNativeDeathPath,
+    canUseNativePopulationStocks,
   } = extendPopulationSourceVariables(
     sourceVariables,
     prepared.outputVariables,
@@ -94,6 +101,7 @@ export function createRuntimeExecutionPlan(
     canUseNativeMortality,
     canUseNativeCohortSupport,
     canUseNativeDeathPath,
+    canUseNativePopulationStocks,
   };
 }
 
@@ -147,7 +155,19 @@ export function applyRuntimeExecutionPlan(
     plan.canUseNativeMortality,
     plan.canUseNativeCohortSupport,
     plan.canUseNativeDeathPath,
+    plan.canUseNativePopulationStocks,
   );
+
+  if (plan.canUseNativePopulationStocks) {
+    for (const definition of createPopulationStockStateDefinitions()) {
+      stepNr(definition);
+    }
+    populateDerivedBufferFromDefinition(
+      sourceFrame,
+      sourceSeries,
+      createPopulationSumDerivedDefinition(),
+    );
+  }
 
   if (sourceSeries.has("nr") && nrStateDefinition) {
     stepNr(nrStateDefinition);
