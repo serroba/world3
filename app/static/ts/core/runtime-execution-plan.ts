@@ -102,7 +102,8 @@ export function createRuntimeExecutionPlan(
         variable !== "f" &&
         variable !== "fpc" &&
         variable !== "fioaa" &&
-        variable !== "tai",
+        variable !== "tai" &&
+        variable !== "ly",
     ),
   );
 
@@ -214,6 +215,7 @@ export function applyRuntimeExecutionPlan(
     constantsUsed,
     plan.agricultureCapabilities.canUseNativeFoodPath,
     plan.agricultureCapabilities.canUseNativeAgriculturalAllocation,
+    plan.agricultureCapabilities.canUseNativeAgricultureProductivity,
   );
 
   populatePopulationNativeSupportSeries(

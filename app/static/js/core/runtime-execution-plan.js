@@ -56,7 +56,8 @@ export function createRuntimeExecutionPlan(prepared, fixture) {
         variable !== "f" &&
         variable !== "fpc" &&
         variable !== "fioaa" &&
-        variable !== "tai"));
+        variable !== "tai" &&
+        variable !== "ly"));
     const needsNativeFoodPath = prepared.outputVariables.some((variable) => POPULATION_OUTPUTS_REQUIRING_FOOD.has(variable));
     const agricultureCapabilities = extendAgricultureSourceVariables(sourceVariables, prepared.outputVariables, fixture, prepared.lookupLibrary, needsNativeFoodPath);
     const capitalCapabilities = extendCapitalSourceVariables(sourceVariables, prepared.outputVariables, fixture, prepared.lookupLibrary);
@@ -90,7 +91,7 @@ export function applyRuntimeExecutionPlan(sourceFrame, sourceSeries, prepared, c
         populateCapitalNativeSupportSeries(sourceFrame, sourceSeries, prepared, constantsUsed, plan.capitalCapabilities.canUseNativeCapitalAllocation, plan.capitalCapabilities.canUseNativeCapitalInvestment, plan.capitalCapabilities.canUseNativeCapitalStocks, plan.capitalCapabilities.canUseNativeCapitalVisibleOutputFormulas, plan.capitalCapabilities.canUseNativeCapitalOrdering);
         populateResourceNativeSupportSeries(sourceFrame, sourceSeries, prepared, constantsUsed, plan.canUseNativeNrFlow);
     }
-    populateAgricultureNativeSupportSeries(sourceFrame, sourceSeries, prepared, constantsUsed, plan.agricultureCapabilities.canUseNativeFoodPath, plan.agricultureCapabilities.canUseNativeAgriculturalAllocation);
+    populateAgricultureNativeSupportSeries(sourceFrame, sourceSeries, prepared, constantsUsed, plan.agricultureCapabilities.canUseNativeFoodPath, plan.agricultureCapabilities.canUseNativeAgriculturalAllocation, plan.agricultureCapabilities.canUseNativeAgricultureProductivity);
     populatePopulationNativeSupportSeries(sourceFrame, sourceSeries, prepared, constantsUsed, plan.canUseNativeLifeExpectancy, plan.canUseNativeMortality, plan.canUseNativeCohortSupport, plan.canUseNativeDeathPath, plan.canUseNativePopulationStocks);
     if (plan.canUseNativePopulationStocks) {
         for (const definition of createPopulationStockStateDefinitions()) {

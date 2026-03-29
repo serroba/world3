@@ -1,6 +1,10 @@
 const DEFAULT_AGRICULTURE_POLICY_YEAR = 1975;
 export const AGRICULTURE_HIDDEN_SERIES = {
+    aiph: "__aiph",
     ifpc: "__ifpc",
+    lymap: "__lymap",
+    lymc: "__lymc",
+    lyf: "__lyf",
 };
 function clipAtPolicyYear(beforeValue, afterValue, time, policyYear) {
     return time > policyYear ? afterValue : beforeValue;
@@ -48,6 +52,73 @@ export function createFoodDerivedDefinition(constantsUsed) {
             const lfh = constantsUsed.lfh ?? 0.7;
             const pl = constantsUsed.pl ?? 0.1;
             return ly * al * lfh * (1 - pl);
+        },
+    };
+}
+export function createAiphDerivedDefinition() {
+    return {
+        variable: AGRICULTURE_HIDDEN_SERIES.aiph,
+        derive: (observation) => {
+            const ai = observation.values.ai;
+            const falm = observation.values.falm;
+            const al = observation.values.al;
+            if (ai === undefined || falm === undefined || al === undefined || al === 0) {
+                throw new Error("Fixture-backed runtime cannot derive '__aiph' because 'ai', 'falm', or 'al' is missing or zero.");
+            }
+            return ai * (1 - falm) / al;
+        },
+    };
+}
+export function createLymcDerivedDefinition(lymcLookup) {
+    return {
+        variable: AGRICULTURE_HIDDEN_SERIES.lymc,
+        derive: (observation) => {
+            const aiph = observation.values[AGRICULTURE_HIDDEN_SERIES.aiph];
+            if (aiph === undefined) {
+                throw new Error("Fixture-backed runtime cannot derive '__lymc' because '__aiph' is missing.");
+            }
+            return lymcLookup.evaluate(aiph);
+        },
+    };
+}
+export function createLyfDerivedDefinition(constantsUsed, policyYear = DEFAULT_AGRICULTURE_POLICY_YEAR) {
+    return {
+        variable: AGRICULTURE_HIDDEN_SERIES.lyf,
+        derive: (observation) => clipAtPolicyYear(constantsUsed.lyf1 ?? 1, constantsUsed.lyf2 ?? 1, observation.time, policyYear),
+    };
+}
+export function createLymapDerivedDefinition(constantsUsed, lymap1Lookup, lymap2Lookup, policyYear = DEFAULT_AGRICULTURE_POLICY_YEAR) {
+    return {
+        variable: AGRICULTURE_HIDDEN_SERIES.lymap,
+        derive: (observation) => {
+            const io = observation.values.io;
+            const io70 = constantsUsed.io70;
+            if (io === undefined) {
+                throw new Error("Fixture-backed runtime cannot derive '__lymap' because 'io' is missing.");
+            }
+            if (io70 === undefined || io70 === 0) {
+                throw new Error("Fixture-backed runtime cannot derive '__lymap' because constant 'io70' is missing or zero.");
+            }
+            const ioRatio = io / io70;
+            return clipAtPolicyYear(lymap1Lookup.evaluate(ioRatio), lymap2Lookup.evaluate(ioRatio), observation.time, policyYear);
+        },
+    };
+}
+export function createLyDerivedDefinition() {
+    return {
+        variable: "ly",
+        derive: (observation) => {
+            const lyf = observation.values[AGRICULTURE_HIDDEN_SERIES.lyf];
+            const lfert = observation.values.lfert;
+            const lymc = observation.values[AGRICULTURE_HIDDEN_SERIES.lymc];
+            const lymap = observation.values[AGRICULTURE_HIDDEN_SERIES.lymap];
+            if (lyf === undefined ||
+                lfert === undefined ||
+                lymc === undefined ||
+                lymap === undefined) {
+                throw new Error("Fixture-backed runtime cannot derive 'ly' because productivity inputs are missing.");
+            }
+            return lyf * lfert * lymc * lymap;
         },
     };
 }
@@ -138,12 +209,57 @@ export function extendAgricultureSourceVariables(sourceVariables, outputVariable
         sourceVariables.add("io");
         sourceVariables.add("iopc");
     }
+    const canUseNativeAgricultureProductivity = (outputVariables.includes("ly") || canUseNativeFoodPath) &&
+        Boolean(fixture.series.ai) &&
+        Boolean(fixture.series.falm) &&
+        Boolean(fixture.series.al) &&
+        Boolean(fixture.series.io) &&
+        Boolean(fixture.series.lfert) &&
+        Boolean(lookupLibrary?.has("LYMC")) &&
+        Boolean(lookupLibrary?.has("LYMAP1")) &&
+        Boolean(lookupLibrary?.has("LYMAP2")) &&
+        fixture.constants_used.io70 !== undefined;
+    if (canUseNativeAgricultureProductivity) {
+        sourceVariables.add("al");
+        sourceVariables.add("ai");
+        sourceVariables.add("falm");
+        sourceVariables.add("io");
+        sourceVariables.add("lfert");
+    }
     return {
         canUseNativeFoodPath,
         canUseNativeAgriculturalAllocation,
+        canUseNativeAgricultureProductivity,
     };
 }
-export function populateAgricultureNativeSupportSeries(sourceFrame, sourceSeries, prepared, constantsUsed, canUseNativeFoodPath, canUseNativeAgriculturalAllocation) {
+export function populateAgricultureNativeSupportSeries(sourceFrame, sourceSeries, prepared, constantsUsed, canUseNativeFoodPath, canUseNativeAgriculturalAllocation, canUseNativeAgricultureProductivity) {
+    if (!canUseNativeFoodPath && !canUseNativeAgricultureProductivity) {
+        return;
+    }
+    if (canUseNativeAgricultureProductivity) {
+        const lymcLookup = prepared.lookupLibrary.get("LYMC");
+        const lymap1Lookup = prepared.lookupLibrary.get("LYMAP1");
+        const lymap2Lookup = prepared.lookupLibrary.get("LYMAP2");
+        if (lymcLookup && lymap1Lookup && lymap2Lookup) {
+            sourceSeries.set(AGRICULTURE_HIDDEN_SERIES.aiph, deriveSeriesValues(sourceFrame, createAiphDerivedDefinition()));
+            const productivityFrame = {
+                request: sourceFrame.request,
+                time: sourceFrame.time,
+                constantsUsed,
+                series: sourceSeries,
+            };
+            sourceSeries.set(AGRICULTURE_HIDDEN_SERIES.lymc, deriveSeriesValues(productivityFrame, createLymcDerivedDefinition(lymcLookup)));
+            sourceSeries.set(AGRICULTURE_HIDDEN_SERIES.lyf, deriveSeriesValues(productivityFrame, createLyfDerivedDefinition(constantsUsed, prepared.request.pyear ?? DEFAULT_AGRICULTURE_POLICY_YEAR)));
+            sourceSeries.set(AGRICULTURE_HIDDEN_SERIES.lymap, deriveSeriesValues(productivityFrame, createLymapDerivedDefinition(constantsUsed, lymap1Lookup, lymap2Lookup, prepared.request.pyear ?? DEFAULT_AGRICULTURE_POLICY_YEAR)));
+            const lyFrame = {
+                request: sourceFrame.request,
+                time: sourceFrame.time,
+                constantsUsed,
+                series: sourceSeries,
+            };
+            sourceSeries.set("ly", deriveSeriesValues(lyFrame, createLyDerivedDefinition()));
+        }
+    }
     if (!canUseNativeFoodPath) {
         return;
     }
@@ -176,7 +292,7 @@ export function populateAgricultureNativeSupportSeries(sourceFrame, sourceSeries
     sourceSeries.set("tai", deriveSeriesValues(allocationFrame, createTaiDerivedDefinition()));
 }
 export function maybePopulateAgricultureOutputSeries(variable, sourceFrame, series, fixture, projectedIndices) {
-    if (!["f", "fpc", "fioaa", "tai"].includes(variable)) {
+    if (!["f", "fpc", "fioaa", "tai", "ly"].includes(variable)) {
         return false;
     }
     const values = sourceFrame.series.get(variable);

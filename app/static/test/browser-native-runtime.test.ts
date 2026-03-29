@@ -92,6 +92,27 @@ const tables: RawLookupTable[] = [
   },
   {
     sector: "Agriculture",
+    "x.name": "AIPH",
+    "x.values": [0, 20, 40],
+    "y.name": "LYMC",
+    "y.values": [1, 1.5, 2],
+  },
+  {
+    sector: "Agriculture",
+    "x.name": "IOR",
+    "x.values": [0, 1, 2],
+    "y.name": "LYMAP1",
+    "y.values": [1, 1.2, 1.4],
+  },
+  {
+    sector: "Agriculture",
+    "x.name": "IOR",
+    "x.values": [0, 1, 2],
+    "y.name": "LYMAP2",
+    "y.values": [1, 1.2, 1.4],
+  },
+  {
+    sector: "Agriculture",
     "x.name": "FPCR",
     "x.values": [0, 1, 2],
     "y.name": "FIOAA2",
@@ -314,6 +335,43 @@ describe("browser-native runtime", () => {
     expect(result.series.le?.values).toEqual([
       expect.closeTo(32.6, 10),
       expect.closeTo(32.6, 10),
+    ]);
+  });
+
+  test("derives ly natively through the agriculture productivity path", async () => {
+    const runtime = createFixtureBackedRuntime(
+      ModelData,
+      async () => tables,
+      async () => ({
+        year_min: 1900,
+        year_max: 1901,
+        dt: 1,
+        time: [1900, 1901],
+        constants_used: {
+          io70: 1000,
+          lyf1: 1,
+          lyf2: 1,
+        },
+        series: {
+          al: { name: "al", values: [10, 12] },
+          ai: { name: "ai", values: [200, 240] },
+          falm: { name: "falm", values: [0.2, 0.25] },
+          io: { name: "io", values: [1000, 1100] },
+          lfert: { name: "lfert", values: [600, 620] },
+        },
+      }),
+    );
+
+    const result = await runtime.simulateStandardRun({
+      year_min: 1900,
+      year_max: 1901,
+      dt: 1,
+      output_variables: ["ly"],
+    });
+
+    expect(result.series.ly?.values).toEqual([
+      expect.closeTo(1008, 10),
+      expect.closeTo(1040.05, 10),
     ]);
   });
 
