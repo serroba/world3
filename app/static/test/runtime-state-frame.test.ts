@@ -121,6 +121,32 @@ describe("runtime state frame", () => {
     });
   });
 
+  test("can derive io natively from pop and iopc through the runtime state frame", () => {
+    const prepared = prepareRuntime(
+      ModelData,
+      {
+        year_min: 1900,
+        year_max: 1902,
+        dt: 1,
+        output_variables: ["io"],
+      },
+      tables,
+    );
+
+    const frame = createRuntimeStateFrame(prepared, fixture);
+
+    expect(runtimeStateFrameToSimulationResult(frame)).toEqual({
+      year_min: 1900,
+      year_max: 1902,
+      dt: 1,
+      time: [1900, 1901, 1902],
+      constants_used: { nri: 100, nruf1: 1, nruf2: 0.5 },
+      series: {
+        io: { name: "io", values: [10, 28, 54] },
+      },
+    });
+  });
+
   test("can derive fcaor natively from stepped nr", () => {
     const prepared = prepareRuntime(
       ModelData,

@@ -1,3 +1,4 @@
+import { extendCapitalSourceVariables, maybePopulateCapitalOutputSeries, } from "./capital-sector.js";
 import { RESOURCE_HIDDEN_SERIES, extendResourceSourceVariables, maybePopulateResourceOutputSeries, populateResourceNativeSupportSeries, } from "./resource-sector.js";
 const TIME_KEY_PRECISION = 8;
 function toTimeKey(value) {
@@ -98,7 +99,10 @@ export function createRuntimeStateFrame(prepared, fixture) {
         ...fixture.constants_used,
         ...(prepared.request.constants ?? {}),
     };
-    const sourceVariables = new Set(prepared.outputVariables.filter((variable) => variable !== "nrfr" && variable !== "fcaor"));
+    const sourceVariables = new Set(prepared.outputVariables.filter((variable) => variable !== "nrfr" &&
+        variable !== "fcaor" &&
+        variable !== "io"));
+    const { canDeriveIo } = extendCapitalSourceVariables(sourceVariables, prepared.outputVariables, fixture);
     const { canUseNativeNrFlow } = extendResourceSourceVariables(sourceVariables, prepared.outputVariables, fixture, prepared.lookupLibrary);
     const sourceSeries = new Map();
     for (const variable of sourceVariables) {
@@ -129,6 +133,9 @@ export function createRuntimeStateFrame(prepared, fixture) {
     };
     const series = new Map();
     for (const variable of prepared.outputVariables) {
+        if (maybePopulateCapitalOutputSeries(variable, sourceFrame, series, fixture, projectedIndices, prepared, canDeriveIo)) {
+            continue;
+        }
         if (maybePopulateResourceOutputSeries(variable, sourceFrame, series, prepared, fixture, projectedIndices, constantsUsed)) {
             continue;
         }

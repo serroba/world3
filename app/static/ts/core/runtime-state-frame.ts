@@ -1,6 +1,10 @@
 import type { ConstantMap, SimulationResult } from "../simulation-contracts.js";
 import type { RuntimePreparation } from "./browser-native-runtime.js";
 import {
+  extendCapitalSourceVariables,
+  maybePopulateCapitalOutputSeries,
+} from "./capital-sector.js";
+import {
   RESOURCE_HIDDEN_SERIES,
   extendResourceSourceVariables,
   maybePopulateResourceOutputSeries,
@@ -216,8 +220,16 @@ export function createRuntimeStateFrame(
 
   const sourceVariables = new Set(
     prepared.outputVariables.filter(
-      (variable) => variable !== "nrfr" && variable !== "fcaor",
+      (variable) =>
+        variable !== "nrfr" &&
+        variable !== "fcaor" &&
+        variable !== "io",
     ),
+  );
+  const { canDeriveIo } = extendCapitalSourceVariables(
+    sourceVariables,
+    prepared.outputVariables,
+    fixture,
   );
   const { canUseNativeNrFlow } = extendResourceSourceVariables(
     sourceVariables,
@@ -271,6 +283,19 @@ export function createRuntimeStateFrame(
 
   const series = new Map<string, Float64Array>();
   for (const variable of prepared.outputVariables) {
+    if (
+      maybePopulateCapitalOutputSeries(
+        variable,
+        sourceFrame,
+        series,
+        fixture,
+        projectedIndices,
+        prepared,
+        canDeriveIo,
+      )
+    ) {
+      continue;
+    }
     if (
       maybePopulateResourceOutputSeries(
         variable,
