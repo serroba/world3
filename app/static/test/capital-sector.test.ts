@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import {
   CAPITAL_HIDDEN_SERIES,
+  computeCapitalOrderedSeries,
   createAlicDerivedDefinition,
   createAlscDerivedDefinition,
   createCufDerivedDefinition,
@@ -89,6 +90,10 @@ const fixture: SimulationResult = {
     alic2: 14,
     alsc1: 20,
     alsc2: 20,
+    icor1: 3,
+    icor2: 3,
+    scor1: 1,
+    scor2: 1,
   },
   series: {
     fioaa: { name: "fioaa", values: [0.1, 0.1, 0.1, 0.1, 0.1] },
@@ -122,6 +127,7 @@ describe("capital sector core", () => {
       canUseNativeCapitalInvestment: false,
       canUseNativeCapitalStocks: false,
       canUseNativeCapitalVisibleOutputFormulas: false,
+      canUseNativeCapitalOrdering: false,
     });
     expect(Array.from(sourceVariables).sort()).toEqual(["iopc", "pop"]);
   });
@@ -145,14 +151,12 @@ describe("capital sector core", () => {
     expect(result.canUseNativeCapitalInvestment).toBe(true);
     expect(result.canUseNativeCapitalStocks).toBe(true);
     expect(result.canUseNativeCapitalVisibleOutputFormulas).toBe(true);
+    expect(result.canUseNativeCapitalOrdering).toBe(true);
     expect(Array.from(sourceVariables).sort()).toEqual([
       "fcaor",
       "fioaa",
-      "io",
-      "iopc",
       "luf",
       "pop",
-      "sopc",
     ]);
   });
 
@@ -468,6 +472,7 @@ describe("capital sector core", () => {
       true,
       false,
       false,
+      false,
     );
 
     expect(Array.from(sourceSeries.get(CAPITAL_HIDDEN_SERIES.fioac) ?? [])).toEqual([
@@ -528,6 +533,7 @@ describe("capital sector core", () => {
       true,
       true,
       true,
+      false,
     );
 
     expect(Array.from(sourceSeries.get(CAPITAL_HIDDEN_SERIES.alic) ?? [])).toEqual([
@@ -603,6 +609,7 @@ describe("capital sector core", () => {
         canDeriveSo: false,
         canDeriveSopc: false,
         canUseNativeCapitalVisibleOutputFormulas: false,
+        canUseNativeCapitalOrdering: false,
       },
     );
 
@@ -640,6 +647,7 @@ describe("capital sector core", () => {
         canDeriveSo: false,
         canDeriveSopc: false,
         canUseNativeCapitalVisibleOutputFormulas: false,
+        canUseNativeCapitalOrdering: false,
       },
     );
 
@@ -677,6 +685,7 @@ describe("capital sector core", () => {
         canDeriveSo: true,
         canDeriveSopc: false,
         canUseNativeCapitalVisibleOutputFormulas: false,
+        canUseNativeCapitalOrdering: false,
       },
     );
 
@@ -714,6 +723,7 @@ describe("capital sector core", () => {
         canDeriveSo: false,
         canDeriveSopc: true,
         canUseNativeCapitalVisibleOutputFormulas: false,
+        canUseNativeCapitalOrdering: false,
       },
     );
 
@@ -721,3 +731,54 @@ describe("capital sector core", () => {
     expect(Array.from(series.get("sopc") ?? [])).toEqual([4, 6, 8]);
   });
 });
+  test("computes capital series through an explicit same-timestep order", () => {
+    const prepared = prepareRuntime(
+      ModelData,
+      { year_min: 1900, year_max: 1902, dt: 1, output_variables: ["iopc", "sopc"] },
+      tables,
+    );
+    const sourceFrame: RuntimeStateFrame = {
+      request: prepared.request,
+      time: Float64Array.from(prepared.time),
+      constantsUsed: fixture.constants_used,
+      series: new Map([
+        ["fcaor", Float64Array.from([0.2, 0.2, 0.2])],
+        ["fioaa", Float64Array.from([0.1, 0.1, 0.1])],
+        ["luf", Float64Array.from([2, 2, 2])],
+        ["pop", Float64Array.from([10, 14, 18])],
+      ]),
+    };
+
+    const result = computeCapitalOrderedSeries(
+      sourceFrame,
+      prepared,
+      fixture.constants_used,
+    );
+
+    expect(Array.from(result.io)).toEqual([56, 53.99563636363637, 52.48523292652124]);
+    expect(Array.from(result.iopc)).toEqual([
+      5.6,
+      3.8568311688311696,
+      2.9158462736956245,
+    ]);
+    expect(Array.from(result.so)).toEqual([
+      144,
+      155.63636363636363,
+      164.43339055151938,
+    ]);
+    expect(Array.from(result.sopc)).toEqual([
+      14.4,
+      11.116883116883116,
+      9.135188363973299,
+    ]);
+    expect(Array.from(result[CAPITAL_HIDDEN_SERIES.ic])).toEqual([
+      210,
+      202.48363636363638,
+      196.81962347445466,
+    ]);
+    expect(Array.from(result[CAPITAL_HIDDEN_SERIES.sc])).toEqual([
+      144,
+      155.63636363636363,
+      164.43339055151938,
+    ]);
+  });

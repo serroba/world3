@@ -27,6 +27,48 @@ const tables: RawLookupTable[] = [
     "y.name": "M1",
     "y.values": [0.05, 0.03],
   },
+  {
+    sector: "Capital",
+    "x.name": "IOPCR",
+    "x.values": [0, 1, 2],
+    "y.name": "FIOACV",
+    "y.values": [0.2, 0.4, 0.6],
+  },
+  {
+    sector: "Capital",
+    "x.name": "IOPC",
+    "x.values": [0, 100, 200],
+    "y.name": "ISOPC1",
+    "y.values": [10, 20, 30],
+  },
+  {
+    sector: "Capital",
+    "x.name": "IOPC",
+    "x.values": [0, 100, 200],
+    "y.name": "ISOPC2",
+    "y.values": [15, 25, 35],
+  },
+  {
+    sector: "Capital",
+    "x.name": "SOR",
+    "x.values": [0, 2, 4],
+    "y.name": "FIOAS1",
+    "y.values": [0.2, 0.4, 0.6],
+  },
+  {
+    sector: "Capital",
+    "x.name": "SOR",
+    "x.values": [0, 2, 4],
+    "y.name": "FIOAS2",
+    "y.values": [0.25, 0.45, 0.65],
+  },
+  {
+    sector: "Capital",
+    "x.name": "LUFD",
+    "x.values": [0, 1, 2],
+    "y.name": "CUF",
+    "y.values": [0, 0.5, 1],
+  },
 ];
 
 describe("browser-native runtime", () => {
@@ -207,6 +249,79 @@ describe("browser-native runtime", () => {
       constants_used: {},
       series: {
         sopc: { name: "sopc", values: [4, 6, 8] },
+      },
+    });
+  });
+
+  test("derives iopc through the ordered capital seam when same-timestep dependencies are present", async () => {
+    const runtime = createFixtureBackedRuntime(
+      ModelData,
+      async () => tables,
+      async () => ({
+        year_min: 1900,
+        year_max: 1902,
+        dt: 0.5,
+        time: [1900, 1900.5, 1901, 1901.5, 1902],
+        constants_used: {
+          fioac1: 0.43,
+          fioac2: 0.5,
+          iopcd: 100,
+          iet: 1950,
+          ici: 210,
+          sci: 144,
+          alic1: 14,
+          alic2: 14,
+          alsc1: 20,
+          alsc2: 20,
+          icor1: 3,
+          icor2: 3,
+          scor1: 1,
+          scor2: 1,
+        },
+        series: {
+          fioaa: { name: "fioaa", values: [0.1, 0.1, 0.1, 0.1, 0.1] },
+          fcaor: { name: "fcaor", values: [0.2, 0.2, 0.2, 0.2, 0.2] },
+          luf: { name: "luf", values: [2, 2, 2, 2, 2] },
+          pop: { name: "pop", values: [10, 12, 14, 16, 18] },
+          iopc: { name: "iopc", values: [99, 99, 99, 99, 99] },
+          sopc: { name: "sopc", values: [99, 99, 99, 99, 99] },
+        },
+      }),
+    );
+
+    await expect(
+      runtime.simulateStandardRun({
+        year_min: 1900,
+        year_max: 1902,
+        dt: 1,
+        output_variables: ["iopc"],
+      }),
+    ).resolves.toEqual({
+      year_min: 1900,
+      year_max: 1902,
+      dt: 1,
+      time: [1900, 1901, 1902],
+      constants_used: {
+        fioac1: 0.43,
+        fioac2: 0.5,
+        iopcd: 100,
+        iet: 1950,
+        ici: 210,
+        sci: 144,
+        alic1: 14,
+        alic2: 14,
+        alsc1: 20,
+        alsc2: 20,
+        icor1: 3,
+        icor2: 3,
+        scor1: 1,
+        scor2: 1,
+      },
+      series: {
+        iopc: {
+          name: "iopc",
+          values: [5.6, 3.8568311688311696, 2.9158462736956245],
+        },
       },
     });
   });

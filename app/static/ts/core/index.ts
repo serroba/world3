@@ -23,6 +23,7 @@ export {
 export { projectSimulationResult } from "./simulation-results.js";
 export {
   CAPITAL_HIDDEN_SERIES,
+  computeCapitalOrderedSeries,
   createAlicDerivedDefinition,
   createAlscDerivedDefinition,
   createCapitalIoDerivedDefinition,
@@ -86,6 +87,7 @@ export type {
   RuntimePreparation,
   RuntimeTablesLoader,
 } from "./browser-native-runtime.js";
+export type { CapitalOrderedSeries } from "./capital-sector.js";
 export type {
   RuntimeDerivedDefinition,
   RuntimeObservation,
