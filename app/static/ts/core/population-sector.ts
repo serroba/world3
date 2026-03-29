@@ -4,6 +4,7 @@ import { Smooth } from "./runtime-primitives.js";
 import type {
   RuntimeDerivedDefinition,
   RuntimeObservation,
+  RuntimeStateDefinition,
   RuntimeStateFrame,
 } from "./runtime-state-frame.js";
 import type { LookupInterpolator } from "./world3-tables.js";
@@ -26,6 +27,7 @@ export const POPULATION_HIDDEN_SERIES = {
 const POPULATION_MORTALITY_OUTPUTS = ["m1", "m2", "m3", "m4"] as const;
 const POPULATION_COHORT_OUTPUTS = ["mat1", "mat2", "mat3"] as const;
 const POPULATION_DEATH_OUTPUTS = ["d1", "d2", "d3", "d4", "d", "cdr"] as const;
+const POPULATION_STOCK_OUTPUTS = ["p2", "p3", "p4"] as const;
 
 function clipAtPolicyYear(
   beforeValue: number,
@@ -337,6 +339,46 @@ export function createPopulationSumDerivedDefinition(): RuntimeDerivedDefinition
   };
 }
 
+export function createPopulationStockStateDefinition(
+  variable: "p2" | "p3" | "p4",
+  inflowVariable: "mat1" | "mat2" | "mat3",
+  outflowVariables: readonly ("d2" | "d3" | "d4" | "mat2" | "mat3")[],
+): RuntimeStateDefinition {
+  return {
+    variable,
+    advance: (currentValue, observation, nextObservation) => {
+      const inflow = observation.values[inflowVariable];
+      if (inflow === undefined) {
+        throw new Error(
+          `Runtime population state advance is missing the inflow variable '${inflowVariable}'.`,
+        );
+      }
+      if (!nextObservation) {
+        return currentValue;
+      }
+      let netFlow = inflow;
+      for (const outflowVariable of outflowVariables) {
+        const outflow = observation.values[outflowVariable];
+        if (outflow === undefined) {
+          throw new Error(
+            `Runtime population state advance is missing the outflow variable '${outflowVariable}'.`,
+          );
+        }
+        netFlow -= outflow;
+      }
+      const dt = nextObservation.time - observation.time;
+      return currentValue + dt * netFlow;
+    },
+  };
+}
+
+export function createPopulationStockStateDefinitions(): RuntimeStateDefinition[] {
+  return [
+    createPopulationStockStateDefinition("p2", "mat1", ["d2", "mat2"]),
+    createPopulationStockStateDefinition("p3", "mat2", ["d3", "mat3"]),
+    createPopulationStockStateDefinition("p4", "mat3", ["d4"]),
+  ];
+}
 export function createTotalDeathsDerivedDefinition(): RuntimeDerivedDefinition {
   return {
     variable: "d",
@@ -386,12 +428,18 @@ export function extendPopulationSourceVariables(
   canUseNativeMortality: boolean;
   canUseNativeCohortSupport: boolean;
   canUseNativeDeathPath: boolean;
+  canUseNativePopulationStocks: boolean;
 } {
   const needsLifeExpectancy =
     outputVariables.includes("le") ||
     outputVariables.some((variable) =>
       POPULATION_MORTALITY_OUTPUTS.includes(
         variable as (typeof POPULATION_MORTALITY_OUTPUTS)[number],
+      ),
+    ) ||
+    outputVariables.some((variable) =>
+      POPULATION_STOCK_OUTPUTS.includes(
+        variable as (typeof POPULATION_STOCK_OUTPUTS)[number],
       ),
     ) ||
     outputVariables.some((variable) =>
@@ -435,6 +483,9 @@ export function extendPopulationSourceVariables(
         POPULATION_MORTALITY_OUTPUTS.includes(
           variable as (typeof POPULATION_MORTALITY_OUTPUTS)[number],
         ) ||
+        POPULATION_STOCK_OUTPUTS.includes(
+          variable as (typeof POPULATION_STOCK_OUTPUTS)[number],
+        ) ||
         POPULATION_COHORT_OUTPUTS.includes(
           variable as (typeof POPULATION_COHORT_OUTPUTS)[number],
         ) ||
@@ -449,12 +500,12 @@ export function extendPopulationSourceVariables(
     Boolean(lookupLibrary?.has("M4"));
 
   const needsNativeCohortSupport =
-    outputVariables.includes("pop") ||
     outputVariables.some((variable) =>
       POPULATION_COHORT_OUTPUTS.includes(
         variable as (typeof POPULATION_COHORT_OUTPUTS)[number],
       ),
     ) ||
+    outputVariables.includes("pop") ||
     outputVariables.some((variable) =>
       POPULATION_DEATH_OUTPUTS.includes(
         variable as (typeof POPULATION_DEATH_OUTPUTS)[number],
@@ -487,11 +538,21 @@ export function extendPopulationSourceVariables(
     sourceVariables.add("p4");
   }
 
+  const canUseNativePopulationStocks =
+    outputVariables.some((variable) =>
+      POPULATION_STOCK_OUTPUTS.includes(
+        variable as (typeof POPULATION_STOCK_OUTPUTS)[number],
+      ),
+    ) &&
+    canUseNativeMortality &&
+    canUseNativeCohortSupport;
+
   return {
     canUseNativeLifeExpectancy,
     canUseNativeMortality,
     canUseNativeCohortSupport,
     canUseNativeDeathPath,
+    canUseNativePopulationStocks,
   };
 }
 
@@ -504,6 +565,7 @@ export function populatePopulationNativeSupportSeries(
   canUseNativeMortality = false,
   canUseNativeCohortSupport = false,
   canUseNativeDeathPath = false,
+  canUseNativePopulationStocks = false,
 ): void {
   if (!canUseNativeLifeExpectancy) {
     return;
@@ -620,18 +682,17 @@ export function populatePopulationNativeSupportSeries(
   }
 
   if (canUseNativeCohortSupport) {
-    const cohortDefinitions = [
-      createMaturationDerivedDefinition("mat1", "p1", "m1", 15),
-      createMaturationDerivedDefinition("mat2", "p2", "m2", 30),
-      createMaturationDerivedDefinition("mat3", "p3", "m3", 20),
-    ] as const;
     const cohortSupportFrame: RuntimeStateFrame = {
       request: sourceFrame.request,
       time: sourceFrame.time,
       constantsUsed,
       series: sourceSeries,
     };
-    for (const definition of cohortDefinitions) {
+    for (const definition of [
+      createMaturationDerivedDefinition("mat1", "p1", "m1", 15),
+      createMaturationDerivedDefinition("mat2", "p2", "m2", 30),
+      createMaturationDerivedDefinition("mat3", "p3", "m3", 20),
+    ]) {
       sourceSeries.set(
         definition.variable,
         deriveSeriesValues(cohortSupportFrame, definition),
@@ -639,7 +700,7 @@ export function populatePopulationNativeSupportSeries(
     }
   }
 
-  if (!canUseNativeDeathPath) {
+  if (!canUseNativeDeathPath && !canUseNativePopulationStocks) {
     return;
   }
 
@@ -664,20 +725,22 @@ export function populatePopulationNativeSupportSeries(
     );
   }
 
-  const totalDeathsFrame: RuntimeStateFrame = {
-    request: sourceFrame.request,
-    time: sourceFrame.time,
-    constantsUsed,
-    series: sourceSeries,
-  };
-  sourceSeries.set(
-    "d",
-    deriveSeriesValues(totalDeathsFrame, createTotalDeathsDerivedDefinition()),
-  );
-  sourceSeries.set(
-    "cdr",
-    deriveSeriesValues(totalDeathsFrame, createCdrDerivedDefinition()),
-  );
+  if (canUseNativeDeathPath) {
+    const totalDeathsFrame: RuntimeStateFrame = {
+      request: sourceFrame.request,
+      time: sourceFrame.time,
+      constantsUsed,
+      series: sourceSeries,
+    };
+    sourceSeries.set(
+      "d",
+      deriveSeriesValues(totalDeathsFrame, createTotalDeathsDerivedDefinition()),
+    );
+    sourceSeries.set(
+      "cdr",
+      deriveSeriesValues(totalDeathsFrame, createCdrDerivedDefinition()),
+    );
+  }
 }
 
 export function maybePopulatePopulationOutputSeries(
@@ -694,7 +757,17 @@ export function maybePopulatePopulationOutputSeries(
   const isDeathOutput = POPULATION_DEATH_OUTPUTS.includes(
     variable as (typeof POPULATION_DEATH_OUTPUTS)[number],
   );
-  if (variable !== "le" && variable !== "pop" && !isCohortOutput && !isMortalityOutput && !isDeathOutput) {
+  const isStockOutput = POPULATION_STOCK_OUTPUTS.includes(
+    variable as (typeof POPULATION_STOCK_OUTPUTS)[number],
+  );
+  if (
+    variable !== "le" &&
+    variable !== "pop" &&
+    !isCohortOutput &&
+    !isMortalityOutput &&
+    !isDeathOutput &&
+    !isStockOutput
+  ) {
     return false;
   }
 

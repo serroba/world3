@@ -1,7 +1,8 @@
 import { extendCapitalSourceVariables, populateCapitalNativeSupportSeries, } from "./capital-sector.js";
 import { computeCoupledCapitalResourceSeries } from "./coupled-capital-resource-runtime.js";
 import { extendResourceSourceVariables, populateResourceNativeSupportSeries, } from "./resource-sector.js";
-import { extendPopulationSourceVariables, populatePopulationNativeSupportSeries, } from "./population-sector.js";
+import { createPopulationStockStateDefinitions, extendPopulationSourceVariables, createPopulationSumDerivedDefinition, populatePopulationNativeSupportSeries, } from "./population-sector.js";
+import { populateDerivedBufferFromDefinition, } from "./runtime-state-frame.js";
 export function createRuntimeExecutionPlan(prepared, fixture) {
     const sourceVariables = new Set(prepared.outputVariables.filter((variable) => variable !== "nrfr" &&
         variable !== "fcaor" &&
@@ -25,7 +26,7 @@ export function createRuntimeExecutionPlan(prepared, fixture) {
         variable !== "cdr"));
     const capitalCapabilities = extendCapitalSourceVariables(sourceVariables, prepared.outputVariables, fixture, prepared.lookupLibrary);
     const { canUseNativeNrFlow } = extendResourceSourceVariables(sourceVariables, prepared.outputVariables, fixture, prepared.lookupLibrary, capitalCapabilities.canUseNativeCapitalOrdering);
-    const { canUseNativeLifeExpectancy, canUseNativeMortality, canUseNativeCohortSupport, canUseNativeDeathPath, } = extendPopulationSourceVariables(sourceVariables, prepared.outputVariables, fixture, prepared.lookupLibrary);
+    const { canUseNativeLifeExpectancy, canUseNativeMortality, canUseNativeCohortSupport, canUseNativeDeathPath, canUseNativePopulationStocks, } = extendPopulationSourceVariables(sourceVariables, prepared.outputVariables, fixture, prepared.lookupLibrary);
     return {
         sourceVariables,
         capitalCapabilities,
@@ -37,6 +38,7 @@ export function createRuntimeExecutionPlan(prepared, fixture) {
         canUseNativeMortality,
         canUseNativeCohortSupport,
         canUseNativeDeathPath,
+        canUseNativePopulationStocks,
     };
 }
 export function applyRuntimeExecutionPlan(sourceFrame, sourceSeries, prepared, constantsUsed, plan, stepNr, nrStateDefinition) {
@@ -49,7 +51,13 @@ export function applyRuntimeExecutionPlan(sourceFrame, sourceSeries, prepared, c
     }
     populateCapitalNativeSupportSeries(sourceFrame, sourceSeries, prepared, constantsUsed, plan.capitalCapabilities.canUseNativeCapitalAllocation, plan.capitalCapabilities.canUseNativeCapitalInvestment, plan.capitalCapabilities.canUseNativeCapitalStocks, plan.capitalCapabilities.canUseNativeCapitalVisibleOutputFormulas, plan.capitalCapabilities.canUseNativeCapitalOrdering);
     populateResourceNativeSupportSeries(sourceFrame, sourceSeries, prepared, constantsUsed, plan.canUseNativeNrFlow);
-    populatePopulationNativeSupportSeries(sourceFrame, sourceSeries, prepared, constantsUsed, plan.canUseNativeLifeExpectancy, plan.canUseNativeMortality, plan.canUseNativeCohortSupport, plan.canUseNativeDeathPath);
+    populatePopulationNativeSupportSeries(sourceFrame, sourceSeries, prepared, constantsUsed, plan.canUseNativeLifeExpectancy, plan.canUseNativeMortality, plan.canUseNativeCohortSupport, plan.canUseNativeDeathPath, plan.canUseNativePopulationStocks);
+    if (plan.canUseNativePopulationStocks) {
+        for (const definition of createPopulationStockStateDefinitions()) {
+            stepNr(definition);
+        }
+        populateDerivedBufferFromDefinition(sourceFrame, sourceSeries, createPopulationSumDerivedDefinition());
+    }
     if (sourceSeries.has("nr") && nrStateDefinition) {
         stepNr(nrStateDefinition);
     }

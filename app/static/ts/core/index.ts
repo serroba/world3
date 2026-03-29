@@ -15,6 +15,8 @@ export {
   createLmpDerivedDefinition,
   createMaturationDerivedDefinition,
   createMortalityDerivedDefinition,
+  createPopulationStockStateDefinition,
+  createPopulationStockStateDefinitions,
   createPopulationSumDerivedDefinition,
   createTotalDeathsDerivedDefinition,
   extendPopulationSourceVariables,
