@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { createValidationCore, validateSimulationResult } from "../ts/core/index.ts";
+import { createValidationCore, validateSimulationResult } from "../ts/core/validation-core.ts";
 import type { SimulationResult } from "../ts/simulation-contracts.ts";
 
 const simulationResult: SimulationResult = {

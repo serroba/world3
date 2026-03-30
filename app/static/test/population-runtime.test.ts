@@ -1,13 +1,14 @@
 import { describe, expect, test } from "vitest";
 
+import { POPULATION_HIDDEN_SERIES } from "../ts/core/population-sector.ts";
 import {
-  POPULATION_HIDDEN_SERIES,
   populatePopulationBirthNativeSupportSeries,
   populatePopulationNativeSupportSeries,
-  prepareRuntime,
-} from "../ts/core/index.ts";
+} from "../ts/core/population-runtime.ts";
+import { prepareRuntime } from "../ts/core/browser-native-runtime.ts";
 import { ModelData } from "../ts/model-data.ts";
-import type { RawLookupTable, RuntimeStateFrame } from "../ts/core/index.ts";
+import type { RawLookupTable } from "../ts/core/world3-tables.ts";
+import type { RuntimeStateFrame } from "../ts/core/runtime-state-frame.ts";
 
 const tables: RawLookupTable[] = [
   {

@@ -5,9 +5,10 @@ import {
   AGRICULTURE_HIDDEN_SERIES,
   computeAgricultureOrderedSeries,
   populateAgricultureNativeSupportSeries,
-  prepareRuntime,
-} from "../ts/core/index.ts";
-import type { RuntimeStateFrame, RawLookupTable } from "../ts/core/index.ts";
+} from "../ts/core/agriculture-sector.ts";
+import { prepareRuntime } from "../ts/core/browser-native-runtime.ts";
+import type { RawLookupTable } from "../ts/core/world3-tables.ts";
+import type { RuntimeStateFrame } from "../ts/core/runtime-state-frame.ts";
 
 const tables: RawLookupTable[] = [
   {

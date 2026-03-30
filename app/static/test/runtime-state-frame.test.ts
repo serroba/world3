@@ -1,14 +1,17 @@
 import { describe, expect, test } from "vitest";
 
 import {
-  assembleSimulationResultFromStepper,
-  createEulerStateDefinition,
   createFcaorDerivedDefinition,
   createNrResourceUsageRateDefinition,
-  createReplayStateDefinition,
   createNrfrDerivedDefinition,
   createNrufDerivedDefinition,
   createPcrumDerivedDefinition,
+} from "../ts/core/resource-sector.ts";
+import { prepareRuntime } from "../ts/core/browser-native-runtime.ts";
+import {
+  assembleSimulationResultFromStepper,
+  createEulerStateDefinition,
+  createReplayStateDefinition,
   createRuntimeStepper,
   createRuntimeStateFrame,
   listRuntimeObservations,
@@ -17,11 +20,10 @@ import {
   populateSeriesBufferFromStepper,
   populateStateBufferFromDefinition,
   populateStateBufferFromStepper,
-  prepareRuntime,
   runtimeStateFrameToSimulationResult,
-} from "../ts/core/index.ts";
+} from "../ts/core/runtime-state-frame.ts";
 import { ModelData } from "../ts/model-data.ts";
-import type { RawLookupTable } from "../ts/core/index.ts";
+import type { RawLookupTable } from "../ts/core/world3-tables.ts";
 import type { SimulationResult } from "../ts/simulation-contracts.ts";
 
 const tables: RawLookupTable[] = [

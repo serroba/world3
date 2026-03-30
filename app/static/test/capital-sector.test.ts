@@ -2,7 +2,6 @@ import { describe, expect, test } from "vitest";
 
 import {
   CAPITAL_HIDDEN_SERIES,
-  computeCoupledCapitalResourceSeries,
   computeCapitalOrderedSeries,
   createAlicDerivedDefinition,
   createAlscDerivedDefinition,
@@ -24,10 +23,12 @@ import {
   extendCapitalSourceVariables,
   maybePopulateCapitalOutputSeries,
   populateCapitalNativeSupportSeries,
-  prepareRuntime,
-} from "../ts/core/index.ts";
+} from "../ts/core/capital-sector.ts";
+import { computeCoupledCapitalResourceSeries } from "../ts/core/coupled-capital-resource-runtime.ts";
+import { prepareRuntime } from "../ts/core/browser-native-runtime.ts";
 import { ModelData } from "../ts/model-data.ts";
-import type { RawLookupTable, RuntimeStateFrame } from "../ts/core/index.ts";
+import type { RawLookupTable } from "../ts/core/world3-tables.ts";
+import type { RuntimeStateFrame } from "../ts/core/runtime-state-frame.ts";
 import type { SimulationResult } from "../ts/simulation-contracts.ts";
 
 const tables: RawLookupTable[] = [

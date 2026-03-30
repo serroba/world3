@@ -1,12 +1,10 @@
 import { describe, expect, test } from "vitest";
 
-import {
-  createRuntimeExecutionGraph,
-  createRuntimeExecutionPlan,
-  prepareRuntime,
-} from "../ts/core/index.ts";
+import { createRuntimeExecutionGraph } from "../ts/core/runtime-execution-graph.ts";
+import { createRuntimeExecutionPlan } from "../ts/core/runtime-execution-plan.ts";
+import { prepareRuntime } from "../ts/core/browser-native-runtime.ts";
 import { ModelData } from "../ts/model-data.ts";
-import type { RawLookupTable } from "../ts/core/index.ts";
+import type { RawLookupTable } from "../ts/core/world3-tables.ts";
 import type { SimulationResult } from "../ts/simulation-contracts.ts";
 
 const tables: RawLookupTable[] = [

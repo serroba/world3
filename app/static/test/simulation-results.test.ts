@@ -1,8 +1,9 @@
 import { describe, expect, test } from "vitest";
 
-import { projectSimulationResult, prepareRuntime } from "../ts/core/index.ts";
+import { projectSimulationResult } from "../ts/core/simulation-results.ts";
+import { prepareRuntime } from "../ts/core/browser-native-runtime.ts";
 import { ModelData } from "../ts/model-data.ts";
-import type { RawLookupTable } from "../ts/core/index.ts";
+import type { RawLookupTable } from "../ts/core/world3-tables.ts";
 import type { SimulationResult } from "../ts/simulation-contracts.ts";
 
 const tables: RawLookupTable[] = [

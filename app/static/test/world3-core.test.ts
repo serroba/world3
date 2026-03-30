@@ -1,8 +1,8 @@
 import { describe, expect, test, vi } from "vitest";
 
 import { ModelData } from "../ts/model-data.ts";
-import { createWorld3Core } from "../ts/core/index.ts";
-import type { RawLookupTable } from "../ts/core/index.ts";
+import { createWorld3Core } from "../ts/core/world3-core.ts";
+import type { RawLookupTable } from "../ts/core/world3-tables.ts";
 import type { SimulationResult } from "../ts/simulation-contracts.ts";
 
 const fixture: SimulationResult = {
