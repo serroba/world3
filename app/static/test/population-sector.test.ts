@@ -967,8 +967,8 @@ describe("population sector core", () => {
     );
     const altLeValues = Array.from(altSeries.get("le") ?? []);
 
-    expect(altLeValues[0]).not.toBeCloseTo(baseLeValues[0], 2);
-    expect(altLeValues[0]).toBeGreaterThan(baseLeValues[0]);
+    expect(altLeValues[0]!).not.toBeCloseTo(baseLeValues[0]!, 2);
+    expect(altLeValues[0]!).toBeGreaterThan(baseLeValues[0]!);
   });
 
   test("changing p1i constant affects native pop output via cohort stocks", () => {
@@ -1055,8 +1055,8 @@ describe("population sector core", () => {
 
     const altPop = Array.from(altFrame.series.get("pop") ?? []);
 
-    expect(altPop[1]).not.toBeCloseTo(basePop[1], 2);
-    expect(altPop[1]).toBeGreaterThan(basePop[1]);
+    expect(altPop[1]!).not.toBeCloseTo(basePop[1]!, 2);
+    expect(altPop[1]!).toBeGreaterThan(basePop[1]!);
   });
 
   test("publishes native cohort outputs and pop from the runtime frame", () => {
