@@ -1,6 +1,6 @@
 ![World3](./img/world3-wordmark.svg)
 
-> Planetary futures explorer powered by a browser-native TypeScript World3 core
+> A static World3 explorer powered by a shared TypeScript simulation core
 
 [![License: CeCILL 2.1](https://img.shields.io/badge/licence-CeCILL%202.1-028181)](https://opensource.org/licenses/CECILL-2.1)
 
@@ -9,7 +9,6 @@
 - [GitHub Pages](#github-pages)
 - [CLI](#cli)
 - [Project Layout](#project-layout)
-- [Legacy Python Reference](#legacy-python-reference)
 - [Architecture](#architecture)
 - [References and Acknowledgment](#references-and-acknowledgment)
 - [Licence](#licence)
@@ -24,11 +23,10 @@ This repository now centers on a **browser-native World3 experience**:
 - a shared TypeScript simulation core used by both the web UI and CLI
 - CI visual validation that renders the BAU chart from that same TS core
 
-The goal is no longer “serve a Python app with a browser attached.” The main product path is now:
+The main product path is now:
 
 1. static site
 2. shared TS simulation engine
-3. optional legacy Python reference implementation kept in-repo for compatibility and historical traceability
 
 World3 models the long-term interaction of:
 
@@ -66,7 +64,9 @@ npm run test:coverage
 ## End-to-End UI
 
 ```bash
-.venv/bin/python -m pytest tests/e2e/test_ui.py -q --no-cov
+cd app/static
+npx playwright install chromium
+npm run test:e2e
 ```
 
 # GitHub Pages
@@ -100,21 +100,7 @@ This is the path used by CI to generate the simulation summary and chart preview
 | `app/static/ts/cli/` | Node-facing adapters for the TS core |
 | `app/static/js/` | Generated browser/runtime JS assets |
 | `app/static/data/` | Static lookup tables, parity fixtures, and OWID-derived local data |
-| `tests/e2e/` | Browser end-to-end coverage for the static app |
-| `pyworld3/` | Legacy Python implementation and compatibility surfaces |
-
-# Legacy Python Reference
-
-The Python code is no longer required for:
-
-- serving the frontend
-- local simulation
-- local compare
-- local calibration logic
-- local validation logic
-- PR simulation visualization
-
-It remains in the repo as a **reference implementation** and for compatibility with the earlier project shape. That makes it useful for historical comparison, parity work, and gradual decommissioning, but it is no longer the primary execution path for the product.
+| `app/static/test/` | Unit and end-to-end coverage for the static app and core |
 
 # Architecture
 
@@ -145,7 +131,7 @@ The TS CLI consumes the same shared core to generate summaries and SVG plots in 
 - Meadows, Dennis L., William W. Behrens, Donella H. Meadows, Roger F. Naill, Jørgen Randers, and Erich Zahn. *Dynamics of Growth in a Finite World*. Wright-Allen Press, 1974.
 - Meadows, Donella H., Dennis L. Meadows, Jorgen Randers, and William W. Behrens. *The Limits to Growth*. 1972.
 - Meadows, Donella H., Jorgen Randers, and Dennis L. Meadows. *Limits to Growth: The 30-Year Update*. Earthscan, 2005.
-- Vanwynsberghe, C. (2021). [PyWorld3](https://github.com/cvanwynsberghe/pyworld3) — The World3 model revisited in Python.
+- Vanwynsberghe, C. (2021). Original open-source World3 implementation lineage referenced by this project: [hal-03414394](https://hal.archives-ouvertes.fr/hal-03414394).
 - Nebel, A., Kling, A., Willamowski, R., & Schell, T. (2024). Recalibration of limits to growth: An update of the World3 model. *Journal of Industrial Ecology*, 28, 87–99.
 
 # Licence
