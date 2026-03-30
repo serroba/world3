@@ -143,13 +143,24 @@
         Adjust any of the World3 model constants below. The simulation updates
         automatically as you change values. Each constant controls a specific aspect of the model.
       </p>
-      <div id="advanced-accordions"></div>
-      <div class="mt-lg" style="display:flex;gap:var(--space-md);flex-wrap:wrap;">
-        <button id="advanced-run" class="btn btn-primary" data-i18n="action.run_simulation">Run simulation</button>
-        <button id="advanced-compare" class="btn btn-outline" data-i18n="advanced.compare_with_standard">Compare with Standard Run</button>
+      <div class="advanced-workbench mt-lg">
+        <section class="advanced-workbench__preview">
+          <div class="advanced-preview__sticky">
+            <div class="advanced-preview__toolbar">
+              <div id="advanced-view-controls"></div>
+              <div class="advanced-preview__actions">
+                <button id="advanced-run" class="btn btn-primary" data-i18n="action.run_simulation">Run simulation</button>
+                <button id="advanced-compare" class="btn btn-outline" data-i18n="advanced.compare_with_standard">Compare with Standard Run</button>
+              </div>
+            </div>
+            <div id="advanced-status"></div>
+            <div id="advanced-charts" class="grid-2 mt-lg"></div>
+          </div>
+        </section>
+        <section class="advanced-workbench__editor">
+          <div id="advanced-accordions"></div>
+        </section>
       </div>
-      <div id="advanced-status" class="mt-lg"></div>
-      <div id="advanced-charts" class="grid-2 mt-lg"></div>
       <div class="view-links">
         <a href="#calibrate" class="btn btn-outline btn-sm" data-i18n="action.calibrate_from_data">Calibrate from data</a>
       </div>

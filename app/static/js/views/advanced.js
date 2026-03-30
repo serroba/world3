@@ -7,18 +7,31 @@
  */
 
 const AdvancedView = (() => {
+  const VIEW_MODES = {
+    split: "split",
+    combined: "combined",
+  };
   const CHART_GROUPS = [
     { id: "adv-chart-pop", titleKey: "explore.chart.population_life", vars: ["pop", "le"] },
     { id: "adv-chart-econ", titleKey: "explore.chart.economy_food", vars: ["iopc", "fpc"] },
     { id: "adv-chart-poll", titleKey: "explore.chart.pollution", vars: ["ppolx"] },
     { id: "adv-chart-res", titleKey: "explore.chart.resources", vars: ["nrfr"] },
   ];
+  const COMBINED_GROUP = {
+    id: "adv-chart-classic",
+    titleKey: "explore.chart.classic",
+    vars: ["pop", "nrfr", "iopc", "fpc", "ppolx"],
+  };
 
   const DEBOUNCE_MS = 400;
 
   let editedConstants = {};
   let debounceTimer = null;
   let abortController = null;
+  let baselineResultPromise = null;
+  let latestResult = null;
+  let currentViewMode = VIEW_MODES.combined;
+  let runSequence = 0;
 
   /** Compute a sensible slider range from a default value. */
   function sliderRange(defaultVal) {
@@ -40,6 +53,17 @@ const AdvancedView = (() => {
   function setChartsLoading(loading) {
     document.querySelectorAll("#advanced-charts .chart-loading-overlay")
       .forEach((el) => el.classList.toggle("active", loading));
+  }
+
+  function activeChartGroups() {
+    return currentViewMode === VIEW_MODES.combined ? [COMBINED_GROUP] : CHART_GROUPS;
+  }
+
+  function ensureBaselineResult() {
+    if (!baselineResultPromise) {
+      baselineResultPromise = SimulationProvider.simulatePreset("standard-run");
+    }
+    return baselineResultPromise;
   }
 
   // ---------------------------------------------------------------------------
@@ -165,6 +189,7 @@ const AdvancedView = (() => {
       });
 
       details.appendChild(body);
+      if (sector === "population") details.open = true;
       container.appendChild(details);
     }
   }
@@ -175,11 +200,21 @@ const AdvancedView = (() => {
 
   function renderChartGrid(container) {
     container.innerHTML = "";
-    CHART_GROUPS.forEach((group) => {
-      const panel = UI.el("div", "chart-panel");
+    activeChartGroups().forEach((group) => {
+      const panel = UI.el(
+        "div",
+        currentViewMode === VIEW_MODES.combined
+          ? "chart-panel chart-panel--combined"
+          : "chart-panel"
+      );
       const header = UI.el("div", "chart-panel__header");
       header.appendChild(UI.el("span", "chart-panel__title", I18n.t(group.titleKey)));
-      const wrap = UI.el("div", "chart-container");
+      const wrap = UI.el(
+        "div",
+        currentViewMode === VIEW_MODES.combined
+          ? "chart-container chart-container--combined"
+          : "chart-container"
+      );
       const canvas = document.createElement("canvas");
       canvas.id = group.id;
       wrap.appendChild(canvas);
@@ -190,8 +225,60 @@ const AdvancedView = (() => {
 
       panel.appendChild(header);
       panel.appendChild(wrap);
-      Charts.renderExplainer(panel, group.id);
+      if (currentViewMode !== VIEW_MODES.combined) {
+        Charts.renderExplainer(panel, group.id);
+      }
       container.appendChild(panel);
+    });
+  }
+
+  function renderViewToggle(container) {
+    if (!container) return;
+    container.innerHTML = "";
+
+    const toggle = UI.el("div", "chart-view-toggle");
+    toggle.appendChild(UI.el("span", "chart-view-toggle__label", I18n.t("explore.view_label")));
+
+    [
+      [VIEW_MODES.split, I18n.t("explore.view_split")],
+      [VIEW_MODES.combined, I18n.t("explore.view_combined")],
+    ].forEach(([mode, text]) => {
+      const button = UI.el("button", "chart-view-toggle__button", text);
+      if (mode === currentViewMode) button.classList.add("active");
+      button.addEventListener("click", () => {
+        if (mode === currentViewMode) return;
+        currentViewMode = mode;
+        const chartsEl = document.getElementById("advanced-charts");
+        renderViewToggle(container);
+        if (chartsEl) {
+          renderChartGrid(chartsEl);
+          if (latestResult) {
+            renderChartResults(latestResult);
+          }
+        }
+      });
+      toggle.appendChild(button);
+    });
+
+    container.appendChild(toggle);
+  }
+
+  async function renderChartResults(result) {
+    const baseline = await ensureBaselineResult();
+    const baselineLabel = I18n.labelForPreset("standard-run", "Standard run");
+    const editedLabel = I18n.t("nav.advanced");
+
+    activeChartGroups().forEach((group) => {
+      const canvas = document.getElementById(group.id);
+      if (!canvas) return;
+      Charts.renderCompare(
+        canvas,
+        baseline,
+        result,
+        group.vars,
+        baselineLabel,
+        editedLabel
+      );
     });
   }
 
@@ -203,6 +290,7 @@ const AdvancedView = (() => {
     const chartsEl = document.getElementById("advanced-charts");
     const statusEl = document.getElementById("advanced-status");
     if (!chartsEl) return;
+    const runId = ++runSequence;
 
     // Abort any in-flight request
     if (abortController) abortController.abort();
@@ -218,13 +306,12 @@ const AdvancedView = (() => {
         request.constants = { ...editedConstants };
       }
       const result = await SimulationProvider.simulate(request, { signal });
+      if (runId !== runSequence) return;
 
+      latestResult = result;
+      await renderChartResults(result);
+      if (runId !== runSequence) return;
       setChartsLoading(false);
-
-      CHART_GROUPS.forEach((group) => {
-        const canvas = document.getElementById(group.id);
-        if (canvas) Charts.renderSingle(canvas, result.time, result.series, group.vars);
-      });
     } catch (err) {
       if (err.name === "AbortError") return; // superseded by newer request
       setChartsLoading(false);
@@ -268,6 +355,7 @@ const AdvancedView = (() => {
     // Render chart grid once (charts update in-place on each simulation)
     const chartsEl = document.getElementById("advanced-charts");
     if (chartsEl) renderChartGrid(chartsEl);
+    renderViewToggle(document.getElementById("advanced-view-controls"));
 
     const runBtn = document.getElementById("advanced-run");
     if (runBtn) {
