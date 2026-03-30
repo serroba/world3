@@ -1,0 +1,21 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="40" y1="32" x2="208" y2="224" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#183153"/>
+      <stop offset="1" stop-color="#0A7B83"/>
+    </linearGradient>
+    <linearGradient id="arc" x1="58" y1="162" x2="197" y2="79" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFB703"/>
+      <stop offset="0.5" stop-color="#FB8500"/>
+      <stop offset="1" stop-color="#E63946"/>
+    </linearGradient>
+  </defs>
+  <rect x="16" y="16" width="224" height="224" rx="48" fill="url(#bg)"/>
+  <circle cx="128" cy="128" r="74" stroke="rgba(255,255,255,0.18)" stroke-width="8"/>
+  <ellipse cx="128" cy="128" rx="74" ry="28" stroke="rgba(255,255,255,0.2)" stroke-width="6"/>
+  <path d="M61 150C79 130 97 115 116 104C135 93 155 82 196 77" stroke="url(#arc)" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="61" cy="150" r="10" fill="#8ECAE6"/>
+  <circle cx="116" cy="104" r="10" fill="#FFB703"/>
+  <circle cx="196" cy="77" r="10" fill="#E63946"/>
+  <path d="M77 176C88 183 101 188 115 191C129 194 144 194 160 191" stroke="rgba(255,255,255,0.9)" stroke-width="8" stroke-linecap="round"/>
+</svg>
