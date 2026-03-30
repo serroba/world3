@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { createOwidDataProvider } from "../ts/core/index.ts";
+import { createOwidDataProvider } from "../ts/core/owid-data.ts";
 
 describe("owid data provider", () => {
   const provider = createOwidDataProvider(async () => ({

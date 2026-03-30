@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { createCalibrationCore } from "../ts/core/index.ts";
+import { createCalibrationCore } from "../ts/core/calibration-core.ts";
 import { ModelData } from "../ts/model-data.ts";
 
 describe("calibration core", () => {

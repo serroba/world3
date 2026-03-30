@@ -1,13 +1,12 @@
 import { describe, expect, test } from "vitest";
 
 import { ModelData } from "../ts/model-data.ts";
-import {
-  AGRICULTURE_HIDDEN_SERIES,
-  computePollutionOrderedSeries,
-  prepareRuntime,
-  RESOURCE_HIDDEN_SERIES,
-} from "../ts/core/index.ts";
-import type { RawLookupTable, RuntimeStateFrame } from "../ts/core/index.ts";
+import { AGRICULTURE_HIDDEN_SERIES } from "../ts/core/agriculture-sector.ts";
+import { computePollutionOrderedSeries } from "../ts/core/pollution-sector.ts";
+import { prepareRuntime } from "../ts/core/browser-native-runtime.ts";
+import { RESOURCE_HIDDEN_SERIES } from "../ts/core/resource-sector.ts";
+import type { RawLookupTable } from "../ts/core/world3-tables.ts";
+import type { RuntimeStateFrame } from "../ts/core/runtime-state-frame.ts";
 
 const tables: RawLookupTable[] = [
   {

@@ -3,16 +3,13 @@ import { describe, expect, test, vi } from "vitest";
 import {
   applyRuntimeExecutionPlan,
   createRuntimeExecutionPlan,
-  prepareRuntime,
-  RESOURCE_HIDDEN_SERIES,
-  CAPITAL_HIDDEN_SERIES,
-} from "../ts/core/index.ts";
+} from "../ts/core/runtime-execution-plan.ts";
+import { prepareRuntime } from "../ts/core/browser-native-runtime.ts";
+import { RESOURCE_HIDDEN_SERIES } from "../ts/core/resource-sector.ts";
+import { CAPITAL_HIDDEN_SERIES } from "../ts/core/capital-sector.ts";
 import { ModelData } from "../ts/model-data.ts";
-import type {
-  RawLookupTable,
-  RuntimeStateDefinition,
-  RuntimeStateFrame,
-} from "../ts/core/index.ts";
+import type { RawLookupTable } from "../ts/core/world3-tables.ts";
+import type { RuntimeStateDefinition, RuntimeStateFrame } from "../ts/core/runtime-state-frame.ts";
 import type { SimulationResult } from "../ts/simulation-contracts.ts";
 
 const tables: RawLookupTable[] = [

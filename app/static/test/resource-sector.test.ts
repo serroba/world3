@@ -5,11 +5,12 @@ import {
   extendResourceSourceVariables,
   maybePopulateResourceOutputSeries,
   populateResourceNativeSupportSeries,
-  prepareRuntime,
   RESOURCE_HIDDEN_SERIES,
-} from "../ts/core/index.ts";
+} from "../ts/core/resource-sector.ts";
+import { prepareRuntime } from "../ts/core/browser-native-runtime.ts";
 import { ModelData } from "../ts/model-data.ts";
-import type { RawLookupTable, RuntimeStateFrame } from "../ts/core/index.ts";
+import type { RawLookupTable } from "../ts/core/world3-tables.ts";
+import type { RuntimeStateFrame } from "../ts/core/runtime-state-frame.ts";
 import type { SimulationResult } from "../ts/simulation-contracts.ts";
 
 const tables: RawLookupTable[] = [

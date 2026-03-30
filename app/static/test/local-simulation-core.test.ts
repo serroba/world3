@@ -6,7 +6,7 @@ import {
   createLocalSimulationCore,
   createRuntimeBackedLocalSimulationCore,
   hasExplicitOverrides,
-} from "../ts/core/index.ts";
+} from "../ts/core/local-simulation-core.ts";
 import type { SimulationResult } from "../ts/simulation-contracts.ts";
 
 const fixture: SimulationResult = {
