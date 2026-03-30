@@ -1,6 +1,6 @@
 # World3 Model Reference
 
-Mathematical and domain reference for the PyWorld3 simulation, for use in validating and testing model behaviour.
+Mathematical and domain reference for the World3 simulation used by this repository's static TypeScript implementation.
 
 ---
 
@@ -16,11 +16,11 @@ The model was updated to World3-03 in:
 
 > Meadows, D. H., Randers, J., & Meadows, D. L. (2005). *Limits to Growth: The 30-Year Update*. Earthscan.
 
-### PyWorld3
+### Open-Source Implementation Lineage
 
-This Python implementation of World3 was created by **Charles Vanwynsberghe**:
+An important open-source implementation lineage for this project comes from **Charles Vanwynsberghe**:
 
-> Vanwynsberghe, C. (2021). PyWorld3 — The World3 model revisited in Python. [hal-03414394](https://hal.archives-ouvertes.fr/hal-03414394)
+> Vanwynsberghe, C. (2021). Open-source World3 implementation lineage referenced by this project. [hal-03414394](https://hal.archives-ouvertes.fr/hal-03414394)
 
 ### Recalibration (Nebel et al., 2024)
 
@@ -28,7 +28,7 @@ The recalibration data and methodology referenced in this document come from:
 
 > Nebel, A., Kling, A., Willamowski, R., & Schell, T. (2024). Recalibration of limits to growth: An update of the World3 model. *Journal of Industrial Ecology*, 28, 87–99. DOI: [10.1111/jiec.13442](https://onlinelibrary.wiley.com/doi/epdf/10.1111/jiec.13442)
 
-Their updated PyWorld3-03 implementation is available at [github.com/TimSchell98/PyWorld3-03](https://github.com/TimSchell98/PyWorld3-03).
+Their updated World3-03 recalibration implementation is available at [github.com/TimSchell98/PyWorld3-03](https://github.com/TimSchell98/PyWorld3-03).
 
 ---
 
@@ -42,13 +42,13 @@ World3 is a **system dynamics** model with **5 interrelated sectors**, two main 
 
 ### Sectors and state variables
 
-| Sector | State Variables | PyWorld3 Module |
+| Sector | State Variables | TypeScript Core Module |
 |---|---|---|
-| Population | $P_1, P_2, P_3, P_4$ (age cohorts 0-14, 15-44, 45-64, 65+) | `population.py` |
-| Capital | $IC$ (industrial capital), $SC$ (service capital) | `capital.py` |
-| Agriculture | $AL$ (arable land), $PAL$ (potentially arable land), $UIL$ (urban-industrial land), $LFERT$ (land fertility) | `agriculture.py` |
-| Pollution | $PPOL$ (persistent pollution) | `pollution.py` |
-| Non-renewable Resources | $NR$ (nonrenewable resources remaining) | `resource.py` |
+| Population | $P_1, P_2, P_3, P_4$ (age cohorts 0-14, 15-44, 45-64, 65+) | `population-sector.ts` / `population-runtime.ts` |
+| Capital | $IC$ (industrial capital), $SC$ (service capital) | `capital-sector.ts` |
+| Agriculture | $AL$ (arable land), $PAL$ (potentially arable land), $UIL$ (urban-industrial land), $LFERT$ (land fertility) | `agriculture-sector.ts` |
+| Pollution | $PPOL$ (persistent pollution) | `pollution-sector.ts` |
+| Non-renewable Resources | $NR$ (nonrenewable resources remaining) | `resource-sector.ts` |
 
 Total system: **12 state variables**, raised to **29th order** with internal delay functions.
 
