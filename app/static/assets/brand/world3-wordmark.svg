@@ -1,33 +1,17 @@
-<svg width="680" height="180" viewBox="0 0 680 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="680" height="180" rx="28" fill="#F6F7F3"/>
-  <g transform="translate(22 22)">
-    <rect x="0" y="0" width="136" height="136" rx="30" fill="#17324D"/>
-    <circle cx="68" cy="68" r="44" stroke="rgba(255,255,255,0.18)" stroke-width="5"/>
-    <ellipse cx="68" cy="68" rx="44" ry="17" stroke="rgba(255,255,255,0.22)" stroke-width="4"/>
-    <path d="M26 84C37 72 48 62 60 55C72 48 85 42 111 38" stroke="url(#trend)" stroke-width="9" stroke-linecap="round"/>
-    <circle cx="26" cy="84" r="6.5" fill="#8ECAE6"/>
-    <circle cx="60" cy="55" r="6.5" fill="#FFB703"/>
-    <circle cx="111" cy="38" r="6.5" fill="#E63946"/>
-    <path d="M37 100C44 105 52 108 60 110C68 111 78 111 88 109" stroke="white" stroke-width="5" stroke-linecap="round"/>
+<svg width="760" height="180" viewBox="0 0 760 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="760" height="180" rx="28" fill="#F8F8F4"/>
+  <g transform="translate(30 22)">
+    <rect x="0" y="0" width="136" height="136" rx="28" fill="#F8F8F4" stroke="#D9E1DC" stroke-width="5"/>
+    <path d="M24 26V116" stroke="#17324D" stroke-width="6.5" stroke-linecap="round"/>
+    <path d="M22 114H112" stroke="#17324D" stroke-width="6.5" stroke-linecap="round"/>
+    <path d="M26 110C39 101 50 88 60 69C69 53 81 39 112 26" stroke="#2B7FFF" stroke-width="6.5" stroke-linecap="round"/>
+    <path d="M26 33C49 33 68 37 82 46C96 55 107 72 112 111" stroke="#51B86B" stroke-width="6.5" stroke-linecap="round"/>
+    <path d="M26 78C41 74 54 66 67 54C80 42 92 33 110 30" stroke="#E63946" stroke-width="6.5" stroke-linecap="round"/>
+    <path d="M26 62C43 58 57 49 72 37C84 28 97 24 112 24" stroke="#FB8500" stroke-width="6.5" stroke-linecap="round"/>
+    <path d="M26 113C48 112 67 107 82 94C97 80 105 62 112 30" stroke="#9B3ECB" stroke-width="6.5" stroke-linecap="round"/>
   </g>
-  <defs>
-    <linearGradient id="trend" x1="26" y1="84" x2="111" y2="38" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FFB703"/>
-      <stop offset="0.5" stop-color="#FB8500"/>
-      <stop offset="1" stop-color="#E63946"/>
-    </linearGradient>
-  </defs>
   <g fill="#17324D">
-    <path d="M194 74L209.5 116L225.1 74H239.4L213.8 136H204.8L179.2 74H194Z"/>
-    <path d="M276.9 74V85.6H245.2V99.2H274.2V110.1H245.2V124.4H277.7V136H231.2V74H276.9Z"/>
-    <path d="M307.8 74C326.4 74 337.5 83.1 337.5 98.3C337.5 109 332.1 116.6 322.4 120.4L339.2 136H321.2L306.4 122.8H297.8V136H283.8V74H307.8ZM297.8 111.5H307.1C316.1 111.5 321.2 107.2 321.2 99.5C321.2 92 316.1 87.9 307.1 87.9H297.8V111.5Z"/>
-    <path d="M372.1 87.8C360.5 87.8 351.7 96.2 351.7 105.1C351.7 114.2 360.6 122.6 372.1 122.6C378.2 122.6 384.9 119.6 390 114.8L398.2 123.8C390.1 131.9 378.7 137.4 371.3 137.4C351.9 137.4 337.5 123.7 337.5 105.3C337.5 87.1 352.2 73.1 372 73.1C379.4 73.1 390.5 78.3 397.9 86L389.8 96.1C384.9 91 378.5 87.8 372.1 87.8Z"/>
-    <path d="M427.4 122.9C439.2 122.9 448.2 114.2 448.2 105.1C448.2 95.9 439.2 87.3 427.4 87.3C415.5 87.3 406.5 96 406.5 105.1C406.5 114.2 415.5 122.9 427.4 122.9ZM427.3 137.4C407.7 137.4 392.4 123.7 392.4 105.2C392.4 86.9 407.7 73.1 427.3 73.1C446.9 73.1 462.2 86.8 462.2 105.2C462.2 123.7 446.9 137.4 427.3 137.4Z"/>
-    <path d="M499.4 74C511.5 74 519.2 79.7 519.2 88.8C519.2 95.4 515.1 100.3 508.1 102.1C516.5 103.5 521.4 109.1 521.4 117.3C521.4 128.9 511.8 136 497.3 136H468.6V74H499.4ZM482.6 98.9H498.7C504.8 98.9 508.4 95.8 508.4 90.6C508.4 85.5 504.8 82.6 498.7 82.6H482.6V98.9ZM482.6 127.3H498.7C506.3 127.3 510.8 123.9 510.8 118.2C510.8 112.8 506.3 109.5 498.7 109.5H482.6V127.3Z"/>
-    <path d="M582.4 74V136H568.4V110.7H540.8V136H526.8V74H540.8V99.1H568.4V74H582.4Z"/>
-    <path d="M620.5 137.4C606.1 137.4 595.3 131.1 587.8 121.5L596.2 112.3C602.7 119.8 610 123.7 617.1 123.7C625 123.7 630.2 119.9 630.2 113.8C630.2 106.2 623.8 103.7 614.7 100.7C602.9 96.9 590.6 92.9 590.6 78.3C590.6 65.9 600.7 57.1 616.1 57.1C626.8 57.1 636.7 60.8 644.7 67.3L637 77.1C630.1 72.2 622.9 69.7 616 69.7C609.2 69.7 604.8 72.8 604.8 78C604.8 85.2 610.9 87.4 619.8 90.2C631.7 94.1 644.5 98.5 644.5 113.3C644.5 126.7 634 137.4 620.5 137.4Z"/>
-  </g>
-  <g fill="#5B6C7A">
-    <text x="193" y="55" font-family="Georgia, serif" font-size="18" letter-spacing="5.5">WORLD MODEL EXPLORER</text>
+    <text x="196" y="60" font-family="'Avenir Next', 'Segoe UI', Arial, sans-serif" font-size="16" font-weight="700" letter-spacing="3.4">SYSTEMS SIMULATION EXPLORER</text>
+    <text x="192" y="132" font-family="'Avenir Next', 'Segoe UI', Arial, sans-serif" font-size="86" font-weight="800" letter-spacing="-2">World3</text>
   </g>
 </svg>
