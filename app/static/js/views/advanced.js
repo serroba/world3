@@ -8,10 +8,10 @@
 
 const AdvancedView = (() => {
   const CHART_GROUPS = [
-    { id: "adv-chart-pop", title: "Population & Life Expectancy", vars: ["pop", "le"] },
-    { id: "adv-chart-econ", title: "Economy & Food", vars: ["iopc", "fpc"] },
-    { id: "adv-chart-poll", title: "Pollution", vars: ["ppolx"] },
-    { id: "adv-chart-res", title: "Resources", vars: ["nrfr"] },
+    { id: "adv-chart-pop", titleKey: "explore.chart.population_life", vars: ["pop", "le"] },
+    { id: "adv-chart-econ", titleKey: "explore.chart.economy_food", vars: ["iopc", "fpc"] },
+    { id: "adv-chart-poll", titleKey: "explore.chart.pollution", vars: ["ppolx"] },
+    { id: "adv-chart-res", titleKey: "explore.chart.resources", vars: ["nrfr"] },
   ];
 
   const DEBOUNCE_MS = 400;
@@ -71,7 +71,7 @@ const AdvancedView = (() => {
       details.className = "accordion";
 
       const summary = document.createElement("summary");
-      summary.textContent = sector;
+      summary.textContent = UI.labelSector(sector, sector);
       details.appendChild(summary);
 
       const body = UI.el("div", "accordion__body");
@@ -84,7 +84,7 @@ const AdvancedView = (() => {
         const group = UI.el("div", "input-group");
 
         const label = document.createElement("label");
-        label.textContent = meta.full_name;
+        label.textContent = UI.labelConstant(name, meta.full_name);
         label.setAttribute("for", `const-${name}`);
         group.appendChild(label);
 
@@ -105,7 +105,7 @@ const AdvancedView = (() => {
 
         const resetBtn = document.createElement("button");
         resetBtn.className = "btn-reset";
-        resetBtn.textContent = "Reset";
+        resetBtn.textContent = I18n.t("advanced.reset");
         row.appendChild(resetBtn);
 
         group.appendChild(row);
@@ -119,7 +119,10 @@ const AdvancedView = (() => {
         slider.max = range.max;
         slider.step = range.step;
         slider.value = defaultVal;
-        slider.setAttribute("aria-label", `${meta.full_name} slider`);
+        slider.setAttribute(
+          "aria-label",
+          I18n.t("advanced.slider_aria", { name: UI.labelConstant(name, meta.full_name) })
+        );
         const maxLabel = UI.el("span", "slider-bounds slider-bounds--max", UI.formatNumber(range.max));
         sliderRow.appendChild(minLabel);
         sliderRow.appendChild(slider);
@@ -175,7 +178,7 @@ const AdvancedView = (() => {
     CHART_GROUPS.forEach((group) => {
       const panel = UI.el("div", "chart-panel");
       const header = UI.el("div", "chart-panel__header");
-      header.appendChild(UI.el("span", "chart-panel__title", group.title));
+      header.appendChild(UI.el("span", "chart-panel__title", I18n.t(group.titleKey)));
       const wrap = UI.el("div", "chart-container");
       const canvas = document.createElement("canvas");
       canvas.id = group.id;

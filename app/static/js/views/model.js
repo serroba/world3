@@ -32,7 +32,7 @@ const ModelView = (() => {
   function buildSourcesBlock(sources) {
     const wrap = UI.el("div", "model-section__sources");
     const heading = document.createElement("strong");
-    heading.textContent = "Sources";
+    heading.textContent = I18n.t("model.sources");
     wrap.appendChild(heading);
     const list = document.createElement("ul");
     sources.forEach((s) => {
@@ -56,7 +56,7 @@ const ModelView = (() => {
   function buildEquationsBlock(eq) {
     const outer = document.createElement("details");
     const outerSummary = document.createElement("summary");
-    outerSummary.textContent = "How does the math work?";
+    outerSummary.textContent = I18n.t("model.math");
     outer.appendChild(outerSummary);
 
     const preamble = document.createElement("p");
@@ -91,13 +91,13 @@ const ModelView = (() => {
 
     const inner = document.createElement("details");
     const innerSummary = document.createElement("summary");
-    innerSummary.textContent = "What are the starting values?";
+    innerSummary.textContent = I18n.t("model.starting_values");
     inner.appendChild(innerSummary);
 
     const table = document.createElement("table");
     table.className = "metrics-table";
     const thead = document.createElement("thead");
-    thead.innerHTML = "<tr><th>Key</th><th>Name</th><th>Value</th><th>Unit</th></tr>";
+    thead.innerHTML = `<tr><th>${UI.escapeHtml(I18n.t("table.key"))}</th><th>${UI.escapeHtml(I18n.t("table.name"))}</th><th>${UI.escapeHtml(I18n.t("table.value"))}</th><th>${UI.escapeHtml(I18n.t("table.unit"))}</th></tr>`;
     table.appendChild(thead);
 
     const tbody = document.createElement("tbody");
@@ -108,7 +108,7 @@ const ModelView = (() => {
       const tr = document.createElement("tr");
       tr.innerHTML =
         "<td><code>" + UI.escapeHtml(c.key) + "</code></td>" +
-        "<td>" + UI.escapeHtml(meta.full_name) + "</td>" +
+        "<td>" + UI.escapeHtml(UI.labelConstant(c.key, meta.full_name)) + "</td>" +
         "<td>" + UI.formatNumber(val) + "</td>" +
         "<td>" + UI.escapeHtml(meta.unit) + "</td>";
       tbody.appendChild(tr);
@@ -118,7 +118,7 @@ const ModelView = (() => {
 
     const link = document.createElement("p");
     link.style.cssText = "margin-top:var(--space-sm);font-size:var(--text-xs);";
-    link.innerHTML = '<a href="#advanced">Edit these in the Advanced editor \u2192</a>';
+    link.innerHTML = `<a href="#advanced">${UI.escapeHtml(I18n.t("action.edit_in_advanced"))} \u2192</a>`;
     inner.appendChild(link);
 
     return inner;
@@ -152,7 +152,7 @@ const ModelView = (() => {
       }
     } catch (_err) {
       const container = canvas.parentElement;
-      if (container) container.innerHTML = '<p class="text-muted" style="padding:var(--space-md);">Failed to load chart.</p>';
+      if (container) container.innerHTML = `<p class="text-muted" style="padding:var(--space-md);">${UI.escapeHtml(I18n.t("errors.failed_chart"))}</p>`;
     }
   }
 
@@ -220,13 +220,11 @@ const ModelView = (() => {
   function renderAssumptions(container) {
     container.innerHTML = "";
 
-    const heading = UI.el("h2", "section-title", "All model assumptions");
+    const heading = UI.el("h2", "section-title", I18n.t("model.assumptions_title"));
     container.appendChild(heading);
 
     const desc = UI.el("p", "text-muted mb-lg");
-    desc.textContent =
-      "Every constant below is a starting assumption of the World3 model. " +
-      "They are grouped by sector. You can edit any of them in the Advanced editor.";
+    desc.textContent = I18n.t("model.assumptions_desc");
     container.appendChild(desc);
 
     // Group constants by sector
@@ -241,13 +239,16 @@ const ModelView = (() => {
       details.className = "accordion";
 
       const summary = document.createElement("summary");
-      summary.textContent = sector + " (" + names.length + " constants)";
+      summary.textContent = I18n.t("model.constants_count", {
+        sector: UI.labelSector(sector, sector),
+        count: names.length,
+      });
       details.appendChild(summary);
 
       const body = UI.el("div", "accordion__body");
       const table = document.createElement("table");
       table.className = "metrics-table";
-      table.innerHTML = "<thead><tr><th>Key</th><th>Name</th><th>Default</th><th>Unit</th></tr></thead>";
+      table.innerHTML = `<thead><tr><th>${UI.escapeHtml(I18n.t("table.key"))}</th><th>${UI.escapeHtml(I18n.t("table.name"))}</th><th>${UI.escapeHtml(I18n.t("table.default"))}</th><th>${UI.escapeHtml(I18n.t("table.unit"))}</th></tr></thead>`;
 
       const tbody = document.createElement("tbody");
       names.forEach((name) => {
@@ -256,7 +257,7 @@ const ModelView = (() => {
         const tr = document.createElement("tr");
         tr.innerHTML =
           "<td><code>" + UI.escapeHtml(name) + "</code></td>" +
-          "<td>" + UI.escapeHtml(meta.full_name) + "</td>" +
+          "<td>" + UI.escapeHtml(UI.labelConstant(name, meta.full_name)) + "</td>" +
           "<td>" + UI.formatNumber(val) + "</td>" +
           "<td>" + UI.escapeHtml(meta.unit) + "</td>";
         tbody.appendChild(tr);
@@ -266,7 +267,7 @@ const ModelView = (() => {
 
       const link = document.createElement("p");
       link.style.cssText = "margin-top:var(--space-sm);font-size:var(--text-sm);";
-      link.innerHTML = '<a href="#advanced">Edit in Advanced editor \u2192</a>';
+      link.innerHTML = `<a href="#advanced">${UI.escapeHtml(I18n.t("action.edit_in_advanced"))} \u2192</a>`;
       body.appendChild(link);
 
       details.appendChild(body);
@@ -282,7 +283,7 @@ const ModelView = (() => {
     container.innerHTML = "";
 
     const footer = UI.el("footer", "ack");
-    const heading = UI.el("h2", "section-title", "References & Sources");
+    const heading = UI.el("h2", "section-title", I18n.t("model.references"));
     footer.appendChild(heading);
 
     const list = document.createElement("ul");
@@ -295,7 +296,7 @@ const ModelView = (() => {
       { text: "Vanwynsberghe, C. \u2014 PyWorld3 (2021)", url: "https://github.com/cvanwynsberghe/pyworld3" },
       { text: "Nebel, A., Kling, A., Willamowski, R. & Schell, T. \u2014 PyWorld3-03 recalibration (2024)", url: "https://doi.org/10.1111/jiec.13442" },
       { text: "Our World in Data \u2014 validation proxies", url: "https://ourworldindata.org" },
-      { text: "serroba/pyworld3 \u2014 this project", url: "https://github.com/serroba/pyworld3" },
+      { text: "serroba/world3 \u2014 this project", url: "https://github.com/serroba/world3" },
     ];
 
     refs.forEach((ref) => {
@@ -358,14 +359,14 @@ const ModelView = (() => {
     });
 
     // Extra pills for bottom sections
-    const assumptionsPill = UI.el("button", "pill", "Assumptions");
+    const assumptionsPill = UI.el("button", "pill", I18n.t("model.assumptions_pill"));
     assumptionsPill.addEventListener("click", () => {
       document.getElementById("model-assumptions")
         ?.scrollIntoView({ behavior: "smooth" });
     });
     container.appendChild(assumptionsPill);
 
-    const sourcesPill = UI.el("button", "pill", "Sources");
+    const sourcesPill = UI.el("button", "pill", I18n.t("model.sources"));
     sourcesPill.addEventListener("click", () => {
       document.getElementById("model-sources")
         ?.scrollIntoView({ behavior: "smooth" });

@@ -2,6 +2,7 @@ import { ModelData, } from "./model-data.js";
 import { buildSimulationRequestFromPreset, resolveScenarioRequest, } from "./simulation-contracts.js";
 import { createSimulationProvider, } from "./simulation-provider.js";
 import { createOwidDataProvider, createValidationCore, createCalibrationCore, } from "./core/index.js";
+import { createI18n, } from "./i18n.js";
 const LOCAL_OWID_DATA_URL = new URL("../data/owid-world-data.json", import.meta.url)
     .toString();
 let localOwidDatasetPromise = null;
@@ -22,6 +23,7 @@ async function loadLocalOwidDataset() {
     return localOwidDatasetPromise;
 }
 const LocalOwidData = createOwidDataProvider(loadLocalOwidDataset);
+const I18n = createI18n();
 window.ModelData = ModelData;
 window.buildSimulationRequestFromPreset = (name, overrides) => buildSimulationRequestFromPreset(ModelData, name, overrides);
 window.resolveScenarioRequest = (spec) => resolveScenarioRequest(ModelData, spec);
@@ -29,3 +31,4 @@ window.CalibrationCore = createCalibrationCore(ModelData);
 window.LocalOwidData = LocalOwidData;
 window.ValidationCore = createValidationCore((options) => LocalOwidData.getValidationData(options));
 window.SimulationProvider = createSimulationProvider(ModelData);
+window.I18n = I18n;

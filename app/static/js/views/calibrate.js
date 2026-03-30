@@ -13,41 +13,41 @@ const CalibrateView = (() => {
   function confidenceBadge(confidence) {
     const colors = { high: "var(--color-accent)", medium: "#d97706", low: "var(--color-danger)" };
     const color = colors[confidence] || "var(--color-text-muted)";
-    return `<span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:var(--text-xs);font-weight:600;border:1px solid ${color};color:${color};">${UI.escapeHtml(confidence)}</span>`;
+    return `<span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:var(--text-xs);font-weight:600;border:1px solid ${color};color:${color};">${UI.escapeHtml(UI.labelConfidence(confidence, confidence))}</span>`;
   }
 
   function renderCalibrationTable(container, data) {
     const entries = Object.values(data.constants);
     if (entries.length === 0) {
-      container.innerHTML = '<p class="text-muted">No constants calibrated.</p>';
+      container.innerHTML = `<p class="text-muted">${UI.escapeHtml(I18n.t("calibrate.no_constants"))}</p>`;
       return;
     }
     let html = `<div style="margin-bottom:var(--space-md);font-size:var(--text-sm);color:var(--color-text-muted);">
-      <strong>Data source:</strong> <a href="https://ourworldindata.org" target="_blank" rel="noopener">Our World in Data</a> &mdash;
-      Entity: <strong>${UI.escapeHtml(data.entity)}</strong>,
-      Reference year: <strong>${data.reference_year}</strong>,
-      Constants calibrated: <strong>${entries.length}</strong>
+      <strong>${UI.escapeHtml(I18n.t("common.data_source"))}:</strong> <a href="https://ourworldindata.org" target="_blank" rel="noopener">Our World in Data</a> &mdash;
+      ${UI.escapeHtml(I18n.t("common.entity"))}: <strong>${UI.escapeHtml(data.entity)}</strong>,
+      ${UI.escapeHtml(I18n.t("common.reference_year"))}: <strong>${data.reference_year}</strong>,
+      ${UI.escapeHtml(I18n.t("calibrate.constants_calibrated"))}: <strong>${entries.length}</strong>
     </div>`;
     html += `<table class="metrics-table">
       <thead><tr>
-        <th>Constant</th>
-        <th>Description</th>
-        <th>OWID Indicator</th>
-        <th>Calibrated</th>
-        <th>Default</th>
-        <th>Delta %</th>
-        <th>Confidence</th>
+        <th>${UI.escapeHtml(I18n.t("calibrate.constant"))}</th>
+        <th>${UI.escapeHtml(I18n.t("calibrate.description"))}</th>
+        <th>${UI.escapeHtml(I18n.t("calibrate.owid_indicator"))}</th>
+        <th>${UI.escapeHtml(I18n.t("calibrate.calibrated"))}</th>
+        <th>${UI.escapeHtml(I18n.t("calibrate.default"))}</th>
+        <th>${UI.escapeHtml(I18n.t("calibrate.delta_pct"))}</th>
+        <th>${UI.escapeHtml(I18n.t("common.confidence"))}</th>
       </tr></thead><tbody>`;
     entries.forEach((c) => {
       const delta = c.default_value !== 0
-        ? ((c.value - c.default_value) / Math.abs(c.default_value) * 100).toFixed(1) + "%"
+        ? UI.formatPercent(((c.value - c.default_value) / Math.abs(c.default_value)), { maximumFractionDigits: 1 })
         : "\u2014";
       let cls = "delta-neutral";
       const deltaPct = c.default_value !== 0 ? (c.value - c.default_value) / Math.abs(c.default_value) * 100 : 0;
       if (deltaPct > 0) cls = "delta-positive";
       if (deltaPct < 0) cls = "delta-negative";
       html += `<tr>
-        <td><strong>${UI.escapeHtml(c.name)}</strong></td>
+        <td><strong>${UI.escapeHtml(UI.labelConstant(c.name, c.name))}</strong></td>
         <td style="font-size:var(--text-xs);color:var(--color-text-muted);">${UI.escapeHtml(c.description)}</td>
         <td style="font-size:var(--text-xs);"><code>${UI.escapeHtml(c.owid_indicator)}</code></td>
         <td>${UI.formatNumber(c.value)}</td>
@@ -67,7 +67,7 @@ const CalibrateView = (() => {
     const resultsEl = document.getElementById("calibrate-results");
     const applyBtn = document.getElementById("calibrate-apply");
 
-    if (statusEl) UI.showSpinner(statusEl, "Calibrating\u2026");
+    if (statusEl) UI.showSpinner(statusEl, I18n.t("common.loading_calibrate"));
     if (resultsEl) resultsEl.innerHTML = "";
     if (applyBtn) applyBtn.style.display = "none";
 
@@ -86,7 +86,7 @@ const CalibrateView = (() => {
       if (data.warnings && data.warnings.length > 0) {
         const warn = UI.el("div", "text-muted mt-lg");
         warn.style.fontSize = "var(--text-sm)";
-        warn.innerHTML = "<strong>Warnings:</strong> " + data.warnings.map(UI.escapeHtml).join("; ");
+        warn.innerHTML = `<strong>${UI.escapeHtml(I18n.t("common.warnings"))}:</strong> ${data.warnings.map(UI.escapeHtml).join("; ")}`;
         if (resultsEl) resultsEl.appendChild(warn);
       }
     } catch (err) {
@@ -111,33 +111,33 @@ const CalibrateView = (() => {
   function renderValidationTable(container, data) {
     const entries = Object.values(data.metrics);
     if (entries.length === 0) {
-      container.innerHTML = '<p class="text-muted">No validation metrics available.</p>';
+      container.innerHTML = `<p class="text-muted">${UI.escapeHtml(I18n.t("validate.no_metrics"))}</p>`;
       return;
     }
     let html = `<div style="margin-bottom:var(--space-md);font-size:var(--text-sm);color:var(--color-text-muted);">
-      <strong>Data source:</strong> <a href="https://ourworldindata.org" target="_blank" rel="noopener">Our World in Data</a> &mdash;
-      Entity: <strong>${UI.escapeHtml(data.entity)}</strong>,
-      Overlap: <strong>${data.overlap_start}\u2013${data.overlap_end}</strong>,
-      Variables compared: <strong>${entries.length}</strong>
+      <strong>${UI.escapeHtml(I18n.t("common.data_source"))}:</strong> <a href="https://ourworldindata.org" target="_blank" rel="noopener">Our World in Data</a> &mdash;
+      ${UI.escapeHtml(I18n.t("common.entity"))}: <strong>${UI.escapeHtml(data.entity)}</strong>,
+      ${UI.escapeHtml(I18n.t("common.overlap"))}: <strong>${data.overlap_start}\u2013${data.overlap_end}</strong>,
+      ${UI.escapeHtml(I18n.t("common.variables_compared"))}: <strong>${entries.length}</strong>
     </div>`;
     html += `<table class="metrics-table">
       <thead><tr>
-        <th>Variable</th>
-        <th>OWID Indicator</th>
-        <th>RMSE</th>
-        <th>MAPE</th>
-        <th>Correlation</th>
-        <th>Points</th>
-        <th>Confidence</th>
+        <th>${UI.escapeHtml(I18n.t("validate.variable"))}</th>
+        <th>${UI.escapeHtml(I18n.t("calibrate.owid_indicator"))}</th>
+        <th>${UI.escapeHtml(I18n.t("validate.rmse"))}</th>
+        <th>${UI.escapeHtml(I18n.t("validate.mape"))}</th>
+        <th>${UI.escapeHtml(I18n.t("validate.correlation"))}</th>
+        <th>${UI.escapeHtml(I18n.t("common.points"))}</th>
+        <th>${UI.escapeHtml(I18n.t("common.confidence"))}</th>
       </tr></thead><tbody>`;
     entries.forEach((m) => {
       html += `<tr>
-        <td title="${UI.escapeHtml(m.description)}"><strong>${UI.escapeHtml(m.variable)}</strong></td>
+        <td title="${UI.escapeHtml(m.description)}"><strong>${UI.escapeHtml(UI.labelVariable(m.variable, m.variable))}</strong></td>
         <td style="font-size:var(--text-xs);"><code>${UI.escapeHtml(m.owid_indicator)}</code></td>
         <td>${UI.formatNumber(m.rmse)}</td>
-        <td>${(m.mape * 100).toFixed(1)}%</td>
-        <td>${m.correlation.toFixed(3)}</td>
-        <td>${m.n_points}</td>
+        <td>${UI.formatPercent(m.mape, { maximumFractionDigits: 1 })}</td>
+        <td>${I18n.formatNumber(m.correlation, { maximumFractionDigits: 3, minimumFractionDigits: 3 })}</td>
+        <td>${I18n.formatNumber(m.n_points, { maximumFractionDigits: 0 })}</td>
         <td>${confidenceBadge(m.confidence)}</td>
       </tr>`;
     });
@@ -156,7 +156,7 @@ const CalibrateView = (() => {
       const panel = UI.el("div", "chart-panel");
       const header = UI.el("div", "chart-panel__header");
       const meta = State.variableMeta[varKey] || {};
-      header.appendChild(UI.el("span", "chart-panel__title", meta.full_name || varKey));
+      header.appendChild(UI.el("span", "chart-panel__title", UI.labelVariable(varKey, meta.full_name || varKey)));
       const wrap = UI.el("div", "chart-container");
       const canvas = document.createElement("canvas");
       canvas.id = `val-chart-${varKey}`;
@@ -183,7 +183,7 @@ const CalibrateView = (() => {
     const resultsEl = document.getElementById("validate-results");
     const chartsEl = document.getElementById("validate-charts");
 
-    if (statusEl) UI.showSpinner(statusEl, "Running simulation & validating\u2026");
+    if (statusEl) UI.showSpinner(statusEl, I18n.t("common.loading_validate"));
     if (resultsEl) resultsEl.innerHTML = "";
     if (chartsEl) chartsEl.innerHTML = "";
 
@@ -202,7 +202,7 @@ const CalibrateView = (() => {
       if (data.warnings && data.warnings.length > 0) {
         const warn = UI.el("div", "text-muted mt-lg");
         warn.style.fontSize = "var(--text-sm)";
-        warn.innerHTML = "<strong>Warnings:</strong> " + data.warnings.map(UI.escapeHtml).join("; ");
+        warn.innerHTML = `<strong>${UI.escapeHtml(I18n.t("common.warnings"))}:</strong> ${data.warnings.map(UI.escapeHtml).join("; ")}`;
         if (resultsEl) resultsEl.appendChild(warn);
       }
     } catch (err) {

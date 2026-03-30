@@ -29,7 +29,7 @@ test("compare view renders metrics without a backend", async ({ page }) => {
   await page.locator("#compare-select-a").selectOption({ index: 0 });
   await page.locator("#compare-select-b").selectOption({ index: 1 });
   await page.waitForSelector("#compare-metrics tr, #compare-metrics .metric-row");
-  await expect(page.locator("#compare-metrics")).toContainText("Population");
+  await expect(page.locator("#compare-metrics")).toContainText("Total population");
 });
 
 test("advanced, calibrate, and validate flows render locally", async ({ page }) => {
@@ -43,4 +43,36 @@ test("advanced, calibrate, and validate flows render locally", async ({ page }) 
 
   await page.click("#validate-run");
   await page.waitForSelector("#validate-results table, #validate-status .card");
+});
+
+test.describe("localization", () => {
+  test.use({ locale: "de-DE" });
+
+  test("uses browser locale by default when supported", async ({ page }) => {
+    await page.goto("/");
+    await page.waitForURL(/#explore\?preset=standard-run&view=combined/);
+    await expect(page).toHaveTitle("World3 — Systemsimulations-Explorer");
+    await expect(page.locator("nav.site-nav")).toContainText("Erkunden");
+    await expect(page.locator(".chart-view-toggle")).toContainText("Klassisches Einzelchart");
+  });
+});
+
+test("persists a manual language choice across reloads", async ({ page }) => {
+  await page.goto("/");
+  await page.selectOption("#locale-picker", "ja");
+  await expect(page).toHaveTitle("World3 — システムシミュレーション・エクスプローラー");
+  await expect(page.locator("#locale-picker")).toHaveValue("ja");
+  await expect(page.locator("nav.site-nav")).toContainText("探索");
+
+  await page.reload();
+  await page.waitForURL(/#explore\?preset=standard-run&view=combined/);
+  await expect(page.locator("#locale-picker")).toHaveValue("ja");
+  await expect(page.locator("nav.site-nav")).toContainText("探索");
+});
+
+test("supports rtl layout for arabic", async ({ page }) => {
+  await page.goto("/");
+  await page.selectOption("#locale-picker", "ar");
+  await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+  await expect(page.locator("nav.site-nav")).toContainText("استكشاف");
 });
