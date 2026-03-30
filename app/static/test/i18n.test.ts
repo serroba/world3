@@ -387,6 +387,6 @@ describe("i18n", () => {
     expect(CoreIndex.createWorld3Core).toBeTypeOf("function");
     expect(CoreIndex.createValidationCore).toBeTypeOf("function");
     expect(CoreIndex.createCalibrationCore).toBeTypeOf("function");
-    expect(CoreIndex.createRuntimeExecutionGraph).toBeTypeOf("function");
+    expect(CoreIndex.createOwidDataProvider).toBeTypeOf("function");
   });
 });
