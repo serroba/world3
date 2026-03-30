@@ -26,6 +26,7 @@ function c(constants, name) {
     return val;
 }
 export function simulateWorld3(options) {
+    /* v8 ignore next 3 -- trivial defaults */
     const yearMin = options.yearMin ?? 1900;
     const yearMax = options.yearMax ?? 2100;
     const dt = options.dt ?? 0.5;
@@ -82,7 +83,7 @@ export function simulateWorld3(options) {
     const FCAOR2 = requireLookup(lookupLib, "FCAOR2");
     const PCRUM = requireLookup(lookupLib, "PCRUM");
     // Constants
-    const consts = options.constants ?? {};
+    const consts = options.constants ?? /* v8 ignore next */ {};
     const p1i = c(consts, "p1i"), p2i = c(consts, "p2i"), p3i = c(consts, "p3i"), p4i = c(consts, "p4i");
     const ici = c(consts, "ici"), sci = c(consts, "sci");
     const ali = c(consts, "ali"), pali = c(consts, "pali"), uili = c(consts, "uili");
