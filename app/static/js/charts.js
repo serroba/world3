@@ -170,7 +170,9 @@ const Charts = (() => {
       maxTicksLimit: 9,
       callback(value) {
         const year = Math.round(value);
-        return year % 25 === 0 ? year : "";
+        return year % 25 === 0
+          ? I18n.formatNumber(year, { maximumFractionDigits: 0 })
+          : "";
       },
     };
   }
@@ -204,11 +206,15 @@ const Charts = (() => {
     const needsY1 = Object.values(axisMap).includes("y1");
 
     const scales = {
-      x: { type: "linear", ticks: yearTicks(), title: { display: true, text: "Year" } },
+      x: {
+        type: "linear",
+        ticks: yearTicks(),
+        title: { display: true, text: I18n.t("chart.axis.year") },
+      },
       y: {
         position: "left",
         title: { display: true, text: unitLabel(varKeys.filter((k) => axisMap[k] === "y")) },
-        ticks: { callback: (v) => UI.formatNumber(v) },
+        ticks: { callback: (v) => UI.formatNumber(Number(v)) },
       },
     };
 
@@ -217,7 +223,7 @@ const Charts = (() => {
         position: "right",
         grid: { drawOnChartArea: false },
         title: { display: true, text: unitLabel(varKeys.filter((k) => axisMap[k] === "y1")) },
-        ticks: { callback: (v) => UI.formatNumber(v) },
+        ticks: { callback: (v) => UI.formatNumber(Number(v)) },
       };
     }
 
@@ -236,14 +242,22 @@ const Charts = (() => {
   /** Base chart options. */
   function baseOptions(varKeys) {
     const { scales, axisMap } = buildScales(varKeys);
+    const isRtl = I18n.getDirection() === "rtl";
     return {
       responsive: true,
       maintainAspectRatio: false,
       animation: false,
       interaction: { mode: "index", intersect: false },
       plugins: {
-        legend: { position: "bottom", labels: { boxWidth: 12, padding: 8, font: { size: 11 } } },
+        legend: {
+          position: "bottom",
+          rtl: isRtl,
+          textDirection: isRtl ? "rtl" : "ltr",
+          labels: { boxWidth: 12, padding: 8, font: { size: 11 } },
+        },
         tooltip: {
+          rtl: isRtl,
+          textDirection: isRtl ? "rtl" : "ltr",
           callbacks: {
             label(ctx) {
               const meta = State.variableMeta[ctx.dataset.varKey];
@@ -272,7 +286,7 @@ const Charts = (() => {
     const meta = State.variableMeta[varKey] || {};
     const color = colorForVar(varKey, colorIndex);
     return {
-      label: meta.full_name || varKey,
+      label: UI.labelVariable(varKey, meta.full_name || varKey),
       varKey,
       yAxisID: yAxisID || "y",
       data: time.map((t, i) => ({ x: t, y: series[varKey]?.values[i] ?? null })),
@@ -313,7 +327,7 @@ const Charts = (() => {
       delete opts._axisMap;
       const datasets = [];
       varKeys.forEach((key, i) => {
-        const metaName = (State.variableMeta[key] || {}).full_name || key;
+        const metaName = UI.labelVariable(key, (State.variableMeta[key] || {}).full_name || key);
         const dsA = makeDataset(resultA.time, resultA.series, key, i, false, axisMap[key]);
         dsA.label = `${metaName} (${labelA})`;
         datasets.push(dsA);
@@ -346,7 +360,7 @@ const Charts = (() => {
       // Outer details: "How does this work?"
       const outer = document.createElement("details");
       const outerSummary = document.createElement("summary");
-      outerSummary.textContent = "How does this work?";
+      outerSummary.textContent = I18n.t("chart.explainer.how");
       outer.appendChild(outerSummary);
 
       const text = document.createElement("p");
@@ -358,7 +372,7 @@ const Charts = (() => {
       if (data.equations && data.equations.length) {
         const inner = document.createElement("details");
         const innerSummary = document.createElement("summary");
-        innerSummary.textContent = "See the equations";
+        innerSummary.textContent = I18n.t("chart.explainer.equations");
         inner.appendChild(innerSummary);
 
         data.equations.forEach((eq) => {
@@ -386,7 +400,7 @@ const Charts = (() => {
           const tag = document.createElement("span");
           tag.className = "var-tag";
           const meta = State.variableMeta[v];
-          tag.textContent = meta ? `${v}: ${meta.full_name}` : v;
+          tag.textContent = meta ? `${v}: ${UI.labelVariable(v, meta.full_name)}` : v;
           tags.appendChild(tag);
         });
         outer.appendChild(tags);

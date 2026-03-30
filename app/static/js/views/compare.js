@@ -4,10 +4,10 @@
 
 const CompareView = (() => {
   const CHART_GROUPS = [
-    { id: "cmp-chart-pop", title: "Population & Life Expectancy", vars: ["pop", "le"] },
-    { id: "cmp-chart-econ", title: "Economy & Food", vars: ["iopc", "fpc"] },
-    { id: "cmp-chart-poll", title: "Pollution", vars: ["ppolx"] },
-    { id: "cmp-chart-res", title: "Resources", vars: ["nrfr"] },
+    { id: "cmp-chart-pop", titleKey: "explore.chart.population_life", vars: ["pop", "le"] },
+    { id: "cmp-chart-econ", titleKey: "explore.chart.economy_food", vars: ["iopc", "fpc"] },
+    { id: "cmp-chart-poll", titleKey: "explore.chart.pollution", vars: ["ppolx"] },
+    { id: "cmp-chart-res", titleKey: "explore.chart.resources", vars: ["nrfr"] },
   ];
 
   function populateSelects(selectA, selectB, presetA, presetB) {
@@ -16,7 +16,7 @@ const CompareView = (() => {
       State.presets.forEach((p) => {
         const opt = document.createElement("option");
         opt.value = p.name;
-        opt.textContent = `${p.name} — ${p.description.slice(0, 50)}`;
+        opt.textContent = `${UI.labelPreset(p)} — ${UI.describePreset(p).slice(0, 50)}`;
         sel.appendChild(opt);
       });
     });
@@ -27,18 +27,21 @@ const CompareView = (() => {
   function renderMetrics(container, metrics, labelA, labelB) {
     let html = `<table class="metrics-table">
       <thead><tr>
-        <th>Metric</th>
+        <th>${UI.escapeHtml(I18n.t("compare.metric"))}</th>
         <th>${UI.escapeHtml(labelA)}</th>
         <th>${UI.escapeHtml(labelB)}</th>
-        <th>Delta</th>
+        <th>${UI.escapeHtml(I18n.t("compare.delta"))}</th>
       </tr></thead><tbody>`;
     metrics.forEach((m) => {
-      const delta = m.delta_pct !== null && m.delta_pct !== undefined ? m.delta_pct.toFixed(1) + "%" : "—";
+      const delta = m.delta_pct !== null && m.delta_pct !== undefined
+        ? UI.formatPercent(m.delta_pct, { mode: "percent", maximumFractionDigits: 1 })
+        : "—";
       let cls = "delta-neutral";
       if (m.delta_pct > 0) cls = "delta-positive";
       if (m.delta_pct < 0) cls = "delta-negative";
+      const metricLabel = UI.labelVariable(m.variable, m.label);
       html += `<tr>
-        <td>${UI.escapeHtml(m.label)}</td>
+        <td>${UI.escapeHtml(metricLabel)}</td>
         <td>${UI.formatNumber(m.value_a)}</td>
         <td>${UI.formatNumber(m.value_b)}</td>
         <td class="${cls}">${delta}</td>
@@ -53,7 +56,7 @@ const CompareView = (() => {
     CHART_GROUPS.forEach((group) => {
       const panel = UI.el("div", "chart-panel");
       const header = UI.el("div", "chart-panel__header");
-      header.appendChild(UI.el("span", "chart-panel__title", group.title));
+      header.appendChild(UI.el("span", "chart-panel__title", I18n.t(group.titleKey)));
       const wrap = UI.el("div", "chart-container");
       const canvas = document.createElement("canvas");
       canvas.id = group.id;
@@ -71,7 +74,7 @@ const CompareView = (() => {
     const statusEl = document.getElementById("compare-status");
     if (!metricsEl || !chartsEl) return;
 
-    if (statusEl) statusEl.innerHTML = '<div class="spinner">Comparing scenarios\u2026</div>';
+    if (statusEl) statusEl.innerHTML = `<div class="spinner">${I18n.t("common.loading_compare")}</div>`;
     renderChartGrid(chartsEl);
 
     try {
@@ -79,16 +82,18 @@ const CompareView = (() => {
         { preset: presetA },
         { preset: presetB }
       );
+      const labelA = I18n.labelForPreset(presetA, data.scenario_a);
+      const labelB = I18n.labelForPreset(presetB, data.scenario_b);
 
       if (statusEl) statusEl.innerHTML = "";
-      renderMetrics(metricsEl, data.metrics, data.scenario_a, data.scenario_b);
+      renderMetrics(metricsEl, data.metrics, labelA, labelB);
 
       CHART_GROUPS.forEach((group) => {
         const canvas = document.getElementById(group.id);
         if (canvas) {
           Charts.renderCompare(
             canvas, data.results_a, data.results_b,
-            group.vars, data.scenario_a, data.scenario_b
+            group.vars, labelA, labelB
           );
         }
       });
@@ -114,7 +119,10 @@ const CompareView = (() => {
     selectA.onchange = onChange;
     selectB.onchange = onChange;
 
-    runComparison(presetA, presetB);
+    runComparison(
+      presetA,
+      presetB,
+    );
   }
 
   return { render };

@@ -14,6 +14,9 @@
   display: flex;
   align-items: center;
   margin-bottom: var(--space-sm);
+  justify-content: space-between;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
 }
 
 .chart-panel__title {
@@ -132,5 +135,10 @@
   .chart-view-toggle__button {
     width: 100%;
     justify-content: center;
+    text-align: center;
   }
+}
+
+html[dir="rtl"] .chart-view-toggle__label {
+  padding: 0 0.35rem 0 0.5rem;
 }

@@ -13,6 +13,10 @@ import {
   createValidationCore,
   createCalibrationCore,
 } from "./core/index.js";
+import {
+  createI18n,
+  type I18nApi,
+} from "./i18n.js";
 
 declare global {
   interface Window {
@@ -27,6 +31,7 @@ declare global {
     CalibrationCore: ReturnType<typeof createCalibrationCore>;
     ValidationCore: ReturnType<typeof createValidationCore>;
     LocalOwidData: ReturnType<typeof createOwidDataProvider>;
+    I18n: I18nApi;
   }
 }
 
@@ -52,6 +57,7 @@ async function loadLocalOwidDataset() {
 }
 
 const LocalOwidData = createOwidDataProvider(loadLocalOwidDataset);
+const I18n = createI18n();
 
 window.ModelData = ModelData;
 window.buildSimulationRequestFromPreset = (name, overrides) =>
@@ -63,3 +69,4 @@ window.ValidationCore = createValidationCore((options) =>
   LocalOwidData.getValidationData(options),
 );
 window.SimulationProvider = createSimulationProvider(ModelData);
+window.I18n = I18n;

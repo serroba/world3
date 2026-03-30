@@ -16,21 +16,25 @@
 
 <nav class="site-nav">
   <div class="container">
-    <a href="#intro" class="site-nav__brand" aria-label="World3 home">
+    <a href="#intro" class="site-nav__brand" aria-label="World3 home" data-i18n="brand.home_aria" data-i18n-attr="aria-label">
       <img src="assets/brand/world3-mark.svg" alt="" class="site-nav__brand-mark">
       <span class="site-nav__brand-lockup">
-        <strong>World3</strong>
-        <span>Systems Simulation Explorer</span>
+        <strong data-i18n="brand.name">World3</strong>
+        <span data-i18n="brand.subtitle">Systems Simulation Explorer</span>
       </span>
     </a>
     <ul class="site-nav__links">
-      <li><a href="#intro">Home</a></li>
-      <li><a href="#model">Model</a></li>
-      <li><a href="#explore">Explore</a></li>
-      <li><a href="#compare">Compare</a></li>
-      <li><a href="#advanced">Advanced</a></li>
-      <li><a href="#calibrate">Calibrate</a></li>
+      <li><a href="#intro" data-i18n="nav.home">Home</a></li>
+      <li><a href="#model" data-i18n="nav.model">Model</a></li>
+      <li><a href="#explore" data-i18n="nav.explore">Explore</a></li>
+      <li><a href="#compare" data-i18n="nav.compare">Compare</a></li>
+      <li><a href="#advanced" data-i18n="nav.advanced">Advanced</a></li>
+      <li><a href="#calibrate" data-i18n="nav.calibrate">Calibrate</a></li>
     </ul>
+    <div class="site-nav__locale">
+      <label for="locale-picker" class="site-nav__locale-label" data-i18n="nav.language">Language</label>
+      <select id="locale-picker" class="site-nav__locale-select" aria-label="Language" data-i18n="nav.language" data-i18n-attr="aria-label"></select>
+    </div>
   </div>
 </nav>
 
@@ -40,7 +44,7 @@
     <!-- INTRO VIEW -->
     <div id="view-intro" class="view">
       <div class="hero">
-        <h1>What happens to civilization by 2100?</h1>
+        <h1 data-i18n="intro.hero_title">What happens to civilization by 2100?</h1>
         <p>
           In 1972, a team of researchers at MIT built <strong>World3</strong> — a computer
           model that simulates how population, industrial output, food production, pollution,
@@ -53,15 +57,15 @@
           happens under different assumptions about technology, policy, and resources — or
           tweak individual parameters in the Advanced editor.
         </p>
-        <a href="#explore" class="btn btn-primary">Start exploring</a>
-        <a href="#model" class="btn btn-outline btn-sm">How does the model work?</a>
+        <a href="#explore" class="btn btn-primary" data-i18n="action.start_exploring">Start exploring</a>
+        <a href="#model" class="btn btn-outline btn-sm" data-i18n="action.model_how">How does the model work?</a>
       </div>
 
-      <h2 class="section-title">Choose a scenario</h2>
+      <h2 class="section-title" data-i18n="intro.choose_scenario">Choose a scenario</h2>
       <div id="intro-presets" class="grid-2"></div>
 
       <footer class="ack">
-        <h2 class="section-title">Acknowledgments</h2>
+        <h2 class="section-title" data-i18n="intro.acknowledgments">Acknowledgments</h2>
         <ul class="ack__list">
           <li>Meadows, D.&nbsp;L., Behrens, W.&nbsp;W., Meadows, D.&nbsp;H., Naill, R.&nbsp;F., Randers, J. &amp; Zahn, E. — <em>Dynamics of Growth in a Finite World</em> (1974)</li>
           <li>Meadows, D.&nbsp;H., Meadows, D.&nbsp;L., Randers, J. &amp; Behrens, W.&nbsp;W. — <em>The Limits to Growth</em> (1972)</li>
@@ -78,7 +82,7 @@
     <!-- MODEL VIEW -->
     <div id="view-model" class="view">
       <div class="hero">
-        <h1>How does the World3 model work?</h1>
+        <h1 data-i18n="model.title">How does the World3 model work?</h1>
         <p>
           In 1972, researchers built a computer model of civilization's trajectory.
           It tracks five things: people, industrial output, food, pollution, and
@@ -91,35 +95,35 @@
       <div id="model-assumptions"></div>
       <div id="model-sources"></div>
       <div class="view-links">
-        <a href="#explore" class="btn btn-outline btn-sm">Explore scenarios</a>
-        <a href="#advanced" class="btn btn-outline btn-sm">Edit constants</a>
+        <a href="#explore" class="btn btn-outline btn-sm" data-i18n="action.explore_scenarios">Explore scenarios</a>
+        <a href="#advanced" class="btn btn-outline btn-sm" data-i18n="action.edit_constants">Edit constants</a>
       </div>
     </div>
 
     <!-- EXPLORE VIEW -->
     <div id="view-explore" class="view">
-      <h2 class="section-title">Explore a scenario</h2>
+      <h2 class="section-title" data-i18n="explore.title">Explore a scenario</h2>
       <div id="explore-pills" class="pill-group mb-lg"></div>
       <div id="explore-view-controls" class="mb-lg"></div>
       <div id="explore-status"></div>
       <div id="explore-charts" class="grid-2"></div>
       <div class="view-links">
-        <a href="#compare" class="btn btn-outline btn-sm">Compare scenarios</a>
-        <a href="#advanced" class="btn btn-outline btn-sm">Advanced editor</a>
-        <a href="#calibrate" class="btn btn-outline btn-sm">Calibrate from data</a>
+        <a href="#compare" class="btn btn-outline btn-sm" data-i18n="action.compare_scenarios">Compare scenarios</a>
+        <a href="#advanced" class="btn btn-outline btn-sm" data-i18n="action.advanced_editor">Advanced editor</a>
+        <a href="#calibrate" class="btn btn-outline btn-sm" data-i18n="action.calibrate_from_data">Calibrate from data</a>
       </div>
     </div>
 
     <!-- COMPARE VIEW -->
     <div id="view-compare" class="view">
-      <h2 class="section-title">Compare scenarios</h2>
+      <h2 class="section-title" data-i18n="compare.title">Compare scenarios</h2>
       <div class="grid-2 mb-lg">
         <div>
-          <label for="compare-select-a" class="text-muted" style="font-size:var(--text-sm);">Scenario A</label>
+          <label for="compare-select-a" class="text-muted" style="font-size:var(--text-sm);" data-i18n="compare.scenario_a">Scenario A</label>
           <select id="compare-select-a"></select>
         </div>
         <div>
-          <label for="compare-select-b" class="text-muted" style="font-size:var(--text-sm);">Scenario B</label>
+          <label for="compare-select-b" class="text-muted" style="font-size:var(--text-sm);" data-i18n="compare.scenario_b">Scenario B</label>
           <select id="compare-select-b"></select>
         </div>
       </div>
@@ -127,33 +131,33 @@
       <div id="compare-metrics" class="card mb-lg"></div>
       <div id="compare-charts" class="grid-2"></div>
       <div class="view-links">
-        <a href="#advanced" class="btn btn-outline btn-sm">Edit constants</a>
-        <a href="#calibrate" class="btn btn-outline btn-sm">Calibrate from data</a>
+        <a href="#advanced" class="btn btn-outline btn-sm" data-i18n="action.edit_constants">Edit constants</a>
+        <a href="#calibrate" class="btn btn-outline btn-sm" data-i18n="action.calibrate_from_data">Calibrate from data</a>
       </div>
     </div>
 
     <!-- ADVANCED VIEW -->
     <div id="view-advanced" class="view">
-      <h2 class="section-title">Advanced: edit constants</h2>
-      <p class="text-muted mb-lg">
+      <h2 class="section-title" data-i18n="advanced.title">Advanced: edit constants</h2>
+      <p class="text-muted mb-lg" data-i18n="advanced.subtitle">
         Adjust any of the World3 model constants below. The simulation updates
         automatically as you change values. Each constant controls a specific aspect of the model.
       </p>
       <div id="advanced-accordions"></div>
       <div class="mt-lg" style="display:flex;gap:var(--space-md);flex-wrap:wrap;">
-        <button id="advanced-run" class="btn btn-primary">Run simulation</button>
-        <button id="advanced-compare" class="btn btn-outline">Compare with Standard Run</button>
+        <button id="advanced-run" class="btn btn-primary" data-i18n="action.run_simulation">Run simulation</button>
+        <button id="advanced-compare" class="btn btn-outline" data-i18n="advanced.compare_with_standard">Compare with Standard Run</button>
       </div>
       <div id="advanced-status" class="mt-lg"></div>
       <div id="advanced-charts" class="grid-2 mt-lg"></div>
       <div class="view-links">
-        <a href="#calibrate" class="btn btn-outline btn-sm">Calibrate from data</a>
+        <a href="#calibrate" class="btn btn-outline btn-sm" data-i18n="action.calibrate_from_data">Calibrate from data</a>
       </div>
     </div>
 
     <!-- CALIBRATE VIEW -->
     <div id="view-calibrate" class="view">
-      <h2 class="section-title">Calibrate &amp; Validate</h2>
+      <h2 class="section-title" data-i18n="calibrate.title">Calibrate &amp; Validate</h2>
       <p class="text-muted mb-lg">
         Calibrate model constants and validate simulation output against real-world
         observations from <a href="https://ourworldindata.org" target="_blank" rel="noopener">Our World in Data</a> (OWID).
@@ -161,7 +165,7 @@
 
       <!-- Calibrate section -->
       <div class="card mb-lg">
-        <h3 class="card__title">Calibrate constants from OWID</h3>
+        <h3 class="card__title" data-i18n="calibrate.section_title">Calibrate constants from OWID</h3>
         <p class="card__desc mb-lg">
           Fetches observed data from Our World in Data for the chosen entity and reference year,
           then fits World3 model constants to match the real-world observations. The table below
@@ -169,17 +173,17 @@
         </p>
         <div class="grid-2 mb-lg">
           <div class="input-group">
-            <label for="calibrate-entity">Entity</label>
+            <label for="calibrate-entity" data-i18n="common.entity">Entity</label>
             <input type="text" id="calibrate-entity" value="World" style="padding:var(--space-sm) var(--space-md);border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:var(--text-sm);min-height:40px;">
           </div>
           <div class="input-group">
-            <label for="calibrate-year">Reference year</label>
+            <label for="calibrate-year" data-i18n="common.reference_year">Reference year</label>
             <input type="number" id="calibrate-year" value="1970" min="1900" max="2025" style="padding:var(--space-sm) var(--space-md);border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:var(--text-sm);min-height:40px;">
           </div>
         </div>
         <div style="display:flex;gap:var(--space-md);flex-wrap:wrap;">
-          <button id="calibrate-run" class="btn btn-primary">Calibrate</button>
-          <button id="calibrate-apply" class="btn btn-outline" style="display:none;">Apply to Advanced</button>
+          <button id="calibrate-run" class="btn btn-primary" data-i18n="action.calibrate">Calibrate</button>
+          <button id="calibrate-apply" class="btn btn-outline" style="display:none;" data-i18n="action.apply_to_advanced">Apply to Advanced</button>
         </div>
         <div id="calibrate-status" class="mt-lg"></div>
         <div id="calibrate-results" class="mt-lg"></div>
@@ -187,7 +191,7 @@
 
       <!-- Validate section -->
       <div class="card mb-lg">
-        <h3 class="card__title">Validate against OWID observations</h3>
+        <h3 class="card__title" data-i18n="validate.section_title">Validate against OWID observations</h3>
         <p class="card__desc mb-lg">
           Runs a default World3 simulation and compares each output variable against the
           corresponding OWID time series. The metrics table shows how well the simulation
@@ -195,17 +199,17 @@
           variable is compared against.
         </p>
         <div class="input-group" style="max-width:300px;">
-          <label for="validate-entity">Entity</label>
+          <label for="validate-entity" data-i18n="common.entity">Entity</label>
           <input type="text" id="validate-entity" value="World" style="padding:var(--space-sm) var(--space-md);border:1px solid var(--color-border);border-radius:var(--radius-sm);font-size:var(--text-sm);min-height:40px;">
         </div>
-        <button id="validate-run" class="btn btn-primary">Validate</button>
+        <button id="validate-run" class="btn btn-primary" data-i18n="action.validate">Validate</button>
         <div id="validate-status" class="mt-lg"></div>
         <div id="validate-results" class="mt-lg"></div>
         <div id="validate-charts" class="grid-2 mt-lg"></div>
       </div>
       <div class="view-links">
-        <a href="#explore" class="btn btn-outline btn-sm">Explore scenarios</a>
-        <a href="#compare" class="btn btn-outline btn-sm">Compare scenarios</a>
+        <a href="#explore" class="btn btn-outline btn-sm" data-i18n="action.explore_scenarios">Explore scenarios</a>
+        <a href="#compare" class="btn btn-outline btn-sm" data-i18n="action.compare_scenarios">Compare scenarios</a>
       </div>
     </div>
 

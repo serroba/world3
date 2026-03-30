@@ -8,14 +8,14 @@ const ExploreView = (() => {
     combined: "combined",
   };
   const CHART_GROUPS = [
-    { id: "chart-pop", title: "Population & Life Expectancy", vars: ["pop", "le"] },
-    { id: "chart-econ", title: "Economy & Food", vars: ["iopc", "fpc"] },
-    { id: "chart-poll", title: "Pollution", vars: ["ppolx"] },
-    { id: "chart-res", title: "Resources", vars: ["nrfr"] },
+    { id: "chart-pop", titleKey: "explore.chart.population_life", vars: ["pop", "le"] },
+    { id: "chart-econ", titleKey: "explore.chart.economy_food", vars: ["iopc", "fpc"] },
+    { id: "chart-poll", titleKey: "explore.chart.pollution", vars: ["ppolx"] },
+    { id: "chart-res", titleKey: "explore.chart.resources", vars: ["nrfr"] },
   ];
   const COMBINED_GROUP = {
     id: "chart-classic",
-    title: "Classic World3 Overview",
+    titleKey: "explore.chart.classic",
     vars: ["pop", "nrfr", "iopc", "fpc", "ppolx"],
   };
 
@@ -25,10 +25,12 @@ const ExploreView = (() => {
   function renderPills(container, activePreset) {
     container.innerHTML = "";
     State.presets.forEach((preset) => {
-      const pill = UI.el("button", "pill", preset.name);
+      const pill = UI.el("button", "pill", UI.labelPreset(preset));
       if (preset.name === activePreset) pill.classList.add("active");
       pill.addEventListener("click", () => {
-        Router.go(`#explore?preset=${encodeURIComponent(preset.name)}`);
+        Router.go(
+          `#explore?preset=${encodeURIComponent(preset.name)}&view=${encodeURIComponent(currentViewMode)}`
+        );
       });
       container.appendChild(pill);
     });
@@ -39,13 +41,13 @@ const ExploreView = (() => {
     CHART_GROUPS.forEach((group) => {
       const panel = UI.el("div", "chart-panel");
       const header = UI.el("div", "chart-panel__header");
-      header.appendChild(UI.el("span", "chart-panel__title", group.title));
+      header.appendChild(UI.el("span", "chart-panel__title", I18n.t(group.titleKey)));
 
       // Tooltip with variable descriptions
       const desc = group.vars
         .map((v) => {
           const m = State.variableMeta[v];
-          return m ? `${m.full_name} (${v})` : v;
+          return m ? `${UI.labelVariable(v, m.full_name)} (${v})` : v;
         })
         .join(", ");
       header.appendChild(UI.helpIcon(desc));
@@ -65,9 +67,9 @@ const ExploreView = (() => {
     container.innerHTML = "";
     const panel = UI.el("div", "chart-panel chart-panel--combined");
     const header = UI.el("div", "chart-panel__header");
-    header.appendChild(UI.el("span", "chart-panel__title", COMBINED_GROUP.title));
+    header.appendChild(UI.el("span", "chart-panel__title", I18n.t(COMBINED_GROUP.titleKey)));
     header.appendChild(UI.helpIcon(
-      "Population, resources, industrial output per capita, food per capita, and pollution index on a single chart with the same core World3 color mapping used in CI visuals."
+      I18n.t("explore.classic_help")
     ));
 
     const wrap = UI.el("div", "chart-container chart-container--combined");
@@ -82,12 +84,12 @@ const ExploreView = (() => {
   function renderViewToggle(container, activeMode, presetName) {
     container.innerHTML = "";
     const toggle = UI.el("div", "chart-view-toggle");
-    const label = UI.el("span", "chart-view-toggle__label", "View");
+    const label = UI.el("span", "chart-view-toggle__label", I18n.t("explore.view_label"));
     toggle.appendChild(label);
 
     [
-      [VIEW_MODES.split, "Sector cards"],
-      [VIEW_MODES.combined, "Classic single chart"],
+      [VIEW_MODES.split, I18n.t("explore.view_split")],
+      [VIEW_MODES.combined, I18n.t("explore.view_combined")],
     ].forEach(([mode, text]) => {
       const button = UI.el("button", "chart-view-toggle__button", text);
       if (mode === activeMode) button.classList.add("active");
@@ -128,7 +130,7 @@ const ExploreView = (() => {
     });
 
     const statusEl = document.getElementById("explore-status");
-    if (statusEl) statusEl.innerHTML = '<div class="spinner">Running simulation\u2026</div>';
+    if (statusEl) statusEl.innerHTML = `<div class="spinner">${I18n.t("common.loading_simulation")}</div>`;
 
     try {
       const result = await SimulationProvider.simulatePreset(presetName);

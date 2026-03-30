@@ -67,6 +67,11 @@ const Router = (() => {
       navigate();
     },
 
+    /** Re-render the active route without mutating the URL. */
+    refresh() {
+      navigate();
+    },
+
     /** Programmatic navigation. */
     go(hash) {
       location.hash = hash;

@@ -11,11 +11,11 @@ const IntroView = (() => {
     State.presets.forEach((preset) => {
       const card = UI.el("div", "card card--clickable");
       card.innerHTML = `
-        <div class="card__title">${UI.escapeHtml(preset.name)}</div>
-        <div class="card__desc">${UI.escapeHtml(preset.description)}</div>
+        <div class="card__title">${UI.escapeHtml(UI.labelPreset(preset))}</div>
+        <div class="card__desc">${UI.escapeHtml(UI.describePreset(preset))}</div>
       `;
       card.addEventListener("click", () => {
-        Router.go(`#explore?preset=${encodeURIComponent(preset.name)}`);
+        Router.go(`#explore?preset=${encodeURIComponent(preset.name)}&view=combined`);
       });
       container.appendChild(card);
     });
