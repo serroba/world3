@@ -57,6 +57,19 @@ test.describe("localization", () => {
   });
 });
 
+test.describe("spanish localization", () => {
+  test.use({ locale: "es-ES" });
+
+  test("uses spanish browser locale when supported", async ({ page }) => {
+    await page.goto("/");
+    await page.waitForURL(/#explore\?preset=standard-run&view=combined/);
+    await expect(page).toHaveTitle("World3 — Explorador de Simulación de Sistemas");
+    await expect(page.locator("nav.site-nav")).toContainText("Explorar");
+    await expect(page.locator(".chart-view-toggle")).toContainText("Gráfico clásico único");
+    await expect(page.locator(".chart-panel__title")).toContainText("Vista clásica de World3");
+  });
+});
+
 test("persists a manual language choice across reloads", async ({ page }) => {
   await page.goto("/");
   await page.selectOption("#locale-picker", "ja");
