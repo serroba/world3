@@ -3,14 +3,30 @@
  */
 
 const Charts = (() => {
-  const COLORS = [
-    "#2563eb", "#059669", "#d97706", "#dc2626", "#7c3aed", "#0891b2",
+  const SERIES_COLORS = {
+    pop: "#2b7fff",
+    le: "#0a7b83",
+    iopc: "#e63946",
+    io: "#e63946",
+    fpc: "#fb8500",
+    f: "#fb8500",
+    nrfr: "#51b86b",
+    nr: "#51b86b",
+    ppolx: "#9b3ecb",
+    ppol: "#9b3ecb",
+  };
+  const FALLBACK_COLORS = [
+    "#2b7fff", "#51b86b", "#fb8500", "#e63946", "#9b3ecb", "#0a7b83",
   ];
 
   /** Destroy any existing chart on a canvas. */
   function destroyIfExists(canvas) {
     const existing = Chart.getChart(canvas);
     if (existing) existing.destroy();
+  }
+
+  function colorForVar(varKey, colorIndex) {
+    return SERIES_COLORS[varKey] || FALLBACK_COLORS[colorIndex % FALLBACK_COLORS.length];
   }
 
   /** Build x-axis ticks for year range. */
@@ -110,13 +126,14 @@ const Charts = (() => {
   /** Build a dataset from simulation series. */
   function makeDataset(time, series, varKey, colorIndex, dashed, yAxisID) {
     const meta = State.variableMeta[varKey] || {};
+    const color = colorForVar(varKey, colorIndex);
     return {
       label: meta.full_name || varKey,
       varKey,
       yAxisID: yAxisID || "y",
       data: time.map((t, i) => ({ x: t, y: series[varKey]?.values[i] ?? null })),
-      borderColor: COLORS[colorIndex % COLORS.length],
-      backgroundColor: COLORS[colorIndex % COLORS.length] + "22",
+      borderColor: color,
+      backgroundColor: color + "22",
       borderWidth: 2,
       borderDash: dashed ? [6, 3] : [],
       pointRadius: 0,

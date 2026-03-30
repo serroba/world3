@@ -3,14 +3,24 @@
  */
 
 const ExploreView = (() => {
+  const VIEW_MODES = {
+    split: "split",
+    combined: "combined",
+  };
   const CHART_GROUPS = [
     { id: "chart-pop", title: "Population & Life Expectancy", vars: ["pop", "le"] },
     { id: "chart-econ", title: "Economy & Food", vars: ["iopc", "fpc"] },
     { id: "chart-poll", title: "Pollution", vars: ["ppolx"] },
     { id: "chart-res", title: "Resources", vars: ["nrfr"] },
   ];
+  const COMBINED_GROUP = {
+    id: "chart-classic",
+    title: "Classic World3 Overview",
+    vars: ["pop", "nrfr", "iopc", "fpc", "ppolx"],
+  };
 
   let currentPreset = null;
+  let currentViewMode = VIEW_MODES.split;
 
   function renderPills(container, activePreset) {
     container.innerHTML = "";
@@ -51,20 +61,68 @@ const ExploreView = (() => {
     });
   }
 
-  async function loadAndRender(presetName) {
+  function renderCombinedChart(container) {
+    container.innerHTML = "";
+    const panel = UI.el("div", "chart-panel chart-panel--combined");
+    const header = UI.el("div", "chart-panel__header");
+    header.appendChild(UI.el("span", "chart-panel__title", COMBINED_GROUP.title));
+    header.appendChild(UI.helpIcon(
+      "Population, resources, industrial output per capita, food per capita, and pollution index on a single chart with the same core World3 color mapping used in CI visuals."
+    ));
+
+    const wrap = UI.el("div", "chart-container chart-container--combined");
+    const canvas = document.createElement("canvas");
+    canvas.id = COMBINED_GROUP.id;
+    wrap.appendChild(canvas);
+    panel.appendChild(header);
+    panel.appendChild(wrap);
+    container.appendChild(panel);
+  }
+
+  function renderViewToggle(container, activeMode, presetName) {
+    container.innerHTML = "";
+    const toggle = UI.el("div", "chart-view-toggle");
+    const label = UI.el("span", "chart-view-toggle__label", "View");
+    toggle.appendChild(label);
+
+    [
+      [VIEW_MODES.split, "Sector cards"],
+      [VIEW_MODES.combined, "Classic single chart"],
+    ].forEach(([mode, text]) => {
+      const button = UI.el("button", "chart-view-toggle__button", text);
+      if (mode === activeMode) button.classList.add("active");
+      button.addEventListener("click", () => {
+        Router.go(
+          `#explore?preset=${encodeURIComponent(presetName)}&view=${encodeURIComponent(mode)}`
+        );
+      });
+      toggle.appendChild(button);
+    });
+
+    container.appendChild(toggle);
+  }
+
+  async function loadAndRender(presetName, viewMode) {
     const chartsEl = document.getElementById("explore-charts");
     const pillsEl = document.getElementById("explore-pills");
-    if (!chartsEl || !pillsEl) return;
+    const controlsEl = document.getElementById("explore-view-controls");
+    if (!chartsEl || !pillsEl || !controlsEl) return;
 
     renderPills(pillsEl, presetName);
+    renderViewToggle(controlsEl, viewMode, presetName);
 
     // Only rebuild chart grid if needed
-    if (currentPreset === null) {
-      renderChartGrid(chartsEl);
+    if (currentPreset === null || currentViewMode !== viewMode) {
+      if (viewMode === VIEW_MODES.combined) {
+        renderCombinedChart(chartsEl);
+      } else {
+        renderChartGrid(chartsEl);
+      }
     }
 
     // Show spinner in each chart
-    CHART_GROUPS.forEach((g) => {
+    const chartGroups = viewMode === VIEW_MODES.combined ? [COMBINED_GROUP] : CHART_GROUPS;
+    chartGroups.forEach((g) => {
       const canvas = document.getElementById(g.id);
       if (canvas) Charts.destroy(canvas);
     });
@@ -75,9 +133,10 @@ const ExploreView = (() => {
     try {
       const result = await SimulationProvider.simulatePreset(presetName);
       currentPreset = presetName;
+      currentViewMode = viewMode;
       if (statusEl) statusEl.innerHTML = "";
 
-      CHART_GROUPS.forEach((group) => {
+      chartGroups.forEach((group) => {
         const canvas = document.getElementById(group.id);
         if (canvas) Charts.renderSingle(canvas, result.time, result.series, group.vars);
       });
@@ -88,11 +147,18 @@ const ExploreView = (() => {
 
   function render(params) {
     const presetName = params.preset || "standard-run";
+    const viewMode = params.view === VIEW_MODES.combined ? VIEW_MODES.combined : VIEW_MODES.split;
     // Rebuild chart grid each time view renders
     currentPreset = null;
+    currentViewMode = viewMode;
     const chartsEl = document.getElementById("explore-charts");
-    if (chartsEl) renderChartGrid(chartsEl);
-    loadAndRender(presetName);
+    const controlsEl = document.getElementById("explore-view-controls");
+    if (controlsEl) renderViewToggle(controlsEl, viewMode, presetName);
+    if (chartsEl) {
+      if (viewMode === VIEW_MODES.combined) renderCombinedChart(chartsEl);
+      else renderChartGrid(chartsEl);
+    }
+    loadAndRender(presetName, viewMode);
   }
 
   return { render };
