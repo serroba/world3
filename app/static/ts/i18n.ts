@@ -186,57 +186,97 @@ const ALLOWED_TRANSLATION_TAGS = new Set(["A", "EM", "STRONG", "CODE", "BR"]);
 const ALLOWED_TRANSLATION_ATTRS = new Map<string, ReadonlySet<string>>([
   ["A", new Set(["href", "target", "rel"])],
 ]);
+const LOCALIZED_TAG_PATTERN = /<(\/?)(a|em|strong|code|br)([^>]*)>/gi;
+const LOCALIZED_ATTR_PATTERN = /(\w+)="([^"]*)"/g;
+
+function decodeHtmlEntities(value: string): string {
+  return value
+    .replace(/&nbsp;/g, "\u00a0")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+}
 
 function appendLocalizedHtml(
   doc: Document,
   node: HTMLElement,
   translated: string,
 ) {
-  const parser = new DOMParser();
-  const parsed = parser.parseFromString(translated, "text/html");
   node.replaceChildren();
+  const stack: HTMLElement[] = [];
+  let currentParent: Node = node;
+  let cursor = 0;
 
-  const appendSafeChildren = (source: ParentNode, target: Node) => {
-    source.childNodes.forEach((child) => {
-      if (child.nodeType === Node.TEXT_NODE) {
-        target.appendChild(doc.createTextNode(child.textContent ?? ""));
-        return;
-      }
-
-      if (child.nodeType !== Node.ELEMENT_NODE) {
-        return;
-      }
-
-      const element = child as HTMLElement;
-      const tagName = element.tagName.toUpperCase();
-      if (!ALLOWED_TRANSLATION_TAGS.has(tagName)) {
-        appendSafeChildren(element, target);
-        return;
-      }
-
-      const safeElement = doc.createElement(tagName.toLowerCase());
-      const allowedAttrs = ALLOWED_TRANSLATION_ATTRS.get(tagName) ?? new Set<string>();
-      Array.from(element.attributes).forEach((attribute) => {
-        const attrName = attribute.name.toLowerCase();
-        if (!allowedAttrs.has(attrName)) {
-          return;
-        }
-        if (tagName === "A" && attrName === "href") {
-          const value = attribute.value.trim();
-          if (!/^https?:\/\//i.test(value)) {
-            return;
-          }
-          safeElement.setAttribute(attrName, value);
-          return;
-        }
-        safeElement.setAttribute(attrName, attribute.value);
-      });
-      appendSafeChildren(element, safeElement);
-      target.appendChild(safeElement);
-    });
+  const appendText = (value: string) => {
+    if (!value) {
+      return;
+    }
+    currentParent.appendChild(doc.createTextNode(decodeHtmlEntities(value)));
   };
 
-  appendSafeChildren(parsed.body, node);
+  for (const match of translated.matchAll(LOCALIZED_TAG_PATTERN)) {
+    const rawTag = match[0] ?? "";
+    const slash = match[1] ?? "";
+    const rawTagName = match[2] ?? "";
+    const rawAttrs = match[3] ?? "";
+    const matchIndex = match.index ?? 0;
+    appendText(translated.slice(cursor, matchIndex));
+    cursor = matchIndex + rawTag.length;
+
+    const tagName = rawTagName.toUpperCase();
+    if (!ALLOWED_TRANSLATION_TAGS.has(tagName)) {
+      appendText(rawTag);
+      continue;
+    }
+
+    if (tagName === "BR" && !slash) {
+      currentParent.appendChild(doc.createElement("br"));
+      continue;
+    }
+
+    if (slash) {
+      while (stack.length > 0) {
+        const last = stack.pop()!;
+        currentParent = stack.at(-1) ?? node;
+        if (last.tagName.toUpperCase() === tagName) {
+          break;
+        }
+      }
+      continue;
+    }
+
+    const safeElement = doc.createElement(tagName.toLowerCase());
+    const allowedAttrs = ALLOWED_TRANSLATION_ATTRS.get(tagName) ?? new Set<string>();
+    let attrMatch: RegExpExecArray | null;
+    LOCALIZED_ATTR_PATTERN.lastIndex = 0;
+    while ((attrMatch = LOCALIZED_ATTR_PATTERN.exec(rawAttrs)) !== null) {
+      const rawAttrName = attrMatch[1] ?? "";
+      const rawAttrValue = attrMatch[2] ?? "";
+      const attrName = rawAttrName.toLowerCase();
+      if (!allowedAttrs.has(attrName)) {
+        continue;
+      }
+
+      const attrValue = decodeHtmlEntities(rawAttrValue).trim();
+      if (tagName === "A" && attrName === "href") {
+        if (!/^https?:\/\//i.test(attrValue)) {
+          continue;
+        }
+        safeElement.setAttribute(attrName, attrValue);
+        continue;
+      }
+
+      safeElement.setAttribute(attrName, attrValue);
+    }
+
+    currentParent.appendChild(safeElement);
+    stack.push(safeElement);
+    currentParent = safeElement;
+  }
+
+  appendText(translated.slice(cursor));
 }
 
 export function createI18n(options: I18nOptions = {}): I18nApi {
