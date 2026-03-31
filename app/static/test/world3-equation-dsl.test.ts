@@ -2,6 +2,8 @@ import { describe, expect, test } from "vitest";
 
 import { WORLD3_STOCK_KEYS } from "../ts/core/world3-keys.ts";
 import {
+  WORLD3_CAPITAL_ALLOCATION_EQUATIONS,
+  WORLD3_CAPITAL_INVESTMENT_EQUATIONS,
   WORLD3_CAPITAL_FLOW_EQUATIONS,
   WORLD3_DERIVED_STOCK_EQUATIONS,
   WORLD3_POPULATION_FLOW_EQUATIONS,
@@ -89,6 +91,43 @@ describe("World3 stock equation DSL", () => {
           kind: "derived-equation",
           key: "sopc",
           inputs: ["so", "pop"],
+        }),
+      ]),
+    );
+  });
+
+  test("declares capital allocation and reinvestment equations explicitly", () => {
+    expect(WORLD3_CAPITAL_ALLOCATION_EQUATIONS).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind: "derived-equation",
+          key: "fioac",
+          inputs: ["iopc", "iopcd", "fioac1", "fioac2"],
+        }),
+        expect.objectContaining({
+          kind: "derived-equation",
+          key: "fioas",
+          inputs: ["sopc"],
+        }),
+        expect.objectContaining({
+          kind: "derived-equation",
+          key: "scir",
+          inputs: ["io", "fioas"],
+        }),
+      ]),
+    );
+
+    expect(WORLD3_CAPITAL_INVESTMENT_EQUATIONS).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind: "derived-equation",
+          key: "fioai",
+          inputs: ["fioaa", "fioas", "fioac"],
+        }),
+        expect.objectContaining({
+          kind: "derived-equation",
+          key: "icir",
+          inputs: ["io", "fioai"],
         }),
       ]),
     );

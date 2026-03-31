@@ -3,6 +3,7 @@ import { describe, expect, test } from "vitest";
 import {
   advanceStateStocks,
   computeCapitalStep,
+  computeCrossSectorStep,
   computeMortalityAndBirthStep,
   computePopulationLeadingStep,
   computeResourceStep,
@@ -193,6 +194,59 @@ describe("world3 simulation sector helpers", () => {
     expect(buffers.scdr[1]).toBeCloseTo(60 / 21);
     expect(buffers.so[1]).toBeCloseTo((60 * 8) / 2);
     expect(buffers.lf[1]).toBeCloseTo((20 + 30) * constants.lfpf);
+  });
+
+  test("derives capital allocation and reinvestment flows through the DSL-backed capital equations", () => {
+    const buffers = createBuffers();
+    const constants = createConstants();
+    const lookups = createLookups();
+
+    buffers.pop[0] = 100;
+    buffers.ic[0] = 50;
+    buffers.sc[0] = 60;
+    buffers.cuf[0] = 8;
+    buffers.fcaor[0] = 0.25;
+    buffers.sopc[0] = 4;
+    buffers.aiph[0] = 3;
+    buffers.al[0] = 70;
+    buffers.pjss[0] = 11;
+    buffers.lfert[0] = 100;
+    buffers.ppolx[0] = 2;
+    buffers.uil[0] = 20;
+    buffers.fioaa[0] = 0.1;
+
+    const crossSector = computeCrossSectorStep(
+      0,
+      1970,
+      buffers,
+      constants,
+      lookups,
+      { icor: 3, scor: 1 },
+      { alai: 2, lymc: 1, lyf: 1, lfrt: 1 },
+      { nruf: 0.5 },
+      1975,
+    );
+
+    expect(buffers.io[0]).toBeCloseTo(50 * (1 - 0.25) * 8 / 3);
+    expect(buffers.iopc[0]).toBeCloseTo(buffers.io[0]! / 100);
+    expect(buffers.fioac[0]).toBeCloseTo(constants.fioac1);
+    expect(buffers.fioas[0]).toBeCloseTo(4);
+    expect(buffers.scir[0]).toBeCloseTo(buffers.io[0]! * 4);
+    expect(crossSector.pcrum).toBeCloseTo(buffers.iopc[0]!);
+
+    buffers.le[0] = 2;
+    buffers.p1[0] = 30;
+    buffers.p2[0] = 60;
+    buffers.p3[0] = 90;
+    buffers.p4[0] = 120;
+    buffers.d[0] = 12;
+    buffers.dtf[0] = 3;
+    buffers.fce[0] = 0.25;
+
+    computeMortalityAndBirthStep(0, 1900, buffers, constants, lookups);
+
+    expect(buffers.fioai[0]).toBeCloseTo(1 - buffers.fioaa[0]! - buffers.fioas[0]! - buffers.fioac[0]!);
+    expect(buffers.icir[0]).toBeCloseTo(buffers.io[0]! * buffers.fioai[0]!);
   });
 
   test("derives mortality, maturation, and death flows through the DSL-backed population step", () => {
