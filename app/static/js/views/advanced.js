@@ -26,6 +26,7 @@ const AdvancedView = (() => {
 
   let editedConstants = {};
   let editedControls = {};
+  let currentPreset = "standard-run";
   let debounceTimer = null;
   let abortController = null;
   let baselineResultPromise = null;
@@ -97,14 +98,55 @@ const AdvancedView = (() => {
     debounceTimer = setTimeout(runSimulation, DEBOUNCE_MS);
   }
 
+  function currentScenarioState() {
+    return {
+      preset: currentPreset,
+      view: currentViewMode,
+      constants: editedConstants,
+      controls: editedControls,
+    };
+  }
+
+  function syncScenarioUrl() {
+    if (typeof ScenarioState === "undefined") return;
+    Router.replace(ScenarioState.buildAdvancedScenarioHash(currentScenarioState()));
+  }
+
+  function copyScenarioLink() {
+    const statusEl = document.getElementById("advanced-status");
+    const url = new URL(
+      `${location.pathname}${location.search}${ScenarioState.buildAdvancedScenarioHash(currentScenarioState())}`,
+      location.origin,
+    ).toString();
+
+    navigator.clipboard.writeText(url)
+      .then(() => {
+        if (statusEl) {
+          statusEl.innerHTML = `<div class="card">${UI.escapeHtml(I18n.t("advanced.copy_link_success", undefined, "Share link copied."))}</div>`;
+        }
+      })
+      .catch((err) => {
+        if (statusEl) UI.showError(statusEl, err.message);
+      });
+  }
+
+  function resetScenario() {
+    editedConstants = {};
+    editedControls = {};
+    const accordionEl = document.getElementById("advanced-accordions");
+    if (accordionEl) {
+      buildAccordions(accordionEl);
+    }
+    syncScenarioUrl();
+    triggerSimulation();
+  }
+
   // ---------------------------------------------------------------------------
   // Accordion builder
   // ---------------------------------------------------------------------------
 
   function buildAccordions(container) {
     container.innerHTML = "";
-    editedConstants = {};
-    editedControls = {};
 
     const controlDetails = document.createElement("details");
     controlDetails.className = "accordion";
@@ -121,6 +163,7 @@ const AdvancedView = (() => {
     const controlBody = UI.el("div", "accordion__body");
     for (const [name, meta] of Object.entries(State.scenarioControlMeta)) {
       const defaultVal = State.scenarioControlDefaults[name];
+      const currentVal = editedControls[name] ?? defaultVal;
       const range = controlSliderRange(name, defaultVal);
 
       const group = UI.el("div", "input-group");
@@ -136,7 +179,7 @@ const AdvancedView = (() => {
       const input = document.createElement("input");
       input.type = "number";
       input.id = `control-${name}`;
-      input.value = defaultVal;
+      input.value = currentVal;
       input.step = "any";
       row.appendChild(input);
 
@@ -156,7 +199,7 @@ const AdvancedView = (() => {
       slider.min = range.min;
       slider.max = range.max;
       slider.step = range.step;
-      slider.value = defaultVal;
+      slider.value = Math.min(Math.max(currentVal, range.min), range.max);
       slider.setAttribute(
         "aria-label",
         I18n.t("advanced.slider_aria", { name: UI.labelControl(name, meta.full_name) }),
@@ -173,6 +216,7 @@ const AdvancedView = (() => {
         } else {
           delete editedControls[name];
         }
+        syncScenarioUrl();
         triggerSimulation();
       }
 
@@ -223,6 +267,7 @@ const AdvancedView = (() => {
       names.forEach((name) => {
         const meta = State.constantMeta[name];
         const defaultVal = State.constantDefaults[name];
+        const currentVal = editedConstants[name] ?? defaultVal;
         const range = sliderRange(defaultVal);
 
         const group = UI.el("div", "input-group");
@@ -240,7 +285,7 @@ const AdvancedView = (() => {
         const input = document.createElement("input");
         input.type = "number";
         input.id = `const-${name}`;
-        input.value = defaultVal;
+        input.value = currentVal;
         input.step = "any";
         row.appendChild(input);
 
@@ -262,7 +307,7 @@ const AdvancedView = (() => {
         slider.min = range.min;
         slider.max = range.max;
         slider.step = range.step;
-        slider.value = defaultVal;
+        slider.value = Math.min(Math.max(currentVal, range.min), range.max);
         slider.setAttribute(
           "aria-label",
           I18n.t("advanced.slider_aria", { name: UI.labelConstant(name, meta.full_name) })
@@ -280,6 +325,7 @@ const AdvancedView = (() => {
           } else {
             delete editedConstants[name];
           }
+          syncScenarioUrl();
           triggerSimulation();
         }
 
@@ -369,6 +415,7 @@ const AdvancedView = (() => {
       button.addEventListener("click", async () => {
         if (mode === currentViewMode) return;
         currentViewMode = mode;
+        syncScenarioUrl();
         const chartsEl = document.getElementById("advanced-charts");
         const statusEl = document.getElementById("advanced-status");
         renderViewToggle(container);
@@ -468,11 +515,25 @@ const AdvancedView = (() => {
     Router.go("#compare?a=standard-run&b=standard-run");
   }
 
+  function applyScenarioState(params) {
+    currentPreset = params.preset || "standard-run";
+    currentViewMode = params.view === VIEW_MODES.split ? VIEW_MODES.split : VIEW_MODES.combined;
+
+    const decoded =
+      typeof ScenarioState !== "undefined" && params.state
+        ? ScenarioState.decodeSavedScenarioState(params.state)
+        : null;
+
+    editedConstants = { ...(decoded?.constants || {}) };
+    editedControls = { ...(decoded?.controls || {}) };
+  }
+
   // ---------------------------------------------------------------------------
   // View entry point
   // ---------------------------------------------------------------------------
 
-  function render() {
+  function render(params = {}) {
+    applyScenarioState(params);
     const accordionEl = document.getElementById("advanced-accordions");
     if (accordionEl) buildAccordions(accordionEl);
 
@@ -501,6 +562,16 @@ const AdvancedView = (() => {
     const compareBtn = document.getElementById("advanced-compare");
     if (compareBtn) {
       compareBtn.onclick = compareWithStandard;
+    }
+
+    const copyBtn = document.getElementById("advanced-copy-link");
+    if (copyBtn) {
+      copyBtn.onclick = copyScenarioLink;
+    }
+
+    const resetBtn = document.getElementById("advanced-reset-scenario");
+    if (resetBtn) {
+      resetBtn.onclick = resetScenario;
     }
 
     // Auto-run with defaults on view init

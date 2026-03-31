@@ -44,6 +44,19 @@ test("advanced, calibrate, and validate flows render locally", async ({ page }) 
   await page.waitForSelector("#validate-results table, #validate-status .card");
 });
 
+test("advanced writes shareable scenario state into the URL", async ({ page }) => {
+  await page.goto("/#advanced");
+  await page.waitForSelector("#advanced-charts canvas");
+
+  await page.locator("summary", { hasText: /scenario controls/i }).click();
+  await page.fill("#control-pyear", "2000");
+  await page.locator("#control-pyear").dispatchEvent("change");
+  await page.waitForTimeout(700);
+
+  await expect(page).toHaveURL(/#advanced\?/);
+  await expect(page).toHaveURL(/state=/);
+});
+
 test.describe("localization", () => {
   test.use({ locale: "de-DE" });
 
