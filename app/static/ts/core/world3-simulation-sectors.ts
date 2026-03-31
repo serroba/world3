@@ -1,3 +1,10 @@
+import {
+  defineDerivedStock,
+  defineStateStock,
+  type World3DerivedStockEquation,
+  type World3StateStockEquation,
+  type World3StockEquationContext,
+} from "./world3-equation-dsl.js";
 import type { Smooth, Delay3, Dlinf3 } from "./runtime-primitives.js";
 import type {
   World3AuxiliaryKey,
@@ -86,6 +93,7 @@ export type World3SimulationConstants = {
   amti: number;
   ppgf1: number;
   ppgf2: number;
+  ppgf21: number;
   pptd1: number;
   pptd2: number;
   ahl70: number;
@@ -174,41 +182,123 @@ function clip(ifTrue: number, ifFalse: number, t: number, switchTime: number): n
   return t > switchTime ? ifTrue : ifFalse;
 }
 
+export const WORLD3_STATE_STOCK_EQUATIONS = [
+  defineStateStock({
+    key: "p1",
+    initialConstant: "p1i",
+    inputs: ["b", "d1", "mat1"],
+    next: ({ k, dt, buffers }) =>
+      buffers.p1[k - 1]! + dt * (buffers.b[k - 1]! - buffers.d1[k - 1]! - buffers.mat1[k - 1]!),
+  }),
+  defineStateStock({
+    key: "p2",
+    initialConstant: "p2i",
+    inputs: ["mat1", "d2", "mat2"],
+    next: ({ k, dt, buffers }) =>
+      buffers.p2[k - 1]! +
+      dt * (buffers.mat1[k - 1]! - buffers.d2[k - 1]! - buffers.mat2[k - 1]!),
+  }),
+  defineStateStock({
+    key: "p3",
+    initialConstant: "p3i",
+    inputs: ["mat2", "d3", "mat3"],
+    next: ({ k, dt, buffers }) =>
+      buffers.p3[k - 1]! +
+      dt * (buffers.mat2[k - 1]! - buffers.d3[k - 1]! - buffers.mat3[k - 1]!),
+  }),
+  defineStateStock({
+    key: "p4",
+    initialConstant: "p4i",
+    inputs: ["mat3", "d4"],
+    next: ({ k, dt, buffers }) =>
+      buffers.p4[k - 1]! + dt * (buffers.mat3[k - 1]! - buffers.d4[k - 1]!),
+  }),
+  defineStateStock({
+    key: "ic",
+    initialConstant: "ici",
+    inputs: ["icir", "icdr"],
+    next: ({ k, dt, buffers }) =>
+      buffers.ic[k - 1]! + dt * (buffers.icir[k - 1]! - buffers.icdr[k - 1]!),
+  }),
+  defineStateStock({
+    key: "sc",
+    initialConstant: "sci",
+    inputs: ["scir", "scdr"],
+    next: ({ k, dt, buffers }) =>
+      buffers.sc[k - 1]! + dt * (buffers.scir[k - 1]! - buffers.scdr[k - 1]!),
+  }),
+  defineStateStock({
+    key: "al",
+    initialConstant: "ali",
+    inputs: ["ldr", "ler", "lrui"],
+    next: ({ k, dt, buffers }) =>
+      buffers.al[k - 1]! +
+      dt * (buffers.ldr[k - 1]! - buffers.ler[k - 1]! - buffers.lrui[k - 1]!),
+  }),
+  defineStateStock({
+    key: "pal",
+    initialConstant: "pali",
+    inputs: ["ldr"],
+    next: ({ k, dt, buffers }) => buffers.pal[k - 1]! - dt * buffers.ldr[k - 1]!,
+  }),
+  defineStateStock({
+    key: "uil",
+    initialConstant: "uili",
+    inputs: ["lrui"],
+    next: ({ k, dt, buffers }) => buffers.uil[k - 1]! + dt * buffers.lrui[k - 1]!,
+  }),
+  defineStateStock({
+    key: "lfert",
+    initialConstant: "lferti",
+    inputs: ["lfr", "lfd"],
+    next: ({ k, dt, buffers }) =>
+      buffers.lfert[k - 1]! + dt * (buffers.lfr[k - 1]! - buffers.lfd[k - 1]!),
+  }),
+  defineStateStock({
+    key: "ppol",
+    initialConstant: "ppoli",
+    inputs: ["ppapr", "ppasr"],
+    next: ({ k, dt, buffers }) =>
+      buffers.ppol[k - 1]! + dt * (buffers.ppapr[k - 1]! - buffers.ppasr[k - 1]!),
+  }),
+  defineStateStock({
+    key: "nr",
+    initialConstant: "nri",
+    inputs: ["nrur"],
+    next: ({ k, dt, buffers }) => buffers.nr[k - 1]! - dt * buffers.nrur[k - 1]!,
+  }),
+] as const satisfies readonly World3StateStockEquation[];
+
+export const WORLD3_DERIVED_STOCK_EQUATIONS = [
+  defineDerivedStock({
+    key: "pop",
+    inputs: ["p1", "p2", "p3", "p4"],
+    compute: ({ k, buffers }) =>
+      buffers.p1[k]! + buffers.p2[k]! + buffers.p3[k]! + buffers.p4[k]!,
+  }),
+] as const satisfies readonly World3DerivedStockEquation[];
+
 export function advanceStateStocks(
   k: number,
   dt: number,
   buffers: World3SimulationBuffers,
   constants: World3SimulationConstants,
 ): void {
+  const context: World3StockEquationContext = { k, dt, buffers, constants };
+
   if (k === 0) {
-    buffers.p1[0] = constants.p1i;
-    buffers.p2[0] = constants.p2i;
-    buffers.p3[0] = constants.p3i;
-    buffers.p4[0] = constants.p4i;
-    buffers.ic[0] = constants.ici;
-    buffers.sc[0] = constants.sci;
-    buffers.al[0] = constants.ali;
-    buffers.pal[0] = constants.pali;
-    buffers.uil[0] = constants.uili;
-    buffers.lfert[0] = constants.lferti;
-    buffers.ppol[0] = constants.ppoli;
-    buffers.nr[0] = constants.nri;
+    for (const equation of WORLD3_STATE_STOCK_EQUATIONS) {
+      buffers[equation.key][0] = constants[equation.initialConstant];
+    }
   } else {
-    buffers.p1[k] = buffers.p1[k - 1]! + dt * (buffers.b[k - 1]! - buffers.d1[k - 1]! - buffers.mat1[k - 1]!);
-    buffers.p2[k] = buffers.p2[k - 1]! + dt * (buffers.mat1[k - 1]! - buffers.d2[k - 1]! - buffers.mat2[k - 1]!);
-    buffers.p3[k] = buffers.p3[k - 1]! + dt * (buffers.mat2[k - 1]! - buffers.d3[k - 1]! - buffers.mat3[k - 1]!);
-    buffers.p4[k] = buffers.p4[k - 1]! + dt * (buffers.mat3[k - 1]! - buffers.d4[k - 1]!);
-    buffers.ic[k] = buffers.ic[k - 1]! + dt * (buffers.icir[k - 1]! - buffers.icdr[k - 1]!);
-    buffers.sc[k] = buffers.sc[k - 1]! + dt * (buffers.scir[k - 1]! - buffers.scdr[k - 1]!);
-    buffers.al[k] = buffers.al[k - 1]! + dt * (buffers.ldr[k - 1]! - buffers.ler[k - 1]! - buffers.lrui[k - 1]!);
-    buffers.pal[k] = buffers.pal[k - 1]! - dt * buffers.ldr[k - 1]!;
-    buffers.uil[k] = buffers.uil[k - 1]! + dt * buffers.lrui[k - 1]!;
-    buffers.lfert[k] = buffers.lfert[k - 1]! + dt * (buffers.lfr[k - 1]! - buffers.lfd[k - 1]!);
-    buffers.ppol[k] = buffers.ppol[k - 1]! + dt * (buffers.ppapr[k - 1]! - buffers.ppasr[k - 1]!);
-    buffers.nr[k] = buffers.nr[k - 1]! - dt * buffers.nrur[k - 1]!;
+    for (const equation of WORLD3_STATE_STOCK_EQUATIONS) {
+      buffers[equation.key][k] = equation.next(context);
+    }
   }
 
-  buffers.pop[k] = buffers.p1[k]! + buffers.p2[k]! + buffers.p3[k]! + buffers.p4[k]!;
+  for (const equation of WORLD3_DERIVED_STOCK_EQUATIONS) {
+    buffers[equation.key][k] = equation.compute(context);
+  }
 }
 
 export function computePopulationLeadingStep(

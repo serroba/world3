@@ -36,7 +36,7 @@ function createConstants(): World3SimulationConstants {
     lferti: 100, ppoli: 110, nri: 120,
     alic1: 14, alic2: 15, icor1: 3, icor2: 4, alsc1: 20, alsc2: 21, scor1: 1, scor2: 2,
     lfpf: 0.75, palt: 1000, alai1: 2, alai2: 3, ppol70: 25, fipm: 0.1, amti: 1,
-    ppgf1: 1, ppgf2: 2, pptd1: 20, pptd2: 30, ahl70: 1.5, nruf1: 0.5, nruf2: 0.25,
+    ppgf1: 1, ppgf2: 2, ppgf21: 3, pptd1: 20, pptd2: 30, ahl70: 1.5, nruf1: 0.5, nruf2: 0.25,
     fioac1: 0.43, fioac2: 0.5, iopcd: 100, iet: 4000, fcest: 4000,
     hsid: 20, ieat: 3, lpd: 20, sad: 20, lufdt: 2, fspd: 2, dcfsn: 4, zpgt: 4000, mtfn: 12,
     rlt: 30, pet: 4000, len: 28, lfh: 1, pl: 0, sfpc: 230, sd: 0.07, ilf: 600, alln: 6000,
