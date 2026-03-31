@@ -230,11 +230,35 @@ const Charts = (() => {
     return { scales, axisMap };
   }
 
+  /** Map raw unit string to its i18n key. */
+  const UNIT_I18N = {
+    "people": "unit.people",
+    "years": "unit.years",
+    "resource units": "unit.resource_units",
+    "pollution units": "unit.pollution_units",
+    "births/1000/yr": "unit.births_per_1000_yr",
+    "deaths/1000/yr": "unit.deaths_per_1000_yr",
+    "$/person/yr": "unit.dollar_per_person_yr",
+    "kg/person/yr": "unit.kg_per_person_yr",
+    "$/yr": "unit.dollar_per_yr",
+    "$/ha/yr": "unit.dollar_per_ha_yr",
+    "kg/yr": "unit.kg_per_yr",
+    "kg/ha/yr": "unit.kg_per_ha_yr",
+    "ha": "unit.ha",
+  };
+
+  /** Translate a raw unit string via i18n, falling back to the raw value. */
+  function translateUnit(raw) {
+    if (!raw || raw === "-") return "";
+    const key = UNIT_I18N[raw];
+    return key ? I18n.t(key, {}, raw) : raw;
+  }
+
   /** Derive a y-axis label from a set of variable keys. */
   function unitLabel(varKeys) {
     const units = [...new Set(varKeys.map((k) => {
       const m = State.variableMeta[k];
-      return m ? m.unit : "";
+      return m ? translateUnit(m.unit) : "";
     }).filter(Boolean))];
     return units.join(", ");
   }
@@ -261,7 +285,8 @@ const Charts = (() => {
           callbacks: {
             label(ctx) {
               const meta = State.variableMeta[ctx.dataset.varKey];
-              const unit = meta ? ` ${meta.unit}` : "";
+              const translated = meta ? translateUnit(meta.unit) : "";
+              const unit = translated ? ` ${translated}` : "";
               return `${ctx.dataset.label}: ${UI.formatNumber(ctx.parsed.y)}${unit}`;
             },
           },
@@ -301,6 +326,9 @@ const Charts = (() => {
   }
 
   return {
+    /** Translate a raw unit string via i18n. */
+    translateUnit,
+
     /**
      * Render a chart panel with one or more variables from a single simulation.
      * Uses dual y-axes when variables have different units.

@@ -222,5 +222,18 @@
   "variable.ppolx": "Verschmutzungsindex",
   "variable.so": "Dienstleistungsproduktion",
   "variable.sopc": "Dienstleistungsproduktion pro Kopf",
-  "variable.tai": "Gesamtinvestitionen in Landwirtschaft"
+  "variable.tai": "Gesamtinvestitionen in Landwirtschaft",
+  "unit.people": "Personen",
+  "unit.years": "Jahre",
+  "unit.resource_units": "Ressourceneinheiten",
+  "unit.pollution_units": "Verschmutzungseinheiten",
+  "unit.births_per_1000_yr": "Geburten/1000/Jahr",
+  "unit.deaths_per_1000_yr": "Todesfälle/1000/Jahr",
+  "unit.dollar_per_person_yr": "$/person/yr",
+  "unit.kg_per_person_yr": "kg/person/yr",
+  "unit.dollar_per_yr": "$/yr",
+  "unit.dollar_per_ha_yr": "$/ha/yr",
+  "unit.kg_per_yr": "kg/yr",
+  "unit.kg_per_ha_yr": "kg/ha/yr",
+  "unit.ha": "ha"
 }

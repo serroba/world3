@@ -222,5 +222,18 @@
   "variable.ppolx": "مؤشر التلوث",
   "variable.so": "إنتاج الخدمات",
   "variable.sopc": "إنتاج الخدمات للفرد",
-  "variable.tai": "إجمالي الاستثمار الزراعي"
+  "variable.tai": "إجمالي الاستثمار الزراعي",
+  "unit.people": "أشخاص",
+  "unit.years": "سنة",
+  "unit.resource_units": "وحدات موارد",
+  "unit.pollution_units": "وحدات تلوث",
+  "unit.births_per_1000_yr": "ولادات/1000/سنة",
+  "unit.deaths_per_1000_yr": "وفيات/1000/سنة",
+  "unit.dollar_per_person_yr": "$/person/yr",
+  "unit.kg_per_person_yr": "kg/person/yr",
+  "unit.dollar_per_yr": "$/yr",
+  "unit.dollar_per_ha_yr": "$/ha/yr",
+  "unit.kg_per_yr": "kg/yr",
+  "unit.kg_per_ha_yr": "kg/ha/yr",
+  "unit.ha": "ha"
 }

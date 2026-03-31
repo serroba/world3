@@ -222,5 +222,18 @@
   "variable.ppolx": "Chỉ số ô nhiễm",
   "variable.so": "Sản lượng dịch vụ",
   "variable.sopc": "Sản lượng dịch vụ bình quân đầu người",
-  "variable.tai": "Tổng đầu tư nông nghiệp"
+  "variable.tai": "Tổng đầu tư nông nghiệp",
+  "unit.people": "người",
+  "unit.years": "năm",
+  "unit.resource_units": "đơn vị tài nguyên",
+  "unit.pollution_units": "đơn vị ô nhiễm",
+  "unit.births_per_1000_yr": "sinh/1000/năm",
+  "unit.deaths_per_1000_yr": "tử/1000/năm",
+  "unit.dollar_per_person_yr": "$/person/yr",
+  "unit.kg_per_person_yr": "kg/person/yr",
+  "unit.dollar_per_yr": "$/yr",
+  "unit.dollar_per_ha_yr": "$/ha/yr",
+  "unit.kg_per_yr": "kg/yr",
+  "unit.kg_per_ha_yr": "kg/ha/yr",
+  "unit.ha": "ha"
 }

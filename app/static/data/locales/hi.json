@@ -222,5 +222,18 @@
   "variable.ppolx": "प्रदूषण सूचकांक",
   "variable.so": "सेवा उत्पादन",
   "variable.sopc": "प्रति व्यक्ति सेवा उत्पादन",
-  "variable.tai": "कुल कृषि निवेश"
+  "variable.tai": "कुल कृषि निवेश",
+  "unit.people": "लोग",
+  "unit.years": "वर्ष",
+  "unit.resource_units": "संसाधन इकाइयाँ",
+  "unit.pollution_units": "प्रदूषण इकाइयाँ",
+  "unit.births_per_1000_yr": "जन्म/1000/वर्ष",
+  "unit.deaths_per_1000_yr": "मृत्यु/1000/वर्ष",
+  "unit.dollar_per_person_yr": "$/person/yr",
+  "unit.kg_per_person_yr": "kg/person/yr",
+  "unit.dollar_per_yr": "$/yr",
+  "unit.dollar_per_ha_yr": "$/ha/yr",
+  "unit.kg_per_yr": "kg/yr",
+  "unit.kg_per_ha_yr": "kg/ha/yr",
+  "unit.ha": "ha"
 }

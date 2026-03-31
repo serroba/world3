@@ -128,7 +128,7 @@ const AdvancedView = (() => {
         input.step = "any";
         row.appendChild(input);
 
-        const unit = UI.el("span", "unit", meta.unit);
+        const unit = UI.el("span", "unit", Charts.translateUnit(meta.unit) || meta.unit);
         row.appendChild(unit);
 
         const resetBtn = document.createElement("button");

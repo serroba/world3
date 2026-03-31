@@ -222,5 +222,18 @@
   "variable.ppolx": "汚染指数",
   "variable.so": "サービス生産",
   "variable.sopc": "一人当たりサービス生産",
-  "variable.tai": "農業総投資"
+  "variable.tai": "農業総投資",
+  "unit.people": "人",
+  "unit.years": "年",
+  "unit.resource_units": "資源単位",
+  "unit.pollution_units": "汚染単位",
+  "unit.births_per_1000_yr": "出生/1000/年",
+  "unit.deaths_per_1000_yr": "死亡/1000/年",
+  "unit.dollar_per_person_yr": "$/person/yr",
+  "unit.kg_per_person_yr": "kg/person/yr",
+  "unit.dollar_per_yr": "$/yr",
+  "unit.dollar_per_ha_yr": "$/ha/yr",
+  "unit.kg_per_yr": "kg/yr",
+  "unit.kg_per_ha_yr": "kg/ha/yr",
+  "unit.ha": "ha"
 }

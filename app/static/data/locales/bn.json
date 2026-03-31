@@ -222,5 +222,18 @@
   "variable.ppolx": "দূষণ সূচক",
   "variable.so": "সেবা উৎপাদন",
   "variable.sopc": "মাথাপিছু সেবা উৎপাদন",
-  "variable.tai": "মোট কৃষি বিনিয়োগ"
+  "variable.tai": "মোট কৃষি বিনিয়োগ",
+  "unit.people": "জন",
+  "unit.years": "বছর",
+  "unit.resource_units": "সম্পদ একক",
+  "unit.pollution_units": "দূষণ একক",
+  "unit.births_per_1000_yr": "জন্ম/1000/বছর",
+  "unit.deaths_per_1000_yr": "মৃত্যু/1000/বছর",
+  "unit.dollar_per_person_yr": "$/person/yr",
+  "unit.kg_per_person_yr": "kg/person/yr",
+  "unit.dollar_per_yr": "$/yr",
+  "unit.dollar_per_ha_yr": "$/ha/yr",
+  "unit.kg_per_yr": "kg/yr",
+  "unit.kg_per_ha_yr": "kg/ha/yr",
+  "unit.ha": "ha"
 }

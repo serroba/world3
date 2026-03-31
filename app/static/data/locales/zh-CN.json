@@ -222,5 +222,18 @@
   "variable.ppolx": "污染指数",
   "variable.so": "服务产出",
   "variable.sopc": "人均服务产出",
-  "variable.tai": "农业总投资"
+  "variable.tai": "农业总投资",
+  "unit.people": "人",
+  "unit.years": "年",
+  "unit.resource_units": "资源单位",
+  "unit.pollution_units": "污染单位",
+  "unit.births_per_1000_yr": "出生/1000/年",
+  "unit.deaths_per_1000_yr": "死亡/1000/年",
+  "unit.dollar_per_person_yr": "$/person/yr",
+  "unit.kg_per_person_yr": "kg/person/yr",
+  "unit.dollar_per_yr": "$/yr",
+  "unit.dollar_per_ha_yr": "$/ha/yr",
+  "unit.kg_per_yr": "kg/yr",
+  "unit.kg_per_ha_yr": "kg/ha/yr",
+  "unit.ha": "ha"
 }
