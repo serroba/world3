@@ -13,6 +13,17 @@ import type {
 
 export type World3EquationDependency = World3VariableKey | World3ConstantKey;
 export type World3DerivedEquationKey = World3AuxiliaryKey | World3FlowKey;
+export type World3RuntimeValueKey =
+  | "ehspc"
+  | "diopc"
+  | "ple"
+  | "fcfpc"
+  | "alai"
+  | "ai"
+  | "pfr"
+  | "ppgf"
+  | "pptd"
+  | "ppapr";
 
 export type World3StockEquationContext = {
   k: number;
@@ -40,7 +51,19 @@ export type World3DerivedEquationContext = World3StockEquationContext & {
   t: number;
   policyYear: number;
   lookups: World3SimulationLookups;
+  runtime?: Partial<Record<World3RuntimeValueKey, number>>;
 };
+
+export function requireWorld3RuntimeValue(
+  context: World3DerivedEquationContext,
+  key: World3RuntimeValueKey,
+): number {
+  const value = context.runtime?.[key];
+  if (value === undefined) {
+    throw new Error(`Missing runtime value '${key}' for derived equation`);
+  }
+  return value;
+}
 
 export type World3DerivedEquation<K extends World3DerivedEquationKey = World3DerivedEquationKey> =
   {

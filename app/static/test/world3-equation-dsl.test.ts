@@ -6,7 +6,10 @@ import {
   WORLD3_CAPITAL_INVESTMENT_EQUATIONS,
   WORLD3_CAPITAL_FLOW_EQUATIONS,
   WORLD3_DERIVED_STOCK_EQUATIONS,
+  WORLD3_AGRICULTURE_EQUATIONS,
+  WORLD3_POLLUTION_EQUATIONS,
   WORLD3_POPULATION_BIRTH_EQUATIONS,
+  WORLD3_POPULATION_LEADING_EQUATIONS,
   WORLD3_POPULATION_FLOW_EQUATIONS,
   WORLD3_RESOURCE_DERIVED_EQUATIONS,
   WORLD3_STATE_STOCK_EQUATIONS,
@@ -157,6 +160,34 @@ describe("World3 stock equation DSL", () => {
           key: "b",
           inputs: ["d", "tf", "p2", "rlt"],
         }),
+      ]),
+    );
+  });
+
+  test("declares population leading equations explicitly", () => {
+    expect(WORLD3_POPULATION_LEADING_EQUATIONS).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ kind: "derived-equation", key: "fpu", inputs: ["pop"] }),
+        expect.objectContaining({ kind: "derived-equation", key: "cdr", inputs: ["d", "pop"] }),
+        expect.objectContaining({ kind: "derived-equation", key: "fce", inputs: ["fcest"] }),
+      ]),
+    );
+  });
+
+  test("declares agriculture and pollution equations explicitly", () => {
+    expect(WORLD3_AGRICULTURE_EQUATIONS).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ kind: "derived-equation", key: "ai", inputs: [] }),
+        expect.objectContaining({ kind: "derived-equation", key: "falm", inputs: ["pfr"] }),
+        expect.objectContaining({ kind: "derived-equation", key: "aiph", inputs: ["ai", "falm", "al"] }),
+      ]),
+    );
+
+    expect(WORLD3_POLLUTION_EQUATIONS).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ kind: "derived-equation", key: "ppolx", inputs: ["ppol", "ppol70"] }),
+        expect.objectContaining({ kind: "derived-equation", key: "ppgao", inputs: ["aiph", "al", "fipm", "amti"] }),
+        expect.objectContaining({ kind: "derived-equation", key: "ppasr", inputs: ["ppol", "ppolx", "ahl70"] }),
       ]),
     );
   });
