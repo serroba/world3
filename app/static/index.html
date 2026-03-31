@@ -79,6 +79,7 @@
     </a>
     <ul class="site-nav__links">
       <li><a href="#intro" data-i18n="nav.home">Home</a></li>
+      <li><a href="#history" data-i18n="nav.history">History</a></li>
       <li><a href="#model" data-i18n="nav.model">Model</a></li>
       <li><a href="#explore" data-i18n="nav.explore">Explore</a></li>
       <li><a href="#compare" data-i18n="nav.compare">Compare</a></li>
@@ -133,6 +134,19 @@
           Licensed under the <a href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" rel="noopener">GNU GPL v3</a>.
         </p>
       </footer>
+    </div>
+
+    <!-- HISTORY VIEW -->
+    <div id="view-history" class="view">
+      <div class="hero">
+        <h1 data-i18n="history.title">The Story Behind the Model</h1>
+        <p class="text-muted" data-i18n="history.subtitle">From a controversial 1972 report to the planetary boundaries framework — how The Limits to Growth shaped our understanding of global sustainability.</p>
+      </div>
+      <div id="history-sections"></div>
+      <div class="view-links">
+        <a href="#model" class="btn btn-outline btn-sm" data-i18n="action.model_how">How does the model work?</a>
+        <a href="#explore" class="btn btn-outline btn-sm" data-i18n="action.explore_scenarios">Explore scenarios</a>
+      </div>
     </div>
 
     <!-- MODEL VIEW -->
@@ -301,6 +315,7 @@
 <script defer src="js/router.js"></script>
 <script defer src="js/model-sections.js"></script>
 <script defer src="js/views/intro.js"></script>
+<script defer src="js/views/history.js"></script>
 <script defer src="js/views/model.js"></script>
 <script defer src="js/views/explore.js"></script>
 <script defer src="js/views/compare.js"></script>
