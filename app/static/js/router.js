@@ -76,5 +76,9 @@ const Router = (() => {
     go(hash) {
       location.hash = hash;
     },
+
+    replace(hash) {
+      replaceHash(hash);
+    },
   };
 })();

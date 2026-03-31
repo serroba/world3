@@ -26,6 +26,7 @@ const AdvancedView = (() => {
 
   let editedConstants = {};
   let editedControls = {};
+  let currentPreset = "standard-run";
   let debounceTimer = null;
   let abortController = null;
   let baselineResultPromise = null;
@@ -97,14 +98,199 @@ const AdvancedView = (() => {
     debounceTimer = setTimeout(runSimulation, DEBOUNCE_MS);
   }
 
+  function currentScenarioState() {
+    return {
+      preset: currentPreset,
+      view: currentViewMode,
+      constants: editedConstants,
+      controls: editedControls,
+    };
+  }
+
+  function syncScenarioUrl() {
+    if (typeof ScenarioState === "undefined") return;
+    Router.replace(ScenarioState.buildAdvancedScenarioHash(currentScenarioState()));
+  }
+
+  function changeCount() {
+    return Object.keys(editedConstants).length + Object.keys(editedControls).length;
+  }
+
+  function scenarioSummaryItems() {
+    const items = [
+      ...Object.keys(editedControls).map((key) => ({
+        type: "control",
+        key,
+        label: UI.labelControl(key, State.scenarioControlMeta[key]?.full_name || key),
+      })),
+      ...Object.keys(editedConstants).map((key) => ({
+        type: "constant",
+        key,
+        label: UI.labelConstant(key, State.constantMeta[key]?.full_name || key),
+      })),
+    ];
+    return items.slice(0, 6);
+  }
+
+  function renderScenarioSummary() {
+    const el = document.getElementById("advanced-scenario-summary");
+    if (!el) return;
+
+    const changed = changeCount();
+    const chips = scenarioSummaryItems();
+    const presetLabel = I18n.labelForPreset(currentPreset, currentPreset);
+
+    const meta = UI.el("div", "advanced-scenario-summary__meta");
+    meta.appendChild(
+      UI.el(
+        "strong",
+        "",
+        I18n.t(
+          "advanced.summary_title",
+          undefined,
+          "Scenario summary",
+        ),
+      ),
+    );
+    meta.appendChild(
+      UI.el(
+        "span",
+        "text-muted",
+        I18n.t(
+          "advanced.summary_meta",
+          {
+            preset: presetLabel,
+            count: changed,
+          },
+          `Preset: ${presetLabel} • ${changed} changes`,
+        ),
+      ),
+    );
+
+    const chipsEl = UI.el("div", "advanced-scenario-summary__chips");
+    if (chips.length === 0) {
+      chipsEl.appendChild(
+        UI.el(
+          "span",
+          "advanced-scenario-summary__chip",
+          I18n.t("advanced.summary_default", undefined, "Using preset defaults"),
+        ),
+      );
+    } else {
+      chips.forEach((item) => {
+        const kind = item.type === "control"
+          ? I18n.t("advanced.summary_control", undefined, "Control")
+          : I18n.t("advanced.summary_constant", undefined, "Constant");
+        chipsEl.appendChild(
+          UI.el(
+            "span",
+            "advanced-scenario-summary__chip",
+            `${kind}: ${item.label}`,
+          ),
+        );
+      });
+      if (changed > chips.length) {
+        chipsEl.appendChild(
+          UI.el(
+            "span",
+            "advanced-scenario-summary__chip",
+            I18n.t(
+              "advanced.summary_more",
+              { count: changed - chips.length },
+              `+${changed - chips.length} more`,
+            ),
+          ),
+        );
+      }
+    }
+
+    el.replaceChildren(meta, chipsEl);
+  }
+
+  function copyScenarioLink() {
+    const statusEl = document.getElementById("advanced-status");
+    const url = new URL(
+      `${location.pathname}${location.search}${ScenarioState.buildAdvancedScenarioHash(currentScenarioState())}`,
+      location.origin,
+    ).toString();
+
+    navigator.clipboard.writeText(url)
+      .then(() => {
+        if (statusEl) {
+          statusEl.innerHTML = `<div class="card">${UI.escapeHtml(I18n.t("advanced.copy_link_success", undefined, "Share link copied."))}</div>`;
+        }
+      })
+      .catch((err) => {
+        if (statusEl) UI.showError(statusEl, err.message);
+      });
+  }
+
+  function exportScenarioJson() {
+    const state = ScenarioState.normalizeSavedScenarioState(currentScenarioState());
+    const blob = new Blob([`${JSON.stringify(state, null, 2)}\n`], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "world3-scenario.json";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function importScenarioObject(state) {
+    const normalized = ScenarioState.normalizeSavedScenarioState(state || {});
+    currentPreset = normalized.preset || "standard-run";
+    currentViewMode = normalized.view === VIEW_MODES.split ? VIEW_MODES.split : VIEW_MODES.combined;
+    editedConstants = { ...(normalized.constants || {}) };
+    editedControls = { ...(normalized.controls || {}) };
+
+    const accordionEl = document.getElementById("advanced-accordions");
+    if (accordionEl) {
+      buildAccordions(accordionEl);
+    }
+    renderViewToggle(document.getElementById("advanced-view-controls"));
+    const chartsEl = document.getElementById("advanced-charts");
+    if (chartsEl) {
+      renderChartGrid(chartsEl);
+    }
+    renderScenarioSummary();
+    syncScenarioUrl();
+    triggerSimulation();
+  }
+
+  async function importScenarioFile(file) {
+    const statusEl = document.getElementById("advanced-status");
+    try {
+      const text = await file.text();
+      importScenarioObject(JSON.parse(text));
+      if (statusEl) {
+        statusEl.innerHTML = `<div class="card">${UI.escapeHtml(I18n.t("advanced.import_success", undefined, "Scenario imported."))}</div>`;
+      }
+    } catch (err) {
+      if (statusEl) UI.showError(statusEl, err.message);
+    }
+  }
+
+  function resetScenario() {
+    editedConstants = {};
+    editedControls = {};
+    const accordionEl = document.getElementById("advanced-accordions");
+    if (accordionEl) {
+      buildAccordions(accordionEl);
+    }
+    syncScenarioUrl();
+    triggerSimulation();
+  }
+
   // ---------------------------------------------------------------------------
   // Accordion builder
   // ---------------------------------------------------------------------------
 
   function buildAccordions(container) {
     container.innerHTML = "";
-    editedConstants = {};
-    editedControls = {};
 
     const controlDetails = document.createElement("details");
     controlDetails.className = "accordion";
@@ -121,6 +307,7 @@ const AdvancedView = (() => {
     const controlBody = UI.el("div", "accordion__body");
     for (const [name, meta] of Object.entries(State.scenarioControlMeta)) {
       const defaultVal = State.scenarioControlDefaults[name];
+      const currentVal = editedControls[name] ?? defaultVal;
       const range = controlSliderRange(name, defaultVal);
 
       const group = UI.el("div", "input-group");
@@ -136,7 +323,7 @@ const AdvancedView = (() => {
       const input = document.createElement("input");
       input.type = "number";
       input.id = `control-${name}`;
-      input.value = defaultVal;
+      input.value = currentVal;
       input.step = "any";
       row.appendChild(input);
 
@@ -156,7 +343,7 @@ const AdvancedView = (() => {
       slider.min = range.min;
       slider.max = range.max;
       slider.step = range.step;
-      slider.value = defaultVal;
+      slider.value = Math.min(Math.max(currentVal, range.min), range.max);
       slider.setAttribute(
         "aria-label",
         I18n.t("advanced.slider_aria", { name: UI.labelControl(name, meta.full_name) }),
@@ -173,6 +360,8 @@ const AdvancedView = (() => {
         } else {
           delete editedControls[name];
         }
+        renderScenarioSummary();
+        syncScenarioUrl();
         triggerSimulation();
       }
 
@@ -194,6 +383,8 @@ const AdvancedView = (() => {
         input.value = defaultVal;
         slider.value = defaultVal;
         delete editedControls[name];
+        renderScenarioSummary();
+        syncScenarioUrl();
         triggerSimulation();
       });
 
@@ -223,6 +414,7 @@ const AdvancedView = (() => {
       names.forEach((name) => {
         const meta = State.constantMeta[name];
         const defaultVal = State.constantDefaults[name];
+        const currentVal = editedConstants[name] ?? defaultVal;
         const range = sliderRange(defaultVal);
 
         const group = UI.el("div", "input-group");
@@ -240,7 +432,7 @@ const AdvancedView = (() => {
         const input = document.createElement("input");
         input.type = "number";
         input.id = `const-${name}`;
-        input.value = defaultVal;
+        input.value = currentVal;
         input.step = "any";
         row.appendChild(input);
 
@@ -262,7 +454,7 @@ const AdvancedView = (() => {
         slider.min = range.min;
         slider.max = range.max;
         slider.step = range.step;
-        slider.value = defaultVal;
+        slider.value = Math.min(Math.max(currentVal, range.min), range.max);
         slider.setAttribute(
           "aria-label",
           I18n.t("advanced.slider_aria", { name: UI.labelConstant(name, meta.full_name) })
@@ -280,6 +472,8 @@ const AdvancedView = (() => {
           } else {
             delete editedConstants[name];
           }
+          renderScenarioSummary();
+          syncScenarioUrl();
           triggerSimulation();
         }
 
@@ -302,6 +496,8 @@ const AdvancedView = (() => {
           input.value = defaultVal;
           slider.value = defaultVal;
           delete editedConstants[name];
+          renderScenarioSummary();
+          syncScenarioUrl();
           triggerSimulation();
         });
 
@@ -369,6 +565,7 @@ const AdvancedView = (() => {
       button.addEventListener("click", async () => {
         if (mode === currentViewMode) return;
         currentViewMode = mode;
+        syncScenarioUrl();
         const chartsEl = document.getElementById("advanced-charts");
         const statusEl = document.getElementById("advanced-status");
         renderViewToggle(container);
@@ -465,14 +662,34 @@ const AdvancedView = (() => {
   // ---------------------------------------------------------------------------
 
   function compareWithStandard() {
-    Router.go("#compare?a=standard-run&b=standard-run");
+    Router.go(
+      ScenarioState.buildCompareScenarioHash({
+        leftPreset: "standard-run",
+        rightPreset: currentPreset,
+        rightState: currentScenarioState(),
+      }),
+    );
+  }
+
+  function applyScenarioState(params) {
+    currentPreset = params.preset || "standard-run";
+    currentViewMode = params.view === VIEW_MODES.split ? VIEW_MODES.split : VIEW_MODES.combined;
+
+    const decoded =
+      typeof ScenarioState !== "undefined" && params.state
+        ? ScenarioState.decodeSavedScenarioState(params.state)
+        : null;
+
+    editedConstants = { ...(decoded?.constants || {}) };
+    editedControls = { ...(decoded?.controls || {}) };
   }
 
   // ---------------------------------------------------------------------------
   // View entry point
   // ---------------------------------------------------------------------------
 
-  function render() {
+  function render(params = {}) {
+    applyScenarioState(params);
     const accordionEl = document.getElementById("advanced-accordions");
     if (accordionEl) buildAccordions(accordionEl);
 
@@ -491,16 +708,47 @@ const AdvancedView = (() => {
         }
       }
       State.calibratedConstants = null;
+      renderScenarioSummary();
+      syncScenarioUrl();
     }
 
     // Render chart grid once (charts update in-place on each simulation)
     const chartsEl = document.getElementById("advanced-charts");
     if (chartsEl) renderChartGrid(chartsEl);
     renderViewToggle(document.getElementById("advanced-view-controls"));
+    renderScenarioSummary();
 
     const compareBtn = document.getElementById("advanced-compare");
     if (compareBtn) {
       compareBtn.onclick = compareWithStandard;
+    }
+
+    const copyBtn = document.getElementById("advanced-copy-link");
+    if (copyBtn) {
+      copyBtn.onclick = copyScenarioLink;
+    }
+
+    const exportBtn = document.getElementById("advanced-export-scenario");
+    if (exportBtn) {
+      exportBtn.onclick = exportScenarioJson;
+    }
+
+    const importBtn = document.getElementById("advanced-import-scenario");
+    const importInput = document.getElementById("advanced-import-file");
+    if (importBtn && importInput) {
+      importBtn.onclick = () => importInput.click();
+      importInput.onchange = () => {
+        const [file] = importInput.files || [];
+        if (file) {
+          importScenarioFile(file);
+        }
+        importInput.value = "";
+      };
+    }
+
+    const resetBtn = document.getElementById("advanced-reset-scenario");
+    if (resetBtn) {
+      resetBtn.onclick = resetScenario;
     }
 
     // Auto-run with defaults on view init
