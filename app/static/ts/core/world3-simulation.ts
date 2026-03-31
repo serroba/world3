@@ -148,6 +148,7 @@ export function simulateWorld3(options: World3SimulationOptions): SimulationResu
     amti: c(consts, "amti"),
     ppgf1: c(consts, "ppgf1"),
     ppgf2: c(consts, "ppgf2"),
+    ppgf21: c(consts, "ppgf21"),
     pptd1: c(consts, "pptd1"),
     pptd2: c(consts, "pptd2"),
     ahl70: c(consts, "ahl70"),
