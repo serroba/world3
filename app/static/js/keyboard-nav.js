@@ -9,7 +9,7 @@
 
 (function initKeyboardNav() {
   const isMac = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent);
-  const modLabel = isMac ? "\u2318" : "Alt";
+  const modLabel = isMac ? "\u2303" : "Alt"; // ⌃ (Control) on Mac, Alt elsewhere
 
   const shortcuts = {
     "1": "#intro",
@@ -106,7 +106,7 @@
 
   /** Check if the platform-appropriate modifier is held. */
   function hasModifier(e) {
-    return isMac ? e.metaKey : e.altKey;
+    return isMac ? e.ctrlKey : e.altKey;
   }
 
   document.addEventListener("keydown", (e) => {
