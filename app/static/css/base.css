@@ -306,6 +306,7 @@ img {
     padding-bottom: var(--space-xs);
     flex-wrap: nowrap;
     scrollbar-width: none;
+    align-items: center;
   }
 
   .site-nav__links::-webkit-scrollbar {
@@ -318,13 +319,19 @@ img {
   }
 
   .site-nav__locale {
-    width: 100%;
-    justify-content: space-between;
+    margin-inline-start: auto;
+    flex: 0 0 auto;
+  }
+
+  .site-nav__locale-label {
+    display: none;
   }
 
   .site-nav__locale-select {
-    width: min(100%, 12rem);
-    max-width: none;
+    min-height: 36px;
+    padding: 0.35rem 0.6rem;
+    font-size: var(--text-xs);
+    max-width: 10rem;
   }
 
   .advanced-preview__toolbar {
