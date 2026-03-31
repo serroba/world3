@@ -1,12 +1,16 @@
 /**
  * Global keyboard shortcuts for quick navigation.
  *
- * Alt+1..8 jump to views. Escape closes accordions or the help dialog.
+ * Cmd+1..8 (Mac) / Alt+1..8 (other) jump to views.
  * ? opens the keyboard shortcut reference overlay.
+ * Escape closes the overlay or open accordions.
  * Only activates when no input/textarea/select is focused.
  */
 
 (function initKeyboardNav() {
+  const isMac = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent);
+  const modLabel = isMac ? "\u2318" : "Alt";
+
   const shortcuts = {
     "1": "#intro",
     "2": "#history",
@@ -20,14 +24,14 @@
 
   const shortcutDescriptions = [
     { keys: "?", desc: "Show this help" },
-    { keys: "Alt + 1", desc: "Home" },
-    { keys: "Alt + 2", desc: "History" },
-    { keys: "Alt + 3", desc: "FAQ" },
-    { keys: "Alt + 4", desc: "Model" },
-    { keys: "Alt + 5", desc: "Explore" },
-    { keys: "Alt + 6", desc: "Compare" },
-    { keys: "Alt + 7", desc: "Advanced" },
-    { keys: "Alt + 8", desc: "Calibrate" },
+    { keys: modLabel + " + 1", desc: "Home" },
+    { keys: modLabel + " + 2", desc: "History" },
+    { keys: modLabel + " + 3", desc: "FAQ" },
+    { keys: modLabel + " + 4", desc: "Model" },
+    { keys: modLabel + " + 5", desc: "Explore" },
+    { keys: modLabel + " + 6", desc: "Compare" },
+    { keys: modLabel + " + 7", desc: "Advanced" },
+    { keys: modLabel + " + 8", desc: "Calibrate" },
     { keys: "Esc", desc: "Close dialog / accordion" },
     { keys: "Tab", desc: "Move focus forward" },
     { keys: "Shift + Tab", desc: "Move focus backward" },
@@ -100,6 +104,11 @@
     dialog = null;
   }
 
+  /** Check if the platform-appropriate modifier is held. */
+  function hasModifier(e) {
+    return isMac ? e.metaKey : e.altKey;
+  }
+
   document.addEventListener("keydown", (e) => {
     // Escape closes dialog first, then accordions
     if (e.key === "Escape") {
@@ -123,8 +132,8 @@
       return;
     }
 
-    // Alt+number navigation
-    if (e.altKey && shortcuts[e.key]) {
+    // Modifier+number navigation
+    if (hasModifier(e) && shortcuts[e.key]) {
       e.preventDefault();
       if (dialog) closeDialog();
       Router.go(shortcuts[e.key]);
