@@ -2,10 +2,12 @@ import { describe, expect, test } from "vitest";
 
 import {
   advanceStateStocks,
+  computeAgricultureStep,
   computeCapitalStep,
   computeCrossSectorStep,
   computeMortalityAndBirthStep,
   computePopulationLeadingStep,
+  computePollutionStep,
   computeResourceStep,
   type World3SimulationBuffers,
   type World3SimulationConstants,
@@ -151,6 +153,10 @@ describe("world3 simulation sector helpers", () => {
 
     computePopulationLeadingStep(1, 1950, buffers, constants, lookups, integrators, 1940);
     expect(buffers.lmhs[1]).toBe(3);
+    expect(buffers.fpu[1]).toBe(lookups.FPU(buffers.pop[1]!));
+    expect(buffers.sfsn[1]).toBe(6);
+    expect(buffers.cmple[1]).toBe(5);
+    expect(buffers.fce[1]).toBe(7);
 
     computeResourceStep(0, 1970, buffers, constants, lookups, 1975);
     expect(buffers.nrfr[0]).toBeCloseTo(0.5);
@@ -159,6 +165,29 @@ describe("world3 simulation sector helpers", () => {
     buffers.nr[1] = 60;
     computeResourceStep(1, 1980, buffers, constants, lookups, 1975);
     expect(buffers.fcaor[1]).toBeCloseTo(1.5);
+  });
+
+  test("derives agriculture and pollution equations through the DSL-backed steps", () => {
+    const buffers = createBuffers();
+    const constants = createConstants();
+    const lookups = createLookups();
+    const integrators = createIntegrators();
+
+    buffers.al[0] = 70;
+    const agriculture = computeAgricultureStep(0, 1970, buffers, constants, lookups, integrators, 1975);
+    expect(agriculture.alai).toBe(2);
+    expect(buffers.ai[0]).toBe(9);
+    expect(buffers.pfr[0]).toBe(10);
+    expect(buffers.falm[0]).toBe(10);
+    expect(buffers.aiph[0]).toBeCloseTo(9 * (1 - 10) / 70);
+
+    buffers.ppol[0] = 110;
+    const pollution = computePollutionStep(0, 1970, buffers, constants, lookups, integrators, 1975);
+    expect(pollution.ppgf).toBe(1);
+    expect(buffers.ppolx[0]).toBeCloseTo(110 / 25);
+    expect(buffers.ppgao[0]).toBeCloseTo(buffers.aiph[0]! * 70 * constants.fipm * constants.amti);
+    expect(buffers.ppapr[0]).toBe(11);
+    expect(buffers.ppasr[0]).toBeCloseTo(110 / (buffers.ppolx[0]! * constants.ahl70 * 1.4));
   });
 
   test("derives capital depreciation and service output flows through the DSL-backed capital step", () => {

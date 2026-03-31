@@ -7,6 +7,7 @@ import {
   type World3DerivedStockEquation,
   type World3StateStockEquation,
   type World3StockEquationContext,
+  requireWorld3RuntimeValue,
 } from "./world3-equation-dsl.js";
 import type { Smooth, Delay3, Dlinf3 } from "./runtime-primitives.js";
 import type {
@@ -461,6 +462,114 @@ export const WORLD3_POPULATION_BIRTH_EQUATIONS = [
   }),
 ] as const satisfies readonly World3DerivedEquation[];
 
+export const WORLD3_POPULATION_LEADING_EQUATIONS = [
+  defineDerivedEquation({
+    key: "fpu",
+    inputs: ["pop"],
+    compute: ({ k, buffers, lookups }) => lookups.FPU(buffers.pop[k]!),
+  }),
+  defineDerivedEquation({
+    key: "lmhs",
+    inputs: [],
+    compute: (context) => {
+      const ehspc = requireWorld3RuntimeValue(context, "ehspc");
+      return clip(
+        context.lookups.LMHS2(ehspc),
+        context.lookups.LMHS1(ehspc),
+        context.t,
+        context.policyYear,
+      );
+    },
+  }),
+  defineDerivedEquation({
+    key: "d",
+    inputs: ["d1", "d2", "d3", "d4"],
+    compute: ({ k, buffers }) =>
+      k === 0 ? 0 : buffers.d1[k - 1]! + buffers.d2[k - 1]! + buffers.d3[k - 1]! + buffers.d4[k - 1]!,
+  }),
+  defineDerivedEquation({
+    key: "cdr",
+    inputs: ["d", "pop"],
+    compute: ({ k, buffers }) => 1000 * buffers.d[k]! / buffers.pop[k]!,
+  }),
+  defineDerivedEquation({
+    key: "sfsn",
+    inputs: [],
+    compute: (context) => context.lookups.SFSN(requireWorld3RuntimeValue(context, "diopc")),
+  }),
+  defineDerivedEquation({
+    key: "cmple",
+    inputs: [],
+    compute: (context) => context.lookups.CMPLE(requireWorld3RuntimeValue(context, "ple")),
+  }),
+  defineDerivedEquation({
+    key: "fce",
+    inputs: ["fcest"],
+    compute: (context) =>
+      clip(
+        1.0,
+        context.lookups.FCE_TOCLIP(requireWorld3RuntimeValue(context, "fcfpc")),
+        context.t,
+        context.constants.fcest,
+      ),
+  }),
+  defineDerivedEquation({
+    key: "cbr",
+    inputs: ["b", "pop"],
+    compute: ({ k, buffers }) => (k === 0 ? 0 : 1000 * buffers.b[k - 1]! / buffers.pop[k]!),
+  }),
+] as const satisfies readonly World3DerivedEquation[];
+
+export const WORLD3_AGRICULTURE_EQUATIONS = [
+  defineDerivedEquation({
+    key: "ai",
+    inputs: [],
+    compute: (context) => requireWorld3RuntimeValue(context, "ai"),
+  }),
+  defineDerivedEquation({
+    key: "pfr",
+    inputs: [],
+    compute: (context) => requireWorld3RuntimeValue(context, "pfr"),
+  }),
+  defineDerivedEquation({
+    key: "falm",
+    inputs: ["pfr"],
+    compute: ({ k, buffers, lookups }) => lookups.FALM(buffers.pfr[k]!),
+  }),
+  defineDerivedEquation({
+    key: "aiph",
+    inputs: ["ai", "falm", "al"],
+    compute: ({ k, buffers }) => buffers.ai[k]! * (1 - buffers.falm[k]!) / buffers.al[k]!,
+  }),
+] as const satisfies readonly World3DerivedEquation[];
+
+export const WORLD3_POLLUTION_EQUATIONS = [
+  defineDerivedEquation({
+    key: "ppolx",
+    inputs: ["ppol", "ppol70"],
+    compute: ({ k, buffers, constants }) => buffers.ppol[k]! / constants.ppol70,
+  }),
+  defineDerivedEquation({
+    key: "ppgao",
+    inputs: ["aiph", "al", "fipm", "amti"],
+    compute: ({ k, buffers, constants }) =>
+      buffers.aiph[k]! * buffers.al[k]! * constants.fipm * constants.amti,
+  }),
+  defineDerivedEquation({
+    key: "ppapr",
+    inputs: [],
+    compute: (context) => requireWorld3RuntimeValue(context, "ppapr"),
+  }),
+  defineDerivedEquation({
+    key: "ppasr",
+    inputs: ["ppol", "ppolx", "ahl70"],
+    compute: ({ k, buffers, constants, lookups }) => {
+      const ahlm = lookups.AHLM(buffers.ppolx[k]!);
+      return buffers.ppol[k]! / (ahlm * constants.ahl70 * 1.4);
+    },
+  }),
+] as const satisfies readonly World3DerivedEquation[];
+
 export function advanceStateStocks(
   k: number,
   dt: number,
@@ -493,20 +602,24 @@ export function computePopulationLeadingStep(
   integrators: World3SimulationIntegrators,
   healthPolicyStartYear: number,
 ): PopulationLeadingState {
-  buffers.fpu[k] = lookups.FPU(buffers.pop[k]!);
   const ehspc = integrators.smooth_hsapc.step(k, constants.hsid);
-  buffers.lmhs[k] = clip(lookups.LMHS2(ehspc), lookups.LMHS1(ehspc), t, healthPolicyStartYear);
-  buffers.d[k] = k === 0 ? 0 : buffers.d1[k - 1]! + buffers.d2[k - 1]! + buffers.d3[k - 1]! + buffers.d4[k - 1]!;
-  buffers.cdr[k] = 1000 * buffers.d[k]! / buffers.pop[k]!;
-
   const aiopc = integrators.smooth_iopc.step(k, constants.ieat);
   const diopc = integrators.dlinf3_iopc.step(k, constants.sad);
-  buffers.sfsn[k] = lookups.SFSN(diopc);
   const ple = integrators.dlinf3_le.step(k, constants.lpd);
-  buffers.cmple[k] = lookups.CMPLE(ple);
   const fcfpc = integrators.dlinf3_fcapc.step(k, constants.hsid);
-  buffers.fce[k] = clip(1.0, lookups.FCE_TOCLIP(fcfpc), t, constants.fcest);
-  buffers.cbr[k] = k === 0 ? 0 : 1000 * buffers.b[k - 1]! / buffers.pop[k]!;
+  const context: World3DerivedEquationContext = {
+    k,
+    dt: 0,
+    buffers,
+    constants,
+    t,
+    policyYear: healthPolicyStartYear,
+    lookups,
+    runtime: { ehspc, diopc, ple, fcfpc },
+  };
+  for (const equation of WORLD3_POPULATION_LEADING_EQUATIONS) {
+    buffers[equation.key][k] = equation.compute(context);
+  }
 
   return { aiopc, diopc };
 }
@@ -552,10 +665,21 @@ export function computeAgricultureStep(
   policyYear: number,
 ): AgricultureState {
   const alai = clip(constants.alai2, constants.alai1, t, policyYear);
-  buffers.ai[k] = integrators.smooth_cai.step(k, alai);
-  buffers.pfr[k] = integrators.smooth_fr.step(k, constants.fspd);
-  buffers.falm[k] = lookups.FALM(buffers.pfr[k]!);
-  buffers.aiph[k] = buffers.ai[k]! * (1 - buffers.falm[k]!) / buffers.al[k]!;
+  const ai = integrators.smooth_cai.step(k, alai);
+  const pfr = integrators.smooth_fr.step(k, constants.fspd);
+  const context: World3DerivedEquationContext = {
+    k,
+    dt: 0,
+    buffers,
+    constants,
+    t,
+    policyYear,
+    lookups,
+    runtime: { alai, ai, pfr },
+  };
+  for (const equation of WORLD3_AGRICULTURE_EQUATIONS) {
+    buffers[equation.key][k] = equation.compute(context);
+  }
   const lymc = lookups.LYMC(buffers.aiph[k]!);
   const lyf = clip(constants.lyf2, constants.lyf1, t, policyYear);
   const lfrt = lookups.LFRT(buffers.falm[k]!);
@@ -571,13 +695,22 @@ export function computePollutionStep(
   integrators: World3SimulationIntegrators,
   policyYear: number,
 ): PollutionState {
-  buffers.ppolx[k] = buffers.ppol[k]! / constants.ppol70;
-  buffers.ppgao[k] = buffers.aiph[k]! * buffers.al[k]! * constants.fipm * constants.amti;
   const ppgf = clip(constants.ppgf2, constants.ppgf1, t, policyYear);
   const pptd = clip(constants.pptd2, constants.pptd1, t, policyYear);
-  buffers.ppapr[k] = integrators.delay3_ppgr.step(k, pptd);
-  const ahlm = lookups.AHLM(buffers.ppolx[k]!);
-  buffers.ppasr[k] = buffers.ppol[k]! / (ahlm * constants.ahl70 * 1.4);
+  const ppapr = integrators.delay3_ppgr.step(k, pptd);
+  const context: World3DerivedEquationContext = {
+    k,
+    dt: 0,
+    buffers,
+    constants,
+    t,
+    policyYear,
+    lookups,
+    runtime: { ppgf, pptd, ppapr },
+  };
+  for (const equation of WORLD3_POLLUTION_EQUATIONS) {
+    buffers[equation.key][k] = equation.compute(context);
+  }
   return { ppgf };
 }
 
