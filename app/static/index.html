@@ -80,6 +80,7 @@
     <ul class="site-nav__links">
       <li><a href="#intro" data-i18n="nav.home">Home</a></li>
       <li><a href="#history" data-i18n="nav.history">History</a></li>
+      <li><a href="#faq" data-i18n="nav.faq">FAQ</a></li>
       <li><a href="#model" data-i18n="nav.model">Model</a></li>
       <li><a href="#explore" data-i18n="nav.explore">Explore</a></li>
       <li><a href="#compare" data-i18n="nav.compare">Compare</a></li>
@@ -116,13 +117,22 @@
         <a href="#model" class="btn btn-outline btn-sm" data-i18n="action.model_how">How does the model work?</a>
       </div>
 
+      <div class="book-callout" data-i18n="intro.book_callout_html" data-i18n-html="true"></div>
+
       <h2 class="section-title" data-i18n="intro.choose_scenario">Choose a scenario</h2>
       <div id="intro-presets" class="grid-2"></div>
+      <p class="text-muted" data-i18n="intro.scenario_context_html" data-i18n-html="true" style="margin-top:var(--space-md);"></p>
+
+      <div id="intro-resources" style="margin-top:var(--space-2xl);">
+        <h2 class="section-title" data-i18n="intro.resources_title">Go Deeper</h2>
+        <div data-i18n="intro.resources_html" data-i18n-html="true"></div>
+      </div>
 
       <footer class="ack">
         <h2 class="section-title" data-i18n="intro.acknowledgments">Acknowledgments</h2>
         <ul class="ack__list">
           <li data-i18n="intro.ack.item_0_html" data-i18n-html="true"><a href="https://www.clubofrome.org/" target="_blank" rel="noopener">Club of Rome</a> — commissioned the original <em>Limits to Growth</em> study at MIT (1972)</li>
+          <li data-i18n="intro.ack.item_8_html" data-i18n-html="true"><a href="https://en.wikipedia.org/wiki/Jay_Wright_Forrester" target="_blank" rel="noopener">Forrester, J.&nbsp;W.</a> — <a href="https://en.wikipedia.org/wiki/World_Dynamics" target="_blank" rel="noopener"><em>World Dynamics</em></a> (1971), the precursor model that inspired World3</li>
           <li data-i18n="intro.ack.item_1_html" data-i18n-html="true">Meadows, D.&nbsp;L., Behrens, W.&nbsp;W., Meadows, D.&nbsp;H., Naill, R.&nbsp;F., Randers, J. &amp; Zahn, E. — <a href="https://en.wikipedia.org/wiki/The_Limits_to_Growth" target="_blank" rel="noopener"><em>Dynamics of Growth in a Finite World</em></a> (1974)</li>
           <li data-i18n="intro.ack.item_2_html" data-i18n-html="true">Meadows, D.&nbsp;H., Meadows, D.&nbsp;L., Randers, J. &amp; Behrens, W.&nbsp;W. — <a href="https://www.clubofrome.org/publication/the-limits-to-growth/" target="_blank" rel="noopener"><em>The Limits to Growth</em></a> (1972)</li>
           <li data-i18n="intro.ack.item_3_html" data-i18n-html="true">Meadows, D.&nbsp;H., Randers, J. &amp; Meadows, D.&nbsp;L. — <a href="https://en.wikipedia.org/wiki/The_Limits_to_Growth" target="_blank" rel="noopener"><em>Limits to Growth: The 30-Year Update</em></a> (2005)</li>
@@ -146,6 +156,19 @@
       <div id="history-sections"></div>
       <div class="view-links">
         <a href="#model" class="btn btn-outline btn-sm" data-i18n="action.model_how">How does the model work?</a>
+        <a href="#explore" class="btn btn-outline btn-sm" data-i18n="action.explore_scenarios">Explore scenarios</a>
+      </div>
+    </div>
+
+    <!-- FAQ VIEW -->
+    <div id="view-faq" class="view">
+      <div class="hero">
+        <h1 data-i18n="faq.title">Common Misconceptions</h1>
+        <p class="text-muted" data-i18n="faq.subtitle">The Limits to Growth has been widely misquoted and misunderstood since 1972. Here are the most common objections — and what the model actually says.</p>
+      </div>
+      <div id="faq-sections"></div>
+      <div class="view-links">
+        <a href="#history" class="btn btn-outline btn-sm" data-i18n="nav.history">History</a>
         <a href="#explore" class="btn btn-outline btn-sm" data-i18n="action.explore_scenarios">Explore scenarios</a>
       </div>
     </div>
@@ -317,6 +340,7 @@
 <script defer src="js/model-sections.js"></script>
 <script defer src="js/views/intro.js"></script>
 <script defer src="js/views/history.js"></script>
+<script defer src="js/views/faq.js"></script>
 <script defer src="js/views/model.js"></script>
 <script defer src="js/views/explore.js"></script>
 <script defer src="js/views/compare.js"></script>
