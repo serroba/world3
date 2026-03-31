@@ -418,6 +418,34 @@ select:focus {
   color: var(--color-text-muted);
 }
 
+/* Scrollable table wrapper for narrow screens */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 639px) {
+  /* Stack input rows vertically on mobile */
+  .input-row {
+    flex-wrap: wrap;
+  }
+
+  .input-row input[type="number"] {
+    width: 100%;
+    flex-shrink: 1;
+    min-height: 44px;
+  }
+
+  .input-row .unit {
+    min-width: auto;
+  }
+
+  /* Ensure touch targets meet 44px minimum */
+  .btn-sm {
+    min-height: 44px;
+  }
+}
+
 /* Hero */
 .hero {
   padding: var(--space-2xl) 0;

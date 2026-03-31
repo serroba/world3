@@ -28,7 +28,7 @@ const CalibrateView = (() => {
       ${UI.escapeHtml(I18n.t("common.reference_year"))}: <strong>${data.reference_year}</strong>,
       ${UI.escapeHtml(I18n.t("calibrate.constants_calibrated"))}: <strong>${entries.length}</strong>
     </div>`;
-    html += `<table class="metrics-table">
+    html += `<div class="table-scroll"><table class="metrics-table">
       <thead><tr>
         <th>${UI.escapeHtml(I18n.t("calibrate.constant"))}</th>
         <th>${UI.escapeHtml(I18n.t("calibrate.description"))}</th>
@@ -56,7 +56,7 @@ const CalibrateView = (() => {
         <td>${confidenceBadge(c.confidence)}</td>
       </tr>`;
     });
-    html += "</tbody></table>";
+    html += "</tbody></table></div>";
     container.innerHTML = html;
   }
 
@@ -120,7 +120,7 @@ const CalibrateView = (() => {
       ${UI.escapeHtml(I18n.t("common.overlap"))}: <strong>${data.overlap_start}\u2013${data.overlap_end}</strong>,
       ${UI.escapeHtml(I18n.t("common.variables_compared"))}: <strong>${entries.length}</strong>
     </div>`;
-    html += `<table class="metrics-table">
+    html += `<div class="table-scroll"><table class="metrics-table">
       <thead><tr>
         <th>${UI.escapeHtml(I18n.t("validate.variable"))}</th>
         <th>${UI.escapeHtml(I18n.t("calibrate.owid_indicator"))}</th>
@@ -141,7 +141,7 @@ const CalibrateView = (() => {
         <td>${confidenceBadge(m.confidence)}</td>
       </tr>`;
     });
-    html += "</tbody></table>";
+    html += "</tbody></table></div>";
     container.innerHTML = html;
   }
 

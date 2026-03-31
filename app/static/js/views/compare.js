@@ -54,7 +54,7 @@ const CompareView = (() => {
         <td class="${cls}">${delta}</td>
       </tr>`;
     });
-    html += "</tbody></table>";
+    html += "</tbody></table></div>";
     container.innerHTML = html;
   }
 
