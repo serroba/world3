@@ -284,22 +284,25 @@ const AdvancedView = (() => {
 
     const editedLabel = I18n.t("nav.advanced");
 
+    const isCombined = currentViewMode === VIEW_MODES.combined;
+
     activeChartGroups().forEach((group) => {
       const canvas = document.getElementById(group.id);
       if (!canvas) return;
       if (baseline) {
         const baselineLabel = I18n.labelForPreset("standard-run", "Standard run");
-        Charts.renderCompare(
-          canvas,
-          baseline,
-          result,
-          group.vars,
-          baselineLabel,
-          editedLabel
-        );
+        if (isCombined) {
+          Charts.renderNormalizedCompare(canvas, baseline, result, group.vars, baselineLabel, editedLabel);
+        } else {
+          Charts.renderCompare(canvas, baseline, result, group.vars, baselineLabel, editedLabel);
+        }
         return;
       }
-      Charts.renderSingle(canvas, result.time, result.series, group.vars);
+      if (isCombined) {
+        Charts.renderNormalized(canvas, result.time, result.series, group.vars);
+      } else {
+        Charts.renderSingle(canvas, result.time, result.series, group.vars);
+      }
     });
   }
 
