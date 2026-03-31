@@ -6,6 +6,7 @@ import {
   computeCapitalStep,
   computeCrossSectorStep,
   computeMortalityAndBirthStep,
+  computePopulationFeedbackStep,
   computePopulationLeadingStep,
   computePollutionStep,
   computeResourceStep,
@@ -243,6 +244,7 @@ describe("world3 simulation sector helpers", () => {
     buffers.ppolx[0] = 2;
     buffers.uil[0] = 20;
     buffers.fioaa[0] = 0.1;
+    buffers.lf[0] = 50;
 
     const crossSector = computeCrossSectorStep(
       0,
@@ -261,6 +263,19 @@ describe("world3 simulation sector helpers", () => {
     expect(buffers.fioac[0]).toBeCloseTo(constants.fioac1);
     expect(buffers.fioas[0]).toBeCloseTo(4);
     expect(buffers.scir[0]).toBeCloseTo(buffers.io[0]! * 4);
+    expect(buffers.hsapc[0]).toBeCloseTo(buffers.sopc[0]!);
+    expect(buffers.pjis[0]).toBeCloseTo(50 * buffers.iopc[0]!);
+    expect(buffers.pjas[0]).toBeCloseTo(3 * 70);
+    expect(buffers.j[0]).toBeCloseTo(buffers.pjis[0]! + buffers.pjas[0]! + 11);
+    expect(buffers.luf[0]).toBeCloseTo(buffers.j[0]! / 50);
+    expect(buffers.ifpc[0]).toBeCloseTo(buffers.iopc[0]!);
+    expect(buffers.lymap[0]).toBeCloseTo(buffers.io[0]! / constants.io70);
+    expect(buffers.lfd[0]).toBeCloseTo(100 * 2);
+    expect(buffers.ly[0]).toBeCloseTo(1 * 100 * 1 * buffers.lymap[0]!);
+    expect(buffers.llmy[0]).toBeCloseTo(buffers.ly[0]! / constants.ilf);
+    expect(buffers.lrui[0]).toBeGreaterThanOrEqual(0);
+    expect(buffers.lfr[0]).toBeCloseTo((constants.ilf - 100) / 1);
+    expect(buffers.nrur[0]).toBeCloseTo(100 * crossSector.pcrum * 0.5);
     expect(crossSector.pcrum).toBeCloseTo(buffers.iopc[0]!);
 
     buffers.le[0] = 2;
@@ -276,6 +291,65 @@ describe("world3 simulation sector helpers", () => {
 
     expect(buffers.fioai[0]).toBeCloseTo(1 - buffers.fioaa[0]! - buffers.fioas[0]! - buffers.fioac[0]!);
     expect(buffers.icir[0]).toBeCloseTo(buffers.io[0]! * buffers.fioai[0]!);
+  });
+
+  test("derives population feedback equations through the DSL-backed feedback step", () => {
+    const buffers = createBuffers();
+    const constants = createConstants();
+    const lookups = createLookups();
+
+    buffers.iopc[0] = 5;
+    buffers.fpu[0] = 2;
+    buffers.sfsn[0] = 6;
+    buffers.cmple[0] = 5;
+    buffers.ly[0] = 10;
+    buffers.al[0] = 70;
+    buffers.pop[0] = 100;
+    buffers.ifpc[0] = 5;
+    buffers.io[0] = 40;
+    buffers.pal[0] = 80;
+    buffers.aiph[0] = 3;
+    buffers.llmy[0] = 2;
+    buffers.ppgao[0] = 7;
+    buffers.ppolx[0] = 2;
+    buffers.lmhs[0] = 3;
+
+    computePopulationFeedbackStep(
+      0,
+      1970,
+      buffers,
+      constants,
+      lookups,
+      { aiopc: 4, diopc: 6 },
+      { alai: 2, lymc: 1, lyf: 1, lfrt: 1 },
+      { ppgf: 1 },
+      { pcrum: 5 },
+      1975,
+    );
+
+    const expectedF = 10 * 70;
+    const expectedFpc = expectedF / 100;
+    const expectedFioaa = expectedFpc / 5;
+    const expectedTai = 40 * expectedFioaa;
+    const expectedMpai = 2 * 10 * 3;
+    const expectedMpld = 10 / ((80 / constants.palt) * constants.sd);
+    const expectedFiald = expectedMpld / expectedMpai;
+    const expectedLmc = 1 - 5 * 2;
+    const expectedDcfs = constants.dcfsn * (0.25) * 6;
+
+    expect(buffers.lmc[0]).toBeCloseTo(expectedLmc);
+    expect(buffers.dcfs[0]).toBeCloseTo(expectedDcfs);
+    expect(buffers.dtf[0]).toBeCloseTo(expectedDcfs * 5);
+    expect(buffers.f[0]).toBeCloseTo(expectedF);
+    expect(buffers.fpc[0]).toBeCloseTo(expectedFpc);
+    expect(buffers.fioaa[0]).toBeCloseTo(expectedFioaa);
+    expect(buffers.tai[0]).toBeCloseTo(expectedTai);
+    expect(buffers.ldr[0]).toBeCloseTo(expectedTai * expectedFiald / (80 / constants.palt));
+    expect(buffers.cai[0]).toBeCloseTo(expectedTai * (1 - expectedFiald));
+    expect(buffers.fr[0]).toBeCloseTo(expectedFpc / constants.sfpc);
+    expect(buffers.ler[0]).toBeCloseTo(70 / (constants.alln * 2));
+    expect(buffers.ppgr[0]).toBeCloseTo((5 * 100 * constants.frpm * constants.imef * constants.imti + 7) * 1);
+    expect(buffers.le[0]).toBeCloseTo(constants.len * (expectedFpc / constants.sfpc) * 3 * 2 * expectedLmc);
   });
 
   test("derives mortality, maturation, and death flows through the DSL-backed population step", () => {

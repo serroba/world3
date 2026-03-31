@@ -5,10 +5,14 @@ import {
   WORLD3_CAPITAL_ALLOCATION_EQUATIONS,
   WORLD3_CAPITAL_INVESTMENT_EQUATIONS,
   WORLD3_CAPITAL_FLOW_EQUATIONS,
+  WORLD3_CROSS_SECTOR_EQUATIONS,
+  WORLD3_CROSS_SECTOR_RESOURCE_EQUATIONS,
   WORLD3_DERIVED_STOCK_EQUATIONS,
   WORLD3_AGRICULTURE_EQUATIONS,
   WORLD3_POLLUTION_EQUATIONS,
   WORLD3_POPULATION_BIRTH_EQUATIONS,
+  WORLD3_POPULATION_FEEDBACK_LATE_EQUATIONS,
+  WORLD3_POPULATION_FEEDBACK_PRIMARY_EQUATIONS,
   WORLD3_POPULATION_LEADING_EQUATIONS,
   WORLD3_POPULATION_FLOW_EQUATIONS,
   WORLD3_RESOURCE_DERIVED_EQUATIONS,
@@ -188,6 +192,38 @@ describe("World3 stock equation DSL", () => {
         expect.objectContaining({ kind: "derived-equation", key: "ppolx", inputs: ["ppol", "ppol70"] }),
         expect.objectContaining({ kind: "derived-equation", key: "ppgao", inputs: ["aiph", "al", "fipm", "amti"] }),
         expect.objectContaining({ kind: "derived-equation", key: "ppasr", inputs: ["ppol", "ppolx", "ahl70"] }),
+      ]),
+    );
+  });
+
+  test("declares cross-sector and population-feedback equations explicitly", () => {
+    expect(WORLD3_CROSS_SECTOR_EQUATIONS).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ kind: "derived-equation", key: "io", inputs: ["ic", "fcaor", "cuf"] }),
+        expect.objectContaining({ kind: "derived-equation", key: "ly", inputs: ["lfert", "lymap"] }),
+        expect.objectContaining({ kind: "derived-equation", key: "lfr", inputs: ["lfert"] }),
+      ]),
+    );
+
+    expect(WORLD3_CROSS_SECTOR_RESOURCE_EQUATIONS).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ kind: "derived-equation", key: "nrur", inputs: ["pop"] }),
+      ]),
+    );
+
+    expect(WORLD3_POPULATION_FEEDBACK_PRIMARY_EQUATIONS).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ kind: "derived-equation", key: "lmc", inputs: ["fpu"] }),
+        expect.objectContaining({ kind: "derived-equation", key: "fpc", inputs: ["f", "pop"] }),
+        expect.objectContaining({ kind: "derived-equation", key: "fioaa", inputs: ["fpc", "ifpc"] }),
+      ]),
+    );
+
+    expect(WORLD3_POPULATION_FEEDBACK_LATE_EQUATIONS).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ kind: "derived-equation", key: "ldr", inputs: ["tai"] }),
+        expect.objectContaining({ kind: "derived-equation", key: "ppgr", inputs: ["pop", "ppgao"] }),
+        expect.objectContaining({ kind: "derived-equation", key: "le", inputs: ["lmhs", "lmc"] }),
       ]),
     );
   });
