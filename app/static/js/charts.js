@@ -3,20 +3,21 @@
  */
 
 const Charts = (() => {
+  // Matplotlib tab10 palette, matching PyWorld3 paper conventions.
   const SERIES_COLORS = {
-    pop: "#2b7fff",
+    nrfr: "#1f77b4",
+    nr: "#1f77b4",
+    iopc: "#ff7f0e",
+    io: "#ff7f0e",
+    fpc: "#2ca02c",
+    f: "#2ca02c",
+    pop: "#d62728",
     le: "#0a7b83",
-    iopc: "#e63946",
-    io: "#e63946",
-    fpc: "#fb8500",
-    f: "#fb8500",
-    nrfr: "#51b86b",
-    nr: "#51b86b",
-    ppolx: "#9b3ecb",
-    ppol: "#9b3ecb",
+    ppolx: "#9467bd",
+    ppol: "#9467bd",
   };
   const FALLBACK_COLORS = [
-    "#2b7fff", "#51b86b", "#fb8500", "#e63946", "#9b3ecb", "#0a7b83",
+    "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#0a7b83",
   ];
   const CROSSHAIR_COLOR = "#17324d55";
   const CROSSHAIR_YEAR_STEP = 0.5;
@@ -230,11 +231,35 @@ const Charts = (() => {
     return { scales, axisMap };
   }
 
+  /** Map raw unit string to its i18n key. */
+  const UNIT_I18N = {
+    "people": "unit.people",
+    "years": "unit.years",
+    "resource units": "unit.resource_units",
+    "pollution units": "unit.pollution_units",
+    "births/1000/yr": "unit.births_per_1000_yr",
+    "deaths/1000/yr": "unit.deaths_per_1000_yr",
+    "$/person/yr": "unit.dollar_per_person_yr",
+    "kg/person/yr": "unit.kg_per_person_yr",
+    "$/yr": "unit.dollar_per_yr",
+    "$/ha/yr": "unit.dollar_per_ha_yr",
+    "kg/yr": "unit.kg_per_yr",
+    "kg/ha/yr": "unit.kg_per_ha_yr",
+    "ha": "unit.ha",
+  };
+
+  /** Translate a raw unit string via i18n, falling back to the raw value. */
+  function translateUnit(raw) {
+    if (!raw || raw === "-") return "";
+    const key = UNIT_I18N[raw];
+    return key ? I18n.t(key, {}, raw) : raw;
+  }
+
   /** Derive a y-axis label from a set of variable keys. */
   function unitLabel(varKeys) {
     const units = [...new Set(varKeys.map((k) => {
       const m = State.variableMeta[k];
-      return m ? m.unit : "";
+      return m ? translateUnit(m.unit) : "";
     }).filter(Boolean))];
     return units.join(", ");
   }
@@ -261,7 +286,8 @@ const Charts = (() => {
           callbacks: {
             label(ctx) {
               const meta = State.variableMeta[ctx.dataset.varKey];
-              const unit = meta ? ` ${meta.unit}` : "";
+              const translated = meta ? translateUnit(meta.unit) : "";
+              const unit = translated ? ` ${translated}` : "";
               return `${ctx.dataset.label}: ${UI.formatNumber(ctx.parsed.y)}${unit}`;
             },
           },
@@ -301,6 +327,9 @@ const Charts = (() => {
   }
 
   return {
+    /** Translate a raw unit string via i18n. */
+    translateUnit,
+
     /**
      * Render a chart panel with one or more variables from a single simulation.
      * Uses dual y-axes when variables have different units.
@@ -335,6 +364,188 @@ const Charts = (() => {
         dsB.label = `${metaName} (${labelB})`;
         datasets.push(dsB);
       });
+      new Chart(canvas, { type: "line", data: { datasets }, options: opts });
+    },
+
+    /**
+     * Render a normalized chart where each series is scaled to [0, 1].
+     * Used for the classic combined overview where variables have vastly
+     * different magnitudes. Tooltips still show actual values with units.
+     */
+    renderNormalized(canvas, time, series, varKeys) {
+      destroyIfExists(canvas);
+      const isRtl = I18n.getDirection() === "rtl";
+      const datasets = varKeys.map((key, i) => {
+        const meta = State.variableMeta[key] || {};
+        const raw = series[key]?.values || [];
+        const max = raw.reduce((a, b) => Math.max(a, b), 0) || 1;
+        const color = colorForVar(key, i);
+        return {
+          label: UI.labelVariable(key, meta.full_name || key),
+          varKey: key,
+          yAxisID: "y",
+          data: time.map((t, j) => ({ x: t, y: raw[j] != null ? raw[j] / max : null })),
+          _rawData: raw,
+          _max: max,
+          borderColor: color,
+          backgroundColor: color + "22",
+          borderWidth: 2,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          tension: 0.1,
+        };
+      });
+      const opts = {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+          legend: {
+            position: "bottom",
+            rtl: isRtl,
+            textDirection: isRtl ? "rtl" : "ltr",
+            labels: { boxWidth: 12, padding: 8, font: { size: 11 } },
+          },
+          tooltip: {
+            rtl: isRtl,
+            textDirection: isRtl ? "rtl" : "ltr",
+            callbacks: {
+              label(ctx) {
+                const ds = ctx.dataset;
+                const rawVal = ds._rawData?.[ctx.dataIndex];
+                const meta = State.variableMeta[ds.varKey];
+                const translated = meta ? translateUnit(meta.unit) : "";
+                const unit = translated ? ` ${translated}` : "";
+                return `${ds.label}: ${UI.formatNumber(rawVal ?? 0)}${unit}`;
+              },
+            },
+          },
+          syncCrosshair: true,
+        },
+        onHover(_event, activeElements, chart) {
+          if (!activeElements?.length && syncedYear !== null) {
+            clearSyncedCrosshair();
+            return;
+          }
+          if (!activeElements?.length) return;
+          const point = chart.data.datasets?.[activeElements[0].datasetIndex]?.data?.[activeElements[0].index];
+          if (point && typeof point.x === "number") syncChartsToYear(point.x);
+        },
+        scales: {
+          x: {
+            type: "linear",
+            ticks: yearTicks(),
+            title: { display: true, text: I18n.t("chart.axis.year") },
+          },
+          y: {
+            display: false,
+            min: 0,
+            max: 1,
+          },
+        },
+      };
+      new Chart(canvas, { type: "line", data: { datasets }, options: opts });
+    },
+
+    /**
+     * Render a normalized comparison chart (two scenarios, each series scaled
+     * by the same max so shapes are visually comparable).
+     */
+    renderNormalizedCompare(canvas, resultA, resultB, varKeys, labelA, labelB) {
+      destroyIfExists(canvas);
+      const isRtl = I18n.getDirection() === "rtl";
+      const datasets = [];
+      varKeys.forEach((key, i) => {
+        const meta = State.variableMeta[key] || {};
+        const metaName = UI.labelVariable(key, meta.full_name || key);
+        const rawA = resultA.series[key]?.values || [];
+        const rawB = resultB.series[key]?.values || [];
+        const max = Math.max(
+          rawA.reduce((a, b) => Math.max(a, b), 0),
+          rawB.reduce((a, b) => Math.max(a, b), 0)
+        ) || 1;
+        const color = colorForVar(key, i);
+        datasets.push({
+          label: `${metaName} (${labelA})`,
+          varKey: key,
+          yAxisID: "y",
+          data: resultA.time.map((t, j) => ({ x: t, y: rawA[j] != null ? rawA[j] / max : null })),
+          _rawData: rawA,
+          _max: max,
+          borderColor: color,
+          backgroundColor: color + "22",
+          borderWidth: 2,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          tension: 0.1,
+        });
+        datasets.push({
+          label: `${metaName} (${labelB})`,
+          varKey: key,
+          yAxisID: "y",
+          data: resultB.time.map((t, j) => ({ x: t, y: rawB[j] != null ? rawB[j] / max : null })),
+          _rawData: rawB,
+          _max: max,
+          borderColor: color,
+          backgroundColor: color + "22",
+          borderWidth: 2,
+          borderDash: [6, 3],
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          tension: 0.1,
+        });
+      });
+      const opts = {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+          legend: {
+            position: "bottom",
+            rtl: isRtl,
+            textDirection: isRtl ? "rtl" : "ltr",
+            labels: { boxWidth: 12, padding: 8, font: { size: 11 } },
+          },
+          tooltip: {
+            rtl: isRtl,
+            textDirection: isRtl ? "rtl" : "ltr",
+            callbacks: {
+              label(ctx) {
+                const ds = ctx.dataset;
+                const rawVal = ds._rawData?.[ctx.dataIndex];
+                const meta = State.variableMeta[ds.varKey];
+                const translated = meta ? translateUnit(meta.unit) : "";
+                const unit = translated ? ` ${translated}` : "";
+                return `${ds.label}: ${UI.formatNumber(rawVal ?? 0)}${unit}`;
+              },
+            },
+          },
+          syncCrosshair: true,
+        },
+        onHover(_event, activeElements, chart) {
+          if (!activeElements?.length && syncedYear !== null) {
+            clearSyncedCrosshair();
+            return;
+          }
+          if (!activeElements?.length) return;
+          const point = chart.data.datasets?.[activeElements[0].datasetIndex]?.data?.[activeElements[0].index];
+          if (point && typeof point.x === "number") syncChartsToYear(point.x);
+        },
+        scales: {
+          x: {
+            type: "linear",
+            ticks: yearTicks(),
+            title: { display: true, text: I18n.t("chart.axis.year") },
+          },
+          y: {
+            display: false,
+            min: 0,
+            max: 1,
+          },
+        },
+      };
       new Chart(canvas, { type: "line", data: { datasets }, options: opts });
     },
 

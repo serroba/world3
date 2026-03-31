@@ -222,5 +222,18 @@
   "variable.ppolx": "Indeks polusi",
   "variable.so": "Output jasa",
   "variable.sopc": "Output jasa per kapita",
-  "variable.tai": "Total investasi pertanian"
+  "variable.tai": "Total investasi pertanian",
+  "unit.people": "orang",
+  "unit.years": "tahun",
+  "unit.resource_units": "satuan sumber daya",
+  "unit.pollution_units": "satuan polusi",
+  "unit.births_per_1000_yr": "kelahiran/1000/tahun",
+  "unit.deaths_per_1000_yr": "kematian/1000/tahun",
+  "unit.dollar_per_person_yr": "$/person/yr",
+  "unit.kg_per_person_yr": "kg/person/yr",
+  "unit.dollar_per_yr": "$/yr",
+  "unit.dollar_per_ha_yr": "$/ha/yr",
+  "unit.kg_per_yr": "kg/yr",
+  "unit.kg_per_ha_yr": "kg/ha/yr",
+  "unit.ha": "ha"
 }

@@ -140,7 +140,12 @@ const ExploreView = (() => {
 
       chartGroups.forEach((group) => {
         const canvas = document.getElementById(group.id);
-        if (canvas) Charts.renderSingle(canvas, result.time, result.series, group.vars);
+        if (!canvas) return;
+        if (viewMode === VIEW_MODES.combined) {
+          Charts.renderNormalized(canvas, result.time, result.series, group.vars);
+        } else {
+          Charts.renderSingle(canvas, result.time, result.series, group.vars);
+        }
       });
     } catch (err) {
       if (statusEl) UI.showError(statusEl, err.message);

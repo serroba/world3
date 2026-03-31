@@ -222,5 +222,18 @@
   "variable.ppolx": "Wskaźnik zanieczyszczeń",
   "variable.so": "Produkcja usług",
   "variable.sopc": "Produkcja usług na osobę",
-  "variable.tai": "Inwestycje rolnicze ogółem"
+  "variable.tai": "Inwestycje rolnicze ogółem",
+  "unit.people": "osób",
+  "unit.years": "lata",
+  "unit.resource_units": "jednostki zasobów",
+  "unit.pollution_units": "jednostki zanieczyszczeń",
+  "unit.births_per_1000_yr": "urodzeń/1000/rok",
+  "unit.deaths_per_1000_yr": "zgonów/1000/rok",
+  "unit.dollar_per_person_yr": "$/person/yr",
+  "unit.kg_per_person_yr": "kg/person/yr",
+  "unit.dollar_per_yr": "$/yr",
+  "unit.dollar_per_ha_yr": "$/ha/yr",
+  "unit.kg_per_yr": "kg/yr",
+  "unit.kg_per_ha_yr": "kg/ha/yr",
+  "unit.ha": "ha"
 }

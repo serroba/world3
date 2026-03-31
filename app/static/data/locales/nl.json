@@ -222,5 +222,18 @@
   "variable.ppolx": "Vervuilingsindex",
   "variable.so": "Dienstenproductie",
   "variable.sopc": "Dienstenproductie per hoofd",
-  "variable.tai": "Totale landbouwinvestering"
+  "variable.tai": "Totale landbouwinvestering",
+  "unit.people": "personen",
+  "unit.years": "jaar",
+  "unit.resource_units": "resource-eenheden",
+  "unit.pollution_units": "vervuilingseenheden",
+  "unit.births_per_1000_yr": "geboorten/1000/jaar",
+  "unit.deaths_per_1000_yr": "sterfgevallen/1000/jaar",
+  "unit.dollar_per_person_yr": "$/person/yr",
+  "unit.kg_per_person_yr": "kg/person/yr",
+  "unit.dollar_per_yr": "$/yr",
+  "unit.dollar_per_ha_yr": "$/ha/yr",
+  "unit.kg_per_yr": "kg/yr",
+  "unit.kg_per_ha_yr": "kg/ha/yr",
+  "unit.ha": "ha"
 }

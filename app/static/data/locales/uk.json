@@ -222,5 +222,18 @@
   "variable.ppolx": "Індекс забруднення",
   "variable.so": "Виробництво послуг",
   "variable.sopc": "Виробництво послуг на душу",
-  "variable.tai": "Загальні сільськогосподарські інвестиції"
+  "variable.tai": "Загальні сільськогосподарські інвестиції",
+  "unit.people": "осіб",
+  "unit.years": "років",
+  "unit.resource_units": "одиниці ресурсів",
+  "unit.pollution_units": "одиниці забруднення",
+  "unit.births_per_1000_yr": "народжень/1000/рік",
+  "unit.deaths_per_1000_yr": "смертей/1000/рік",
+  "unit.dollar_per_person_yr": "$/person/yr",
+  "unit.kg_per_person_yr": "kg/person/yr",
+  "unit.dollar_per_yr": "$/yr",
+  "unit.dollar_per_ha_yr": "$/ha/yr",
+  "unit.kg_per_yr": "kg/yr",
+  "unit.kg_per_ha_yr": "kg/ha/yr",
+  "unit.ha": "ha"
 }

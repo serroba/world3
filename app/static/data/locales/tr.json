@@ -222,5 +222,18 @@
   "variable.ppolx": "Kirlilik endeksi",
   "variable.so": "Hizmet üretimi",
   "variable.sopc": "Kişi başı hizmet üretimi",
-  "variable.tai": "Toplam tarımsal yatırım"
+  "variable.tai": "Toplam tarımsal yatırım",
+  "unit.people": "kişi",
+  "unit.years": "yıl",
+  "unit.resource_units": "kaynak birimi",
+  "unit.pollution_units": "kirlilik birimi",
+  "unit.births_per_1000_yr": "doğum/1000/yıl",
+  "unit.deaths_per_1000_yr": "ölüm/1000/yıl",
+  "unit.dollar_per_person_yr": "$/person/yr",
+  "unit.kg_per_person_yr": "kg/person/yr",
+  "unit.dollar_per_yr": "$/yr",
+  "unit.dollar_per_ha_yr": "$/ha/yr",
+  "unit.kg_per_yr": "kg/yr",
+  "unit.kg_per_ha_yr": "kg/ha/yr",
+  "unit.ha": "ha"
 }

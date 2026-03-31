@@ -222,5 +222,18 @@
   "variable.ppolx": "ดัชนีมลพิษ",
   "variable.so": "ผลผลิตบริการ",
   "variable.sopc": "ผลผลิตบริการต่อหัว",
-  "variable.tai": "การลงทุนเกษตรกรรมรวม"
+  "variable.tai": "การลงทุนเกษตรกรรมรวม",
+  "unit.people": "คน",
+  "unit.years": "ปี",
+  "unit.resource_units": "หน่วยทรัพยากร",
+  "unit.pollution_units": "หน่วยมลพิษ",
+  "unit.births_per_1000_yr": "เกิด/1000/ปี",
+  "unit.deaths_per_1000_yr": "ตาย/1000/ปี",
+  "unit.dollar_per_person_yr": "$/person/yr",
+  "unit.kg_per_person_yr": "kg/person/yr",
+  "unit.dollar_per_yr": "$/yr",
+  "unit.dollar_per_ha_yr": "$/ha/yr",
+  "unit.kg_per_yr": "kg/yr",
+  "unit.kg_per_ha_yr": "kg/ha/yr",
+  "unit.ha": "ha"
 }

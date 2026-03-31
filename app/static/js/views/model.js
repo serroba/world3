@@ -156,7 +156,7 @@ const ModelView = (() => {
         "<td><code>" + UI.escapeHtml(c.key) + "</code></td>" +
         "<td>" + UI.escapeHtml(UI.labelConstant(c.key, meta.full_name)) + "</td>" +
         "<td>" + UI.formatNumber(val) + "</td>" +
-        "<td>" + UI.escapeHtml(meta.unit) + "</td>";
+        "<td>" + UI.escapeHtml(Charts.translateUnit(meta.unit) || meta.unit) + "</td>";
       tbody.appendChild(tr);
     });
     table.appendChild(tbody);
@@ -306,7 +306,7 @@ const ModelView = (() => {
           "<td><code>" + UI.escapeHtml(name) + "</code></td>" +
           "<td>" + UI.escapeHtml(UI.labelConstant(name, meta.full_name)) + "</td>" +
           "<td>" + UI.formatNumber(val) + "</td>" +
-          "<td>" + UI.escapeHtml(meta.unit) + "</td>";
+          "<td>" + UI.escapeHtml(Charts.translateUnit(meta.unit) || meta.unit) + "</td>";
         tbody.appendChild(tr);
       });
       table.appendChild(tbody);

@@ -222,5 +222,18 @@
   "variable.ppolx": "Indice di inquinamento",
   "variable.so": "Produzione di servizi",
   "variable.sopc": "Produzione di servizi pro capite",
-  "variable.tai": "Investimento agricolo totale"
+  "variable.tai": "Investimento agricolo totale",
+  "unit.people": "persone",
+  "unit.years": "anni",
+  "unit.resource_units": "unità di risorse",
+  "unit.pollution_units": "unità di inquinamento",
+  "unit.births_per_1000_yr": "nascite/1000/anno",
+  "unit.deaths_per_1000_yr": "decessi/1000/anno",
+  "unit.dollar_per_person_yr": "$/person/yr",
+  "unit.kg_per_person_yr": "kg/person/yr",
+  "unit.dollar_per_yr": "$/yr",
+  "unit.dollar_per_ha_yr": "$/ha/yr",
+  "unit.kg_per_yr": "kg/yr",
+  "unit.kg_per_ha_yr": "kg/ha/yr",
+  "unit.ha": "ha"
 }
