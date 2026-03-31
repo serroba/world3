@@ -113,6 +113,29 @@ describe("World3 registry", () => {
 
   test("covers all default UI variables", () => {
     const exportedKeys = new Set(WORLD3_SERIES_REGISTRY.map((definition) => definition.key));
+    expect(WORLD3_DEFAULT_VARIABLES).toEqual([
+      "pop",
+      "nr",
+      "nrfr",
+      "io",
+      "iopc",
+      "fpc",
+      "f",
+      "so",
+      "sopc",
+      "ppolx",
+      "ppol",
+      "al",
+      "ly",
+      "le",
+      "cbr",
+      "cdr",
+      "fioaa",
+      "fcaor",
+      "tai",
+      "aiph",
+    ]);
+    expect(ModelData.defaultVariables).toEqual(WORLD3_DEFAULT_VARIABLES);
     for (const variable of WORLD3_DEFAULT_VARIABLES) {
       expect(exportedKeys.has(variable as (typeof WORLD3_SERIES_REGISTRY)[number]["key"])).toBe(true);
     }

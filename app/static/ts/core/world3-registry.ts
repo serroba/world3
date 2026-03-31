@@ -161,13 +161,32 @@ export const WORLD3_CONSTANT_REGISTRY: ReadonlyArray<World3ConstantDefinition> =
   { key: "zpgt", fullName: "Zero population growth time", sector: "Population", unit: "year" },
 ] satisfies readonly World3ConstantDefinition[];
 
-export const WORLD3_DEFAULT_VARIABLES = WORLD3_SERIES_REGISTRY
-  .filter((definition) => definition.defaultOutput)
-  .map((definition) => definition.key);
-
 const SERIES_BY_KEY = new Map(
   WORLD3_SERIES_REGISTRY.map((definition) => [definition.key, definition] as const),
 );
+
+export const WORLD3_DEFAULT_VARIABLES: ReadonlyArray<keyof World3SimulationBuffers> = [
+  "pop",
+  "nr",
+  "nrfr",
+  "io",
+  "iopc",
+  "fpc",
+  "f",
+  "so",
+  "sopc",
+  "ppolx",
+  "ppol",
+  "al",
+  "ly",
+  "le",
+  "cbr",
+  "cdr",
+  "fioaa",
+  "fcaor",
+  "tai",
+  "aiph",
+] as const;
 
 export function resolveWorld3CompareMetric(
   key: keyof World3SimulationBuffers,

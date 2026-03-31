@@ -128,10 +128,29 @@ export const WORLD3_CONSTANT_REGISTRY = [
     { key: "uili", fullName: "Initial urban-industrial land", sector: "Agriculture", unit: "ha" },
     { key: "zpgt", fullName: "Zero population growth time", sector: "Population", unit: "year" },
 ];
-export const WORLD3_DEFAULT_VARIABLES = WORLD3_SERIES_REGISTRY
-    .filter((definition) => definition.defaultOutput)
-    .map((definition) => definition.key);
 const SERIES_BY_KEY = new Map(WORLD3_SERIES_REGISTRY.map((definition) => [definition.key, definition]));
+export const WORLD3_DEFAULT_VARIABLES = [
+    "pop",
+    "nr",
+    "nrfr",
+    "io",
+    "iopc",
+    "fpc",
+    "f",
+    "so",
+    "sopc",
+    "ppolx",
+    "ppol",
+    "al",
+    "ly",
+    "le",
+    "cbr",
+    "cdr",
+    "fioaa",
+    "fcaor",
+    "tai",
+    "aiph",
+];
 export function resolveWorld3CompareMetric(key, definitions = SERIES_BY_KEY) {
     const definition = definitions.get(key);
     if (!definition?.compareMetricLabel) {
