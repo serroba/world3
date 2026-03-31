@@ -3,6 +3,7 @@
  */
 
 const CompareView = (() => {
+  const SHARED_SCENARIO_VALUE = "__shared__";
   const CHART_GROUPS = [
     { id: "cmp-chart-pop", titleKey: "explore.chart.population_life", vars: ["pop", "le"] },
     { id: "cmp-chart-econ", titleKey: "explore.chart.economy_food", vars: ["iopc", "fpc"] },
@@ -10,7 +11,7 @@ const CompareView = (() => {
     { id: "cmp-chart-res", titleKey: "explore.chart.resources", vars: ["nrfr"] },
   ];
 
-  function populateSelects(selectA, selectB, presetA, presetB) {
+  function populateSelects(selectA, selectB, presetA, presetB, sharedScenario) {
     [selectA, selectB].forEach((sel) => {
       sel.innerHTML = "";
       State.presets.forEach((p) => {
@@ -20,8 +21,14 @@ const CompareView = (() => {
         sel.appendChild(opt);
       });
     });
+    if (sharedScenario) {
+      const opt = document.createElement("option");
+      opt.value = SHARED_SCENARIO_VALUE;
+      opt.textContent = I18n.t("compare.shared_scenario", undefined, "Shared custom scenario");
+      selectB.appendChild(opt);
+    }
     selectA.value = presetA;
-    selectB.value = presetB;
+    selectB.value = sharedScenario ? SHARED_SCENARIO_VALUE : presetB;
   }
 
   function renderMetrics(container, metrics, labelA, labelB) {
@@ -68,7 +75,7 @@ const CompareView = (() => {
     });
   }
 
-  async function runComparison(presetA, presetB) {
+  async function runComparison(presetA, presetB, sharedScenario) {
     const metricsEl = document.getElementById("compare-metrics");
     const chartsEl = document.getElementById("compare-charts");
     const statusEl = document.getElementById("compare-status");
@@ -78,12 +85,21 @@ const CompareView = (() => {
     renderChartGrid(chartsEl);
 
     try {
+      const scenarioA = { preset: presetA };
+      const scenarioB = sharedScenario
+        ? {
+            preset: sharedScenario.preset || presetB,
+            request: ScenarioState.savedScenarioStateToRequest(sharedScenario),
+          }
+        : { preset: presetB };
       const data = await SimulationProvider.compare(
-        { preset: presetA },
-        { preset: presetB }
+        scenarioA,
+        scenarioB
       );
       const labelA = I18n.labelForPreset(presetA, data.scenario_a);
-      const labelB = I18n.labelForPreset(presetB, data.scenario_b);
+      const labelB = sharedScenario
+        ? I18n.t("compare.shared_scenario", undefined, "Shared custom scenario")
+        : I18n.labelForPreset(presetB, data.scenario_b);
 
       if (statusEl) statusEl.innerHTML = "";
       renderMetrics(metricsEl, data.metrics, labelA, labelB);
@@ -104,16 +120,30 @@ const CompareView = (() => {
 
   function render(params) {
     const presetA = params.a || "doubled-resources";
-    const presetB = params.b || "standard-run";
+    const presetB = params.bpreset || params.b || "standard-run";
+    const sharedScenario =
+      typeof ScenarioState !== "undefined" && params.bscenario
+        ? ScenarioState.decodeSavedScenarioState(params.bscenario)
+        : null;
 
     const selectA = document.getElementById("compare-select-a");
     const selectB = document.getElementById("compare-select-b");
     if (!selectA || !selectB) return;
 
-    populateSelects(selectA, selectB, presetA, presetB);
+    populateSelects(selectA, selectB, presetA, presetB, sharedScenario);
 
     // Wire up change handlers
     const onChange = () => {
+      if (selectB.value === SHARED_SCENARIO_VALUE && sharedScenario) {
+        Router.go(
+          ScenarioState.buildCompareScenarioHash({
+            leftPreset: selectA.value,
+            rightPreset: presetB,
+            rightState: sharedScenario,
+          }),
+        );
+        return;
+      }
       Router.go(`#compare?a=${encodeURIComponent(selectA.value)}&b=${encodeURIComponent(selectB.value)}`);
     };
     selectA.onchange = onChange;
@@ -122,6 +152,7 @@ const CompareView = (() => {
     runComparison(
       presetA,
       presetB,
+      sharedScenario,
     );
   }
 

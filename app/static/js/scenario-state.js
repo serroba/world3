@@ -67,9 +67,46 @@ export function buildAdvancedScenarioHash(state) {
     const query = params.toString();
     return query ? `#advanced?${query}` : "#advanced";
 }
+export function savedScenarioStateToRequest(state) {
+    const request = {};
+    const controls = state.controls ?? {};
+    if (controls.year_min !== undefined) {
+        request.year_min = controls.year_min;
+    }
+    if (controls.year_max !== undefined) {
+        request.year_max = controls.year_max;
+    }
+    if (controls.dt !== undefined) {
+        request.dt = controls.dt;
+    }
+    if (controls.pyear !== undefined) {
+        request.pyear = controls.pyear;
+    }
+    if (controls.iphst !== undefined) {
+        request.iphst = controls.iphst;
+    }
+    if (state.constants && Object.keys(state.constants).length > 0) {
+        request.constants = { ...state.constants };
+    }
+    return request;
+}
+export function buildCompareScenarioHash(params) {
+    const query = new URLSearchParams();
+    query.set("a", params.leftPreset || "standard-run");
+    if (params.rightState) {
+        query.set("bpreset", params.rightPreset || params.rightState.preset || "standard-run");
+        query.set("bscenario", encodeSavedScenarioState(params.rightState));
+    }
+    else {
+        query.set("b", params.rightPreset || "standard-run");
+    }
+    return `#compare?${query.toString()}`;
+}
 window.ScenarioState = {
     encodeSavedScenarioState,
     decodeSavedScenarioState,
     buildAdvancedScenarioHash,
+    buildCompareScenarioHash,
     normalizeSavedScenarioState,
+    savedScenarioStateToRequest,
 };

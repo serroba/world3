@@ -5,6 +5,12 @@ export type SavedScenarioState = {
   controls?: Record<string, number>;
 };
 
+export type CompareScenarioParams = {
+  leftPreset?: string;
+  rightPreset?: string;
+  rightState?: SavedScenarioState;
+};
+
 function toBase64Url(value: string): string {
   return btoa(unescape(encodeURIComponent(value)))
     .replace(/\+/g, "-")
@@ -88,13 +94,71 @@ export function buildAdvancedScenarioHash(state: SavedScenarioState): string {
   return query ? `#advanced?${query}` : "#advanced";
 }
 
+export function savedScenarioStateToRequest(
+  state: SavedScenarioState,
+): {
+  year_min?: number;
+  year_max?: number;
+  dt?: number;
+  pyear?: number;
+  iphst?: number;
+  constants?: Record<string, number>;
+} {
+  const request: {
+    year_min?: number;
+    year_max?: number;
+    dt?: number;
+    pyear?: number;
+    iphst?: number;
+    constants?: Record<string, number>;
+  } = {};
+
+  const controls = state.controls ?? {};
+  if (controls.year_min !== undefined) {
+    request.year_min = controls.year_min;
+  }
+  if (controls.year_max !== undefined) {
+    request.year_max = controls.year_max;
+  }
+  if (controls.dt !== undefined) {
+    request.dt = controls.dt;
+  }
+  if (controls.pyear !== undefined) {
+    request.pyear = controls.pyear;
+  }
+  if (controls.iphst !== undefined) {
+    request.iphst = controls.iphst;
+  }
+  if (state.constants && Object.keys(state.constants).length > 0) {
+    request.constants = { ...state.constants };
+  }
+
+  return request;
+}
+
+export function buildCompareScenarioHash(params: CompareScenarioParams): string {
+  const query = new URLSearchParams();
+  query.set("a", params.leftPreset || "standard-run");
+
+  if (params.rightState) {
+    query.set("bpreset", params.rightPreset || params.rightState.preset || "standard-run");
+    query.set("bscenario", encodeSavedScenarioState(params.rightState));
+  } else {
+    query.set("b", params.rightPreset || "standard-run");
+  }
+
+  return `#compare?${query.toString()}`;
+}
+
 declare global {
   interface Window {
     ScenarioState: {
       encodeSavedScenarioState: typeof encodeSavedScenarioState;
       decodeSavedScenarioState: typeof decodeSavedScenarioState;
       buildAdvancedScenarioHash: typeof buildAdvancedScenarioHash;
+      buildCompareScenarioHash: typeof buildCompareScenarioHash;
       normalizeSavedScenarioState: typeof normalizeSavedScenarioState;
+      savedScenarioStateToRequest: typeof savedScenarioStateToRequest;
     };
   }
 }
@@ -103,5 +167,7 @@ window.ScenarioState = {
   encodeSavedScenarioState,
   decodeSavedScenarioState,
   buildAdvancedScenarioHash,
+  buildCompareScenarioHash,
   normalizeSavedScenarioState,
+  savedScenarioStateToRequest,
 };

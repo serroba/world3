@@ -80,6 +80,36 @@ img {
   flex-wrap: wrap;
 }
 
+.advanced-scenario-summary {
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.advanced-scenario-summary__meta {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.advanced-scenario-summary__chips {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.advanced-scenario-summary__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 0.3rem 0.65rem;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  background: var(--color-surface-muted);
+}
+
 .advanced-editor__footer {
   margin-top: var(--space-lg);
   padding-top: var(--space-md);

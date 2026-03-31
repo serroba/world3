@@ -2,9 +2,11 @@ import { describe, expect, test } from "vitest";
 
 import {
   buildAdvancedScenarioHash,
+  buildCompareScenarioHash,
   decodeSavedScenarioState,
   encodeSavedScenarioState,
   normalizeSavedScenarioState,
+  savedScenarioStateToRequest,
 } from "../ts/scenario-state.ts";
 
 describe("scenario state", () => {
@@ -29,9 +31,6 @@ describe("scenario state", () => {
       }),
     ).toEqual({
       preset: "standard-run",
-      view: undefined,
-      constants: undefined,
-      controls: undefined,
     });
   });
 
@@ -47,5 +46,44 @@ describe("scenario state", () => {
     expect(hash).toContain("preset=standard-run");
     expect(hash).toContain("view=combined");
     expect(hash).toContain("state=");
+  });
+
+  test("builds a compare hash for a shared scenario", () => {
+    const hash = buildCompareScenarioHash({
+      leftPreset: "standard-run",
+      rightPreset: "standard-run",
+      rightState: {
+        preset: "standard-run",
+        controls: { pyear: 2000 },
+        constants: { len: 35 },
+      },
+    });
+
+    expect(hash).toContain("#compare?");
+    expect(hash).toContain("a=standard-run");
+    expect(hash).toContain("bpreset=standard-run");
+    expect(hash).toContain("bscenario=");
+  });
+
+  test("converts saved state into a simulation request", () => {
+    expect(
+      savedScenarioStateToRequest({
+        controls: {
+          year_min: 1900,
+          year_max: 2050,
+          dt: 0.5,
+          pyear: 1975,
+          iphst: 1940,
+        },
+        constants: { len: 32 },
+      }),
+    ).toEqual({
+      year_min: 1900,
+      year_max: 2050,
+      dt: 0.5,
+      pyear: 1975,
+      iphst: 1940,
+      constants: { len: 32 },
+    });
   });
 });
