@@ -180,6 +180,38 @@ export const WORLD3_CAPITAL_FLOW_EQUATIONS = [
         compute: ({ k, buffers }) => buffers.so[k] / buffers.pop[k],
     }),
 ];
+export const WORLD3_CAPITAL_ALLOCATION_EQUATIONS = [
+    defineDerivedEquation({
+        key: "fioac",
+        inputs: ["iopc", "iopcd", "fioac1", "fioac2"],
+        compute: ({ k, t, buffers, constants, lookups }) => clip(lookups.FIOACV(buffers.iopc[k] / constants.iopcd), clip(constants.fioac2, constants.fioac1, t, constants.iet), t, constants.iet),
+    }),
+    defineDerivedEquation({
+        key: "fioas",
+        inputs: ["sopc"],
+        compute: ({ k, t, buffers, lookups, policyYear }) => {
+            const isopc = clip(lookups.ISOPC2(buffers.iopc[k]), lookups.ISOPC1(buffers.iopc[k]), t, policyYear);
+            return clip(lookups.FIOAS2(buffers.sopc[k] / isopc), lookups.FIOAS1(buffers.sopc[k] / isopc), t, policyYear);
+        },
+    }),
+    defineDerivedEquation({
+        key: "scir",
+        inputs: ["io", "fioas"],
+        compute: ({ k, buffers }) => buffers.io[k] * buffers.fioas[k],
+    }),
+];
+export const WORLD3_CAPITAL_INVESTMENT_EQUATIONS = [
+    defineDerivedEquation({
+        key: "fioai",
+        inputs: ["fioaa", "fioas", "fioac"],
+        compute: ({ k, buffers }) => 1 - buffers.fioaa[k] - buffers.fioas[k] - buffers.fioac[k],
+    }),
+    defineDerivedEquation({
+        key: "icir",
+        inputs: ["io", "fioai"],
+        compute: ({ k, buffers }) => buffers.io[k] * buffers.fioai[k],
+    }),
+];
 export function advanceStateStocks(k, dt, buffers, constants) {
     const context = { k, dt, buffers, constants };
     if (k === 0) {
@@ -270,13 +302,21 @@ export function computeResourceStep(k, t, buffers, constants, lookups, policyYea
     return { nruf: clip(constants.nruf2, constants.nruf1, t, policyYear) };
 }
 export function computeCrossSectorStep(k, t, buffers, constants, lookups, capital, agriculture, resources, policyYear) {
+    const context = {
+        k,
+        dt: 0,
+        buffers,
+        constants,
+        t,
+        policyYear,
+        lookups,
+    };
     buffers.hsapc[k] = lookups.HSAPC(buffers.sopc[k]);
     buffers.io[k] = buffers.ic[k] * (1 - buffers.fcaor[k]) * buffers.cuf[k] / capital.icor;
     buffers.iopc[k] = buffers.io[k] / buffers.pop[k];
-    buffers.fioac[k] = clip(lookups.FIOACV(buffers.iopc[k] / constants.iopcd), clip(constants.fioac2, constants.fioac1, t, policyYear), t, constants.iet);
-    const isopc = clip(lookups.ISOPC2(buffers.iopc[k]), lookups.ISOPC1(buffers.iopc[k]), t, policyYear);
-    buffers.fioas[k] = clip(lookups.FIOAS2(buffers.sopc[k] / isopc), lookups.FIOAS1(buffers.sopc[k] / isopc), t, policyYear);
-    buffers.scir[k] = buffers.io[k] * buffers.fioas[k];
+    for (const equation of WORLD3_CAPITAL_ALLOCATION_EQUATIONS) {
+        buffers[equation.key][k] = equation.compute(context);
+    }
     buffers.pjis[k] = buffers.ic[k] * lookups.JPICU(buffers.iopc[k]);
     buffers.pjas[k] = lookups.JPH(buffers.aiph[k]) * buffers.al[k];
     buffers.j[k] = buffers.pjis[k] + buffers.pjas[k] + buffers.pjss[k];
@@ -324,6 +364,7 @@ export function computeMortalityAndBirthStep(k, t, buffers, constants, lookups) 
     buffers.fcapc[k] = lookups.FSAFC(buffers.mtf[k] / buffers.dtf[k] - 1) * buffers.sopc[k];
     buffers.tf[k] = Math.min(buffers.mtf[k], buffers.mtf[k] * (1 - buffers.fce[k]) + buffers.dtf[k] * buffers.fce[k]);
     buffers.b[k] = clip(buffers.d[k], buffers.tf[k] * buffers.p2[k] * 0.5 / constants.rlt, t, constants.pet);
-    buffers.fioai[k] = 1 - buffers.fioaa[k] - buffers.fioas[k] - buffers.fioac[k];
-    buffers.icir[k] = buffers.io[k] * buffers.fioai[k];
+    for (const equation of WORLD3_CAPITAL_INVESTMENT_EQUATIONS) {
+        buffers[equation.key][k] = equation.compute(context);
+    }
 }
