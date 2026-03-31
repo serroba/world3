@@ -23,7 +23,20 @@ export type World3RuntimeValueKey =
   | "pfr"
   | "ppgf"
   | "pptd"
-  | "ppapr";
+  | "ppapr"
+  | "pcrum"
+  | "cmi"
+  | "fie"
+  | "mpai"
+  | "mpld"
+  | "fiald"
+  | "lmf"
+  | "lmp"
+  | "icor"
+  | "lyf"
+  | "lymc"
+  | "lfrt"
+  | "nruf";
 
 export type World3StockEquationContext = {
   k: number;
