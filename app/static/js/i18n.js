@@ -23,13 +23,13 @@ export const SUPPORTED_LOCALES = [
     { code: "th", nativeLabel: "ไทย", direction: "ltr" },
     { code: "ja", nativeLabel: "日本語", direction: "ltr" },
     { code: "zh-CN", nativeLabel: "简体中文", direction: "ltr" },
+    { code: "zh-TW", nativeLabel: "繁體中文", direction: "ltr" },
 ];
 const SUPPORTED_LOCALE_MAP = new Map(SUPPORTED_LOCALES.map((locale) => [locale.code, locale]));
 const LOCALE_ALIASES = {
     pt: "pt-PT",
     zh: "zh-CN",
-    "zh-TW": "zh-CN",
-    "zh-HK": "zh-CN",
+    "zh-HK": "zh-TW",
     "zh-SG": "zh-CN",
 };
 function normalizeLocalePart(value, index) {
