@@ -104,6 +104,10 @@ jobs:
         working-directory: app/static
         run: npm ci
 
+      - name: Build compiled JS from TypeScript
+        working-directory: app/static
+        run: npm run build
+
       - name: Validate HTML
         run: npx --yes htmlhint@latest app/static/index.html
 
