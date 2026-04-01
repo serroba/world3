@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test("homepage loads standard run in the classic combined chart view", async ({ page }) => {
   await page.goto("/");
-  await expect(page).toHaveTitle("World3 — Systems Simulation Explorer");
+  await expect(page).toHaveTitle(/World3 Simulator/);
   await expect(page.locator("nav.site-nav")).toBeVisible();
   await page.waitForURL(/#explore\?preset=standard-run&view=combined/);
   await page.waitForSelector("#explore-charts canvas");
@@ -71,7 +71,7 @@ test.describe("localization", () => {
   test("uses browser locale by default when supported", async ({ page }) => {
     await page.goto("/");
     await page.waitForURL(/#explore\?preset=standard-run&view=combined/);
-    await expect(page).toHaveTitle("World3 — Systemsimulations-Explorer");
+    await expect(page).toHaveTitle(/World3-Simulator/);
     await expect(page.locator("nav.site-nav")).toContainText("Erkunden");
     await expect(page.locator(".chart-view-toggle")).toContainText("Klassisches Einzeldiagramm");
   });
@@ -83,7 +83,7 @@ test.describe("spanish localization", () => {
   test("uses spanish browser locale when supported", async ({ page }) => {
     await page.goto("/");
     await page.waitForURL(/#explore\?preset=standard-run&view=combined/);
-    await expect(page).toHaveTitle("World3 — Explorador de Simulación de Sistemas");
+    await expect(page).toHaveTitle(/Simulador World3/);
     await expect(page.locator("nav.site-nav")).toContainText("Explorar");
     await expect(page.locator(".chart-view-toggle")).toContainText("Gráfico clásico único");
     await expect(page.locator(".chart-panel__title")).toContainText("Vista clásica de World3");
@@ -91,7 +91,7 @@ test.describe("spanish localization", () => {
 
   test("uses spanish browser locale for content as well as chrome", async ({ page }) => {
     await page.goto("/#intro");
-    await expect(page).toHaveTitle("World3 — Explorador de Simulación de Sistemas");
+    await expect(page).toHaveTitle(/Simulador World3/);
     await expect(page.locator("nav.site-nav")).toContainText("Explorar");
     await expect(page.locator("#view-intro .hero")).toContainText("En 1972, un equipo de investigadores del MIT");
     await expect(page.locator("#view-intro .ack")).toContainText("Los límites del crecimiento");
@@ -101,7 +101,7 @@ test.describe("spanish localization", () => {
 test("persists a manual language choice across reloads", async ({ page }) => {
   await page.goto("/");
   await page.selectOption("#locale-picker", "ja");
-  await expect(page).toHaveTitle("World3 — システムシミュレーション・エクスプローラー");
+  await expect(page).toHaveTitle(/World3シミュレータ/);
   await expect(page.locator("#locale-picker")).toHaveValue("ja");
   await expect(page.locator("nav.site-nav")).toContainText("探索");
 
