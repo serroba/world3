@@ -259,7 +259,7 @@ describe("World3 stock equation DSL", () => {
       io: Float64Array.of(0),
     } as unknown as Parameters<typeof runWorld3ExecutionPhase>[1]["buffers"];
 
-    const context = {
+    const context: Parameters<typeof runWorld3ExecutionPhase>[1] = {
       k: 0,
       dt: 0,
       t: 1900,
@@ -267,7 +267,7 @@ describe("World3 stock equation DSL", () => {
       buffers,
       constants: {} as Parameters<typeof runWorld3ExecutionPhase>[1]["constants"],
       lookups: {} as Parameters<typeof runWorld3ExecutionPhase>[1]["lookups"],
-      runtime: {} as Parameters<typeof runWorld3ExecutionPhase>[1]["runtime"],
+      runtime: {},
     };
 
     const runtimePhase = defineRuntimePhase("runtime", [
