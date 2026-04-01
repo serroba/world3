@@ -3,22 +3,23 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>World3 — Systems Simulation Explorer</title>
-  <meta name="description" content="Explore the World3 systems dynamics model interactively. Simulate how population, industrial output, food, pollution, and resources interact from 1900 to 2100 under different policy scenarios.">
+  <title>World3 Simulator – Explore the Limits to Growth Model Online</title>
+  <meta name="description" content="Interactive World3 simulator based on the Limits to Growth model. Simulate population, resources, pollution, food, and industrial output from 1900 to 2100. Explore collapse and stabilisation scenarios online.">
+  <meta name="keywords" content="World3, simulator, Limits to Growth, system dynamics, simulation, overshoot, collapse, population, resources, pollution, Club of Rome, Donella Meadows, Dennis Meadows">
   <link rel="canonical" href="https://limits.world/">
 
   <!-- Open Graph -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="World3 — Systems Simulation Explorer">
-  <meta property="og:description" content="Explore the World3 systems dynamics model interactively. Simulate how population, industrial output, food, pollution, and resources interact from 1900 to 2100.">
+  <meta property="og:title" content="World3 Simulator – Limits to Growth Model Online">
+  <meta property="og:description" content="Interactive World3 simulator. Explore how population, resources, pollution, and industrial output interact from 1900 to 2100 under different scenarios.">
   <meta property="og:url" content="https://limits.world/">
   <meta property="og:image" content="https://limits.world/assets/brand/og-image.png">
-  <meta property="og:site_name" content="World3">
+  <meta property="og:site_name" content="World3 Simulator">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="World3 — Systems Simulation Explorer">
-  <meta name="twitter:description" content="Explore the World3 systems dynamics model interactively. Simulate scenarios from The Limits to Growth.">
+  <meta name="twitter:title" content="World3 Simulator – Limits to Growth Model Online">
+  <meta name="twitter:description" content="Simulate the World3 model from The Limits to Growth. Explore collapse vs stabilisation scenarios interactively.">
   <meta name="twitter:image" content="https://limits.world/assets/brand/og-image.png">
   <meta name="twitter:creator" content="@serroba">
 
@@ -26,13 +27,18 @@
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "WebApplication",
-    "name": "World3",
-    "alternateName": "World3 Systems Simulation Explorer",
+    "@type": "SoftwareApplication",
+    "name": "World3 Simulator",
+    "alternateName": "Limits to Growth Simulator",
     "url": "https://limits.world/",
-    "description": "Interactive browser-based simulation of the World3 systems dynamics model from The Limits to Growth (1972). Explore scenarios for population, resources, pollution, food, and industrial output.",
+    "description": "Interactive online simulator of the World3 system dynamics model from The Limits to Growth (1972). Explore scenarios for population, resources, pollution, food production, and industrial output. Compare collapse and stabilisation pathways.",
     "applicationCategory": "EducationalApplication",
-    "operatingSystem": "Any",
+    "operatingSystem": "Web",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
     "author": {
       "@type": "Person",
       "name": "serroba",
@@ -42,14 +48,15 @@
     "isBasedOn": {
       "@type": "Book",
       "name": "The Limits to Growth",
+      "url": "https://www.clubofrome.org/publication/the-limits-to-growth/",
       "author": [
-        { "@type": "Person", "name": "Donella H. Meadows" },
-        { "@type": "Person", "name": "Dennis L. Meadows" },
-        { "@type": "Person", "name": "Jorgen Randers" },
+        { "@type": "Person", "name": "Donella H. Meadows", "url": "https://en.wikipedia.org/wiki/Donella_Meadows" },
+        { "@type": "Person", "name": "Dennis L. Meadows", "url": "https://en.wikipedia.org/wiki/Dennis_Meadows" },
+        { "@type": "Person", "name": "Jorgen Randers", "url": "https://en.wikipedia.org/wiki/J%C3%B8rgen_Randers" },
         { "@type": "Person", "name": "William W. Behrens III" }
       ],
       "datePublished": "1972",
-      "publisher": { "@type": "Organization", "name": "Club of Rome" }
+      "publisher": { "@type": "Organization", "name": "Club of Rome", "url": "https://www.clubofrome.org/" }
     }
   }
   </script>
@@ -102,7 +109,7 @@
     <!-- INTRO VIEW -->
     <div id="view-intro" class="view">
       <div class="hero">
-        <h1 data-i18n="intro.hero_title">What happens to civilization by 2100?</h1>
+        <h1 data-i18n="intro.hero_title">World3 Simulator — What happens to civilization by 2100?</h1>
         <p data-i18n="intro.body_1_html" data-i18n-html="true">
           In 1972, a team of researchers at MIT built <strong>World3</strong> — a computer
           model that simulates how population, industrial output, food production, pollution,
@@ -120,6 +127,18 @@
       </div>
 
       <div class="book-callout" data-i18n="intro.book_callout_html" data-i18n-html="true"></div>
+
+      <!-- SEO: keyword-rich content in raw HTML for crawlers -->
+      <section class="card mb-lg" id="intro-what-you-can-do">
+        <h2 class="card__title" data-i18n="intro.what_can_you_do_title">What Can You Do With This Simulator?</h2>
+        <p class="text-muted" data-i18n="intro.what_can_you_do_html" data-i18n-html="true">
+          Unlike static explanations, this <strong>World3 simulator</strong> lets you experience the
+          <em>Limits to Growth</em> model interactively. Run simulations from 1900 to 2100.
+          Explore collapse scenarios, test optimistic technology assumptions, or see how
+          comprehensive policy changes can avoid overshoot. Adjust individual model constants
+          and watch the system respond in real time.
+        </p>
+      </section>
 
       <h2 class="section-title" data-i18n="intro.choose_scenario">Choose a scenario</h2>
       <div id="intro-presets" class="grid-2"></div>
