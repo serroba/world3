@@ -1,5 +1,5 @@
 {
-  "meta.title": "World3 Simulator – Explore the Limits to Growth Model Online",
+  "meta.title": "World3 Simulator – Jelajahi Model Limits to Growth Online",
   "brand.home_aria": "Beranda World3",
   "brand.name": "World3",
   "brand.subtitle": "Penjelajah Simulasi Sistem",
@@ -11,7 +11,7 @@
   "nav.calibrate": "Kalibrasi",
   "nav.language": "Bahasa",
   "nav.language_auto": "Otomatis",
-  "intro.hero_title": "World3 Simulator — What happens to civilization by 2100?",
+  "intro.hero_title": "World3 Simulator — Apa yang terjadi pada peradaban pada 2100?",
   "intro.body_1_html": "Pada 1972, tim peneliti di MIT membangun <strong>World3</strong> — model komputer yang menyimulasikan bagaimana populasi, output industri, produksi pangan, polusi, dan sumber daya alam berinteraksi dari waktu ke waktu. Temuan mereka, yang diterbitkan dalam <a href=\"https://www.clubofrome.org/publication/the-limits-to-growth/\" target=\"_blank\" rel=\"noopener\"><em>Batas-Batas Pertumbuhan</em> (<em>The Limits to Growth</em>)</a>, menunjukkan bahwa skenario bisnis-seperti-biasa mengarah pada overshoot dan kemunduran.",
   "intro.body_2_html": "Alat ini memungkinkan kamu menjelajahi skenario tersebut sendiri. Pilih preset untuk melihat apa yang terjadi di bawah asumsi berbeda tentang teknologi, kebijakan, dan sumber daya — atau sesuaikan parameter individual di editor lanjutan.",
   "intro.choose_scenario": "Pilih skenario",

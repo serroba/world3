@@ -1,5 +1,5 @@
 {
-  "meta.title": "World3 Simulator – Explore the Limits to Growth Model Online",
+  "meta.title": "Symulator World3 – Eksploruj model Granic wzrostu",
   "brand.home_aria": "Strona główna World3",
   "brand.name": "World3",
   "brand.subtitle": "Eksplorator symulacji systemowej",
@@ -11,7 +11,7 @@
   "nav.calibrate": "Kalibruj",
   "nav.language": "Język",
   "nav.language_auto": "Automatycznie",
-  "intro.hero_title": "World3 Simulator — What happens to civilization by 2100?",
+  "intro.hero_title": "World3 Simulator — Co stanie się z cywilizacją do 2100 roku?",
   "intro.body_1_html": "W 1972 roku zespół badaczy z MIT zbudował <strong>World3</strong> — model komputerowy symulujący interakcje między ludnością, produkcją przemysłową, produkcją żywności, zanieczyszczeniami i zasobami naturalnymi w czasie. Wyniki, opublikowane w <a href=\"https://www.clubofrome.org/publication/the-limits-to-growth/\" target=\"_blank\" rel=\"noopener\"><em>Granicach wzrostu</em> (<em>The Limits to Growth</em>)</a>, pokazały, że kontynuacja obecnego kursu prowadzi do przekroczenia granic i upadku.",
   "intro.body_2_html": "To narzędzie pozwala ci samodzielnie eksplorować te scenariusze. Wybierz predefiniowany scenariusz, aby zobaczyć, co się stanie przy różnych założeniach dotyczących technologii, polityki i zasobów — lub dostosuj poszczególne parametry w edytorze zaawansowanym.",
   "intro.choose_scenario": "Wybierz scenariusz",

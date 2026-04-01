@@ -11,7 +11,7 @@
   "nav.calibrate": "Kalibrieren",
   "nav.language": "Sprache",
   "nav.language_auto": "Automatisch",
-  "intro.hero_title": "World3 Simulator — What happens to civilization by 2100?",
+  "intro.hero_title": "World3-Simulator — Was passiert mit unserer Zivilisation bis 2100?",
   "intro.body_1_html": "1972 baute ein Forscherteam am MIT <strong>World3</strong> — ein Computermodell, das simuliert, wie Bevölkerung, Industrieproduktion, Nahrungsmittelproduktion, Umweltverschmutzung und natürliche Ressourcen im Laufe der Zeit zusammenwirken. Ihre Ergebnisse, veröffentlicht in <a href=\"https://www.clubofrome.org/publication/the-limits-to-growth/\" target=\"_blank\" rel=\"noopener\"><em>Die Grenzen des Wachstums</em></a>, zeigten, dass ein Weiter-so zu Überschreitung und Niedergang führt.",
   "intro.body_2_html": "Mit diesem Tool kannst du diese Szenarien selbst erkunden. Wähle ein Szenario, um zu sehen, was unter verschiedenen Annahmen zu Technologie, Politik und Ressourcen geschieht — oder passe einzelne Parameter im erweiterten Editor an.",
   "intro.choose_scenario": "Szenario wählen",

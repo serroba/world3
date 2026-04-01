@@ -11,7 +11,7 @@
   "nav.calibrate": "Calibra",
   "nav.language": "Lingua",
   "nav.language_auto": "Automatico",
-  "intro.hero_title": "World3 Simulator — What happens to civilization by 2100?",
+  "intro.hero_title": "World3 Simulator — Cosa succede alla civiltà entro il 2100?",
   "intro.body_1_html": "Nel 1972, un gruppo di ricercatori del MIT ha costruito <strong>World3</strong> — un modello informatico che simula come popolazione, produzione industriale, produzione alimentare, inquinamento e risorse naturali interagiscono nel tempo. I risultati, pubblicati in <a href=\"https://www.clubofrome.org/publication/the-limits-to-growth/\" target=\"_blank\" rel=\"noopener\"><em>I limiti dello sviluppo</em> (<em>The Limits to Growth</em>)</a>, hanno mostrato che lo scenario tendenziale porta al superamento e al declino.",
   "intro.body_2_html": "Questo strumento ti permette di esplorare quegli scenari. Scegli uno scenario predefinito per vedere cosa succede con diverse ipotesi su tecnologia, politiche e risorse — oppure modifica i singoli parametri nell'editor avanzato.",
   "intro.choose_scenario": "Scegli uno scenario",

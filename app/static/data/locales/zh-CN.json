@@ -11,7 +11,7 @@
   "nav.calibrate": "校准",
   "nav.language": "语言",
   "nav.language_auto": "自动",
-  "intro.hero_title": "World3 Simulator — What happens to civilization by 2100?",
+  "intro.hero_title": "World3 模拟器 — 文明在 2100 年会发生什么？",
   "intro.body_1_html": "1972年，MIT的一个研究团队构建了<strong>World3</strong>——一个模拟人口、工业产出、粮食生产、污染和自然资源如何随时间相互作用的计算机模型。他们的研究成果发表在<a href=\"https://www.clubofrome.org/publication/the-limits-to-growth/\" target=\"_blank\" rel=\"noopener\"><em>增长的极限</em>（<em>The Limits to Growth</em>）</a>中，表明一切照旧的路径将导致过冲和衰退。",
   "intro.body_2_html": "这个工具让你亲自探索这些情景。选择一个预设方案，看看在不同的技术、政策和资源假设下会发生什么——或者在高级编辑器中调整单个参数。",
   "intro.choose_scenario": "选择一个情景",

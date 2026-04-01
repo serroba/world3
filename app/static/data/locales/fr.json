@@ -1,5 +1,5 @@
 {
-  "meta.title": "Simulateur World3 – Explorez le modèle des Limites à la croissance",
+  "meta.title": "World3 Simulator – Explorez le modèle des Limites à la croissance",
   "brand.home_aria": "Accueil World3",
   "brand.name": "World3",
   "brand.subtitle": "Explorateur de simulation systémique",
@@ -11,7 +11,7 @@
   "nav.calibrate": "Calibrer",
   "nav.language": "Langue",
   "nav.language_auto": "Automatique",
-  "intro.hero_title": "World3 Simulator — What happens to civilization by 2100?",
+  "intro.hero_title": "World3 Simulator — Que va-t-il arriver à la civilisation d’ici 2100 ?",
   "intro.body_1_html": "En 1972, une équipe de chercheurs du MIT a construit <strong>World3</strong> — un modèle informatique simulant les interactions entre population, production industrielle, production alimentaire, pollution et ressources naturelles au fil du temps. Leurs résultats, publiés dans <a href=\"https://www.clubofrome.org/publication/the-limits-to-growth/\" target=\"_blank\" rel=\"noopener\"><em>Les limites à la croissance</em> (<em>The Limits to Growth</em>)</a>, ont montré que le scénario tendanciel mène au dépassement et au déclin.",
   "intro.body_2_html": "Cet outil te permet d'explorer ces scénarios toi-même. Choisis un scénario prédéfini pour voir ce qui se passe sous différentes hypothèses technologiques, politiques et de ressources — ou ajuste des paramètres individuels dans l'éditeur avancé.",
   "intro.choose_scenario": "Choisis un scénario",

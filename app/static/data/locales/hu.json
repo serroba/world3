@@ -11,7 +11,7 @@
   "nav.calibrate": "Kalibrálás",
   "nav.language": "Nyelv",
   "nav.language_auto": "Automatikus",
-  "intro.hero_title": "World3 Simulator — What happens to civilization by 2100?",
+  "intro.hero_title": "World3 Simulator — Mi történik a civilizációval 2100-ig?",
   "intro.body_1_html": "1972-ben az MIT kutatócsoportja megalkotta a <strong>World3</strong> modellt — egy számítógépes szimulációt, amely a népesség, az ipari termelés, az élelmiszer-termelés, a szennyezés és a természeti erőforrások időbeli kölcsönhatásait modellezi. Eredményeiket <a href=\"https://www.clubofrome.org/publication/the-limits-to-growth/\" target=\"_blank\" rel=\"noopener\"><em>A növekedés határai</em></a> (<em>The Limits to Growth</em>) című művükben publikálták, amely megmutatta, hogy a szokásos üzletmenet túllövéshez és hanyatláshoz vezet.",
   "intro.body_2_html": "Ez az eszköz lehetővé teszi, hogy saját maga fedezze fel ezeket a forgatókönyveket. Válasszon egy előbeállítást, hogy lássa, mi történik különböző technológiai, politikai és erőforrás-feltételezések mellett — vagy módosítson egyes paramétereket a Haladó szerkesztőben.",
   "intro.choose_scenario": "Válasszon forgatókönyvet",

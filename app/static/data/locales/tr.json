@@ -1,5 +1,5 @@
 {
-  "meta.title": "World3 Simulator – Explore the Limits to Growth Model Online",
+  "meta.title": "World3 Simulator – Büyümenin Sınırları modelini keşfedin",
   "brand.home_aria": "World3 ana sayfa",
   "brand.name": "World3",
   "brand.subtitle": "Sistem Simülasyonu Keşfedici",
@@ -11,7 +11,7 @@
   "nav.calibrate": "Kalibrasyon",
   "nav.language": "Dil",
   "nav.language_auto": "Otomatik",
-  "intro.hero_title": "World3 Simulator — What happens to civilization by 2100?",
+  "intro.hero_title": "World3 Simulator — Uygarlığa 2100 yılına kadar ne olur?",
   "intro.body_1_html": "1972'de MIT'den bir araştırma ekibi <strong>World3</strong>'ü inşa etti — nüfus, sanayi üretimi, gıda üretimi, kirlilik ve doğal kaynakların zaman içinde nasıl etkileştiğini simüle eden bir bilgisayar modeli. <a href=\"https://www.clubofrome.org/publication/the-limits-to-growth/\" target=\"_blank\" rel=\"noopener\"><em>Büyümenin Sınırları</em> (<em>The Limits to Growth</em>)</a> olarak yayımlanan bulguları, mevcut gidişatın aşırı kullanıma ve düşüşe yol açtığını gösterdi.",
   "intro.body_2_html": "Bu araç, bu senaryoları kendin keşfetmeni sağlıyor. Teknoloji, politika ve kaynaklar hakkında farklı varsayımlar altında ne olduğunu görmek için bir senaryo seç — ya da gelişmiş düzenleyicide parametreleri ayarla.",
   "intro.choose_scenario": "Bir senaryo seç",

@@ -1,5 +1,5 @@
 {
-  "meta.title": "World3 Simulator – Explore the Limits to Growth Model Online",
+  "meta.title": "World3 Simulator – लिमिट्स टू ग्रोथ मॉडल को एक्सप्लोर करें",
   "brand.home_aria": "World3 होम",
   "brand.name": "World3",
   "brand.subtitle": "सिस्टम सिमुलेशन एक्सप्लोरर",
@@ -11,7 +11,7 @@
   "nav.calibrate": "कैलिब्रेशन",
   "nav.language": "भाषा",
   "nav.language_auto": "ऑटो",
-  "intro.hero_title": "World3 Simulator — What happens to civilization by 2100?",
+  "intro.hero_title": "World3 Simulator — सभ्यता के साथ 2100 तक क्या होता है?",
   "intro.body_1_html": "1972 में, MIT के शोधकर्ताओं की एक टीम ने <strong>World3</strong> बनाया — एक कंप्यूटर मॉडल जो समय के साथ जनसंख्या, औद्योगिक उत्पादन, खाद्य उत्पादन, प्रदूषण और प्राकृतिक संसाधनों की परस्पर क्रिया का अनुकरण करता है। उनके निष्कर्ष, <a href=\"https://www.clubofrome.org/publication/the-limits-to-growth/\" target=\"_blank\" rel=\"noopener\"><em>विकास की सीमाएँ</em> (<em>The Limits to Growth</em>)</a> के रूप में प्रकाशित, ने दिखाया कि यथास्थिति ओवरशूट और गिरावट की ओर ले जाती है।",
   "intro.body_2_html": "यह टूल तुम्हें उन परिदृश्यों को स्वयं एक्सप्लोर करने देता है। तकनीक, नीति और संसाधनों के बारे में अलग-अलग धारणाओं के तहत क्या होता है यह देखने के लिए एक प्रीसेट चुनो — या एडवांस्ड एडिटर में अलग-अलग पैरामीटर एडजस्ट करो।",
   "intro.choose_scenario": "एक परिदृश्य चुनो",

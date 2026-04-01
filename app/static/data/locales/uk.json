@@ -1,5 +1,5 @@
 {
-  "meta.title": "World3 Simulator – Explore the Limits to Growth Model Online",
+  "meta.title": "World3 Simulator – Модель «Межі зростання» онлайн",
   "brand.home_aria": "Головна World3",
   "brand.name": "World3",
   "brand.subtitle": "Дослідник системної симуляції",
@@ -11,7 +11,7 @@
   "nav.calibrate": "Калібрування",
   "nav.language": "Мова",
   "nav.language_auto": "Авто",
-  "intro.hero_title": "World3 Simulator — What happens to civilization by 2100?",
+  "intro.hero_title": "World3 Simulator — що станеться з цивілізацією до 2100 року?",
   "intro.body_1_html": "У 1972 році група дослідників з MIT створила <strong>World3</strong> — комп'ютерну модель, яка симулює взаємодію населення, промислового виробництва, виробництва їжі, забруднення та природних ресурсів у часі. Їхні висновки, опубліковані у <a href=\"https://www.clubofrome.org/publication/the-limits-to-growth/\" target=\"_blank\" rel=\"noopener\"><em>Межах зростання</em> (<em>The Limits to Growth</em>)</a>, показали, що інерційний сценарій веде до перевищення та занепаду.",
   "intro.body_2_html": "Цей інструмент дозволяє тобі самостійно досліджувати ці сценарії. Обери попередньо налаштований сценарій, щоб побачити, що відбувається за різних припущень щодо технологій, політики та ресурсів — або налаштуй окремі параметри в розширеному редакторі.",
   "intro.choose_scenario": "Обери сценарій",

@@ -1,5 +1,5 @@
 {
-  "meta.title": "World3 Simulator – Explore the Limits to Growth Model Online",
+  "meta.title": "World3 Simulator – অনলাইনে প্রবৃদ্ধির সীমা মডেল অন্বেষণ করুন",
   "brand.home_aria": "World3 হোম",
   "brand.name": "World3",
   "brand.subtitle": "সিস্টেম সিমুলেশন এক্সপ্লোরার",
@@ -11,7 +11,7 @@
   "nav.calibrate": "ক্যালিব্রেশন",
   "nav.language": "ভাষা",
   "nav.language_auto": "স্বয়ংক্রিয়",
-  "intro.hero_title": "World3 Simulator — What happens to civilization by 2100?",
+  "intro.hero_title": "World3 Simulator — ২১০০ সালের মধ্যে সভ্যতার কী পরিণতি হবে?",
   "intro.body_1_html": "১৯৭২ সালে MIT-এর একটি গবেষক দল <strong>World3</strong> তৈরি করেছিল — একটি কম্পিউটার মডেল যা সময়ের সাথে সাথে জনসংখ্যা, শিল্প উৎপাদন, খাদ্য উৎপাদন, দূষণ এবং প্রাকৃতিক সম্পদের মিথস্ক্রিয়া অনুকরণ করে। তাদের ফলাফল, <a href=\"https://www.clubofrome.org/publication/the-limits-to-growth/\" target=\"_blank\" rel=\"noopener\"><em>প্রবৃদ্ধির সীমা</em> (<em>The Limits to Growth</em>)</a> হিসেবে প্রকাশিত, দেখিয়েছিল যে চলতি ধারা অতিক্রমণ ও পতনের দিকে নিয়ে যায়।",
   "intro.body_2_html": "এই টুলটি তোমাকে নিজে সেই পরিস্থিতিগুলো অন্বেষণ করতে দেয়। প্রযুক্তি, নীতি এবং সম্পদ সম্পর্কে বিভিন্ন অনুমানে কী ঘটে তা দেখতে একটি প্রিসেট বেছে নাও — অথবা উন্নত সম্পাদকে পৃথক প্যারামিটার সামঞ্জস্য করো।",
   "intro.choose_scenario": "একটি পরিস্থিতি বেছে নাও",

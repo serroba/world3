@@ -11,7 +11,7 @@
   "nav.calibrate": "المعايرة",
   "nav.language": "اللغة",
   "nav.language_auto": "تلقائي",
-  "intro.hero_title": "World3 Simulator — What happens to civilization by 2100?",
+  "intro.hero_title": "محاكي World3 — ماذا يحدث للحضارة بحلول عام 2100؟",
   "intro.body_1_html": "في عام 1972، بنى فريق من الباحثين في MIT نموذج <strong>World3</strong> — نموذج حاسوبي يحاكي كيفية تفاعل السكان والإنتاج الصناعي وإنتاج الغذاء والتلوث والموارد الطبيعية عبر الزمن. نتائجهم، المنشورة في <a href=\"https://www.clubofrome.org/publication/the-limits-to-growth/\" target=\"_blank\" rel=\"noopener\"><em>حدود النمو</em> (<em>The Limits to Growth</em>)</a>، أظهرت أن المسار المعتاد يؤدي إلى التجاوز والانحدار.",
   "intro.body_2_html": "تتيح لك هذه الأداة استكشاف تلك السيناريوهات بنفسك. اختر سيناريو مسبقاً لترى ما يحدث في ظل افتراضات مختلفة حول التكنولوجيا والسياسات والموارد — أو عدّل معاملات فردية في المحرر المتقدم.",
   "intro.choose_scenario": "اختر سيناريو",

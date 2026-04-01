@@ -1,5 +1,5 @@
 {
-  "meta.title": "World3 Simulator – Explore the Limits to Growth Model Online",
+  "meta.title": "World3 Simulator – สำรวจแบบจำลอง Limits to Growth ออนไลน์",
   "brand.home_aria": "หน้าแรก World3",
   "brand.name": "World3",
   "brand.subtitle": "เครื่องมือสำรวจการจำลองระบบ",
@@ -11,7 +11,7 @@
   "nav.calibrate": "สอบเทียบ",
   "nav.language": "ภาษา",
   "nav.language_auto": "อัตโนมัติ",
-  "intro.hero_title": "World3 Simulator — What happens to civilization by 2100?",
+  "intro.hero_title": "World3 Simulator — อารยธรรมจะเป็นอย่างไรภายในปี 2100?",
   "intro.body_1_html": "ในปี 1972 ทีมนักวิจัยจาก MIT สร้าง <strong>World3</strong> — โมเดลคอมพิวเตอร์ที่จำลองปฏิสัมพันธ์ของประชากร ผลผลิตอุตสาหกรรม การผลิตอาหาร มลพิษ และทรัพยากรธรรมชาติตลอดเวลา ผลการศึกษาตีพิมพ์ใน <a href=\"https://www.clubofrome.org/publication/the-limits-to-growth/\" target=\"_blank\" rel=\"noopener\"><em>ขีดจำกัดของการเติบโต</em> (<em>The Limits to Growth</em>)</a> แสดงให้เห็นว่าแนวทางเดิมนำไปสู่การเกินขีดและเสื่อมถอย",
   "intro.body_2_html": "เครื่องมือนี้ให้คุณสำรวจสถานการณ์เหล่านั้นด้วยตัวเอง เลือกพรีเซ็ตเพื่อดูว่าจะเกิดอะไรขึ้นภายใต้สมมติฐานต่างๆ เกี่ยวกับเทคโนโลยี นโยบาย และทรัพยากร — หรือปรับพารามิเตอร์ในตัวแก้ไขขั้นสูง",
   "intro.choose_scenario": "เลือกสถานการณ์",
