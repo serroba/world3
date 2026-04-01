@@ -1,13 +1,11 @@
 import { expect, test } from "@playwright/test";
 
-test("homepage redirects to /explore with default scenario", async ({ page }) => {
+test("homepage loads intro view at /", async ({ page }) => {
   await page.goto("/");
   await expect(page).toHaveTitle(/World3 Simulator/);
   await expect(page.locator("nav.site-nav")).toBeVisible();
-  await page.waitForURL(/\/explore\?preset=standard-run/);
-  await page.waitForSelector("#explore-charts canvas");
-  await expect(page.locator("#explore-charts canvas")).toHaveCount(1);
-  await expect(page.locator(".chart-panel__title")).toContainText("Classic World3 Overview");
+  await expect(page.locator("#view-intro")).toBeVisible();
+  await expect(page.locator("#view-intro .hero h1")).toBeVisible();
 });
 
 test("explore view supports sector cards and classic combined chart", async ({ page }) => {
@@ -99,7 +97,7 @@ test.describe("localization", () => {
 
   test("uses browser locale by default when supported", async ({ page }) => {
     await page.goto("/");
-    await page.waitForURL(/\/explore\?preset=standard-run/);
+    await expect(page.locator("#view-intro")).toBeVisible();
     await expect(page).toHaveTitle(/World3-Simulator/);
     await expect(page.locator("nav.site-nav")).toContainText("Erkunden");
     await expect(page.locator(".chart-view-toggle")).toContainText("Klassisches Einzeldiagramm");
@@ -111,7 +109,7 @@ test.describe("spanish localization", () => {
 
   test("uses spanish browser locale when supported", async ({ page }) => {
     await page.goto("/");
-    await page.waitForURL(/\/explore\?preset=standard-run/);
+    await expect(page.locator("#view-intro")).toBeVisible();
     await expect(page).toHaveTitle(/Simulador World3/);
     await expect(page.locator("nav.site-nav")).toContainText("Explorar");
     await expect(page.locator(".chart-view-toggle")).toContainText("Gráfico clásico único");

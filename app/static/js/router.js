@@ -14,22 +14,17 @@ const Router = (() => {
 
   function parsePath() {
     let pathname = location.pathname;
-    const qs = location.search.replace(/^\?/, "");
+    let qs = location.search.replace(/^\?/, "");
 
     // Backwards compat: redirect old hash URLs to path URLs
     if (location.hash && location.hash.length > 1) {
       const [hashPath, hashQs] = location.hash.substring(1).split("?");
-      const newUrl = hashPath + (hashQs ? "?" + hashQs : "");
+      // Ensure leading slash
+      const normalizedPath = hashPath.startsWith("/") ? hashPath : "/" + hashPath;
+      const newUrl = normalizedPath + (hashQs ? "?" + hashQs : "");
       history.replaceState(null, "", newUrl);
-      pathname = hashPath;
-      if (hashQs) {
-        const params = {};
-        for (const pair of hashQs.split("&")) {
-          const [k, v] = pair.split("=");
-          params[decodeURIComponent(k)] = decodeURIComponent(v || "");
-        }
-        return { path: pathname, params };
-      }
+      pathname = normalizedPath;
+      qs = hashQs || "";
     }
 
     // Normalise: strip trailing slash (except root)
@@ -37,9 +32,9 @@ const Router = (() => {
       pathname = pathname.slice(0, -1);
     }
 
-    // Map root to /explore default
+    // Root serves the intro/home view (not a redirect)
     if (pathname === "/" || pathname === "") {
-      pathname = "/explore";
+      pathname = "/";
     }
 
     const params = {};
@@ -61,7 +56,7 @@ const Router = (() => {
     // Update nav links
     document.querySelectorAll(".site-nav__links a").forEach((a) => {
       const href = a.getAttribute("href");
-      a.classList.toggle("active", href === path || (path === "/explore" && href === "/"));
+      a.classList.toggle("active", href === path);
     });
 
     // Find matching route
@@ -81,11 +76,13 @@ const Router = (() => {
 
   // Intercept link clicks for SPA navigation
   document.addEventListener("click", (e) => {
+    // Skip modified clicks (Cmd/Ctrl+click, middle click, Shift+click)
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
     const link = e.target.closest("a[href]");
     if (!link) return;
     const href = link.getAttribute("href");
-    if (!href || href.startsWith("http") || href.startsWith("//") || href.startsWith("mailto:") || href.startsWith("#app-shell")) return;
-    if (link.target === "_blank") return;
+    if (!href || href.startsWith("http") || href.startsWith("//") || href.startsWith("mailto:") || href.startsWith("#")) return;
+    if (link.target === "_blank" || link.hasAttribute("download")) return;
     if (!href.startsWith("/")) return;
     e.preventDefault();
     history.pushState(null, "", href);
