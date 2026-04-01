@@ -69,6 +69,7 @@ export const SUPPORTED_LOCALES: readonly SupportedLocale[] = [
   { code: "th", nativeLabel: "ไทย", direction: "ltr" },
   { code: "ja", nativeLabel: "日本語", direction: "ltr" },
   { code: "zh-CN", nativeLabel: "简体中文", direction: "ltr" },
+  { code: "zh-TW", nativeLabel: "繁體中文", direction: "ltr" },
 ] as const;
 
 const SUPPORTED_LOCALE_MAP = new Map(
@@ -78,8 +79,7 @@ const SUPPORTED_LOCALE_MAP = new Map(
 const LOCALE_ALIASES: Readonly<Record<string, string>> = {
   pt: "pt-PT",
   zh: "zh-CN",
-  "zh-TW": "zh-CN",
-  "zh-HK": "zh-CN",
+  "zh-HK": "zh-TW",
   "zh-SG": "zh-CN",
 };
 
