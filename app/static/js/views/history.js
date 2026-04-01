@@ -3,7 +3,7 @@
  */
 
 const HistoryView = (() => {
-  const SECTIONS = ["cybernetics", "origin", "backlash", "vindication", "updates", "systems_thinking", "boundaries"];
+  const SECTIONS = ["cybernetics", "origin", "overshoot", "backlash", "vindication", "updates", "systems_thinking", "boundaries"];
 
   function render() {
     const container = document.getElementById("history-sections");
