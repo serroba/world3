@@ -64,6 +64,13 @@ const Router = (() => {
     return { path: pathname, params, locale };
   }
 
+  function updateNavHighlight(activePath) {
+    document.querySelectorAll(".site-nav__links a").forEach((a) => {
+      const href = a.getAttribute("href");
+      a.classList.toggle("active", href === activePath);
+    });
+  }
+
   function navigate() {
     const { path, params, locale } = parsePath();
 
@@ -75,11 +82,7 @@ const Router = (() => {
     // Hide all views
     document.querySelectorAll(".view").forEach((el) => el.classList.remove("active"));
 
-    // Update nav links
-    document.querySelectorAll(".site-nav__links a").forEach((a) => {
-      const href = a.getAttribute("href");
-      a.classList.toggle("active", href === path);
-    });
+    updateNavHighlight(path);
 
     // Find matching route
     const route = routes.find((r) => r.pattern === path);
@@ -143,16 +146,14 @@ const Router = (() => {
       navigate();
     },
 
+    /**
+     * Replace the current URL without re-rendering the active view.
+     * Use this for URL state updates (e.g. scenario params) where the
+     * view is already handling its own updates. Use go() for navigation.
+     */
     replace(path) {
       history.replaceState(null, "", path);
-      // Update nav link highlighting without re-rendering the active view.
-      // This prevents the Advanced view from rebuilding its accordions
-      // when syncScenarioUrl() updates the URL on every parameter change.
-      const { path: currentPath } = parsePath();
-      document.querySelectorAll(".site-nav__links a").forEach((a) => {
-        const href = a.getAttribute("href");
-        a.classList.toggle("active", href === currentPath);
-      });
+      updateNavHighlight(parsePath().path);
     },
 
     /** Register a callback invoked after every navigation. */
