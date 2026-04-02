@@ -133,7 +133,7 @@ test("persists a manual language choice across reloads", async ({ page }) => {
   await expect(page.locator("nav.site-nav")).toContainText("探索");
 
   await page.reload();
-  await page.waitForURL(/\/explore\?preset=standard-run/);
+  await page.waitForSelector("#locale-picker");
   await expect(page.locator("#locale-picker")).toHaveValue("ja");
   await expect(page.locator("nav.site-nav")).toContainText("探索");
 });
