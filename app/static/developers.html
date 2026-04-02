@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>World3 API — Developer Documentation</title>
+  <meta name="description" content="API documentation for the World3 Simulator. Run simulations, explore scenarios, and retrieve time series data via a JSON API.">
+  <link rel="icon" type="image/svg+xml" href="assets/brand/favicon.svg">
+  <style>
+    body { margin: 0; padding: 0; }
+    .api-header {
+      background: #17324d;
+      color: #fff;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .api-header img { height: 32px; }
+    .api-header a { color: #2ec4b6; text-decoration: none; font-size: 0.875rem; }
+    .api-header a:hover { text-decoration: underline; }
+    .api-header__title { font-weight: 700; font-size: 1.1rem; flex: 1; }
+  </style>
+</head>
+<body>
+  <div class="api-header">
+    <img src="assets/brand/world3-mark.svg" alt="">
+    <span class="api-header__title">World3 Simulator API</span>
+    <a href="/">Back to app</a>
+    <a href="/openapi.json">OpenAPI spec</a>
+    <a href="/agent.json">Agent manifest</a>
+  </div>
+  <redoc spec-url="/openapi.json"
+    hide-hostname
+    theme='{
+      "colors": { "primary": { "main": "#0a7b83" } },
+      "typography": { "fontFamily": "-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif" },
+      "sidebar": { "backgroundColor": "#f6f7f3" }
+    }'
+  ></redoc>
+  <script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"></script>
+</body>
+</html>
