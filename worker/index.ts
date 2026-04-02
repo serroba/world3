@@ -23,6 +23,10 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Headers": "Content-Type",
 };
 
+const LINK_HEADER =
+  '</openapi.json>; rel="service-desc"; type="application/json", ' +
+  '</agent.json>; rel="alternate"; type="application/json"';
+
 let tablesCache: RawLookupTable[] | null = null;
 
 async function loadTables(env: Env): Promise<RawLookupTable[]> {
@@ -40,7 +44,11 @@ async function loadTables(env: Env): Promise<RawLookupTable[]> {
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+    headers: {
+      "Content-Type": "application/json",
+      "Link": LINK_HEADER,
+      ...CORS_HEADERS,
+    },
   });
 }
 
