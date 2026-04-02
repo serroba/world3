@@ -7,6 +7,8 @@
   <meta name="description" content="Interactive World3 simulator based on the Limits to Growth model. Simulate population, resources, pollution, food, and industrial output from 1900 to 2100. Explore collapse and stabilisation scenarios online.">
   <meta name="keywords" content="World3, simulator, Limits to Growth, system dynamics, simulation, overshoot, collapse, population, resources, pollution, Club of Rome, Donella Meadows, Dennis Meadows">
   <link rel="canonical" href="https://limits.world/">
+  <link rel="service-desc" href="/openapi.json" type="application/json">
+  <link rel="alternate" href="/agent.json" type="application/json" title="Agent manifest">
   <div id="hreflang-links"></div>
 
   <!-- Open Graph -->
@@ -96,6 +98,7 @@
       <li><a href="/compare" data-i18n="nav.compare">Compare</a></li>
       <li><a href="/advanced" data-i18n="nav.advanced">Advanced</a></li>
       <li><a href="/calibrate" data-i18n="nav.calibrate">Calibrate</a></li>
+      <li><a href="/developers">API</a></li>
       <li class="site-nav__locale">
         <label for="locale-picker" class="site-nav__locale-label" data-i18n="nav.language">Language</label>
         <select id="locale-picker" class="site-nav__locale-select" aria-label="Language" data-i18n="nav.language" data-i18n-attr="aria-label"></select>
@@ -332,6 +335,104 @@
       </div>
     </div>
 
+    <!-- DEVELOPERS VIEW -->
+    <div id="view-developers" class="view">
+      <div class="hero">
+        <h1>API &amp; Developer Resources</h1>
+        <p class="text-muted">Use the World3 simulator programmatically. Run simulations, retrieve presets, and integrate with AI agents.</p>
+      </div>
+
+      <div class="card mb-lg">
+        <h2 class="card__title">Endpoints</h2>
+        <table style="width:100%; border-collapse:collapse; margin-top:var(--space-md);">
+          <thead>
+            <tr style="text-align:left; border-bottom:2px solid var(--color-border);">
+              <th style="padding:var(--space-sm) var(--space-md);">Method</th>
+              <th style="padding:var(--space-sm) var(--space-md);">Path</th>
+              <th style="padding:var(--space-sm) var(--space-md);">Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--color-border);">
+              <td style="padding:var(--space-sm) var(--space-md);"><code>POST</code></td>
+              <td style="padding:var(--space-sm) var(--space-md);"><code>/api/simulate</code></td>
+              <td style="padding:var(--space-sm) var(--space-md);">Run a World3 simulation with custom parameters</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--color-border);">
+              <td style="padding:var(--space-sm) var(--space-md);"><code>GET</code></td>
+              <td style="padding:var(--space-sm) var(--space-md);"><code>/api/presets</code></td>
+              <td style="padding:var(--space-sm) var(--space-md);">List presets, constants, and variable metadata</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card mb-lg">
+        <h2 class="card__title">Quick start</h2>
+        <p>Run a standard simulation with a single request:</p>
+        <pre style="background:var(--color-surface-alt);padding:var(--space-md);border-radius:var(--radius-sm);overflow-x:auto;margin-top:var(--space-sm);"><code>curl -X POST https://limits.world/api/simulate \
+  -H "Content-Type: application/json" \
+  -d '{}'</code></pre>
+        <p style="margin-top:var(--space-md);">Use a preset with custom overrides:</p>
+        <pre style="background:var(--color-surface-alt);padding:var(--space-md);border-radius:var(--radius-sm);overflow-x:auto;margin-top:var(--space-sm);"><code>curl -X POST https://limits.world/api/simulate \
+  -H "Content-Type: application/json" \
+  -d '{"preset":"comprehensive-policy","year_max":2200}'</code></pre>
+      </div>
+
+      <div class="card mb-lg">
+        <h2 class="card__title">Specifications &amp; discovery</h2>
+        <table style="width:100%; border-collapse:collapse; margin-top:var(--space-md);">
+          <thead>
+            <tr style="text-align:left; border-bottom:2px solid var(--color-border);">
+              <th style="padding:var(--space-sm) var(--space-md);">Resource</th>
+              <th style="padding:var(--space-sm) var(--space-md);">URL</th>
+              <th style="padding:var(--space-sm) var(--space-md);">Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--color-border);">
+              <td style="padding:var(--space-sm) var(--space-md);">OpenAPI spec</td>
+              <td style="padding:var(--space-sm) var(--space-md);"><a href="/openapi.json"><code>/openapi.json</code></a></td>
+              <td style="padding:var(--space-sm) var(--space-md);">Full API schema (OpenAPI 3.0)</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--color-border);">
+              <td style="padding:var(--space-sm) var(--space-md);">Agent manifest</td>
+              <td style="padding:var(--space-sm) var(--space-md);"><a href="/agent.json"><code>/agent.json</code></a></td>
+              <td style="padding:var(--space-sm) var(--space-md);">Machine-readable capabilities for AI agents</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--color-border);">
+              <td style="padding:var(--space-sm) var(--space-md);">Source code</td>
+              <td style="padding:var(--space-sm) var(--space-md);"><a href="https://github.com/serroba/world3" target="_blank" rel="noopener"><code>github.com/serroba/world3</code></a></td>
+              <td style="padding:var(--space-sm) var(--space-md);">Spec files live at <code>app/static/openapi.json</code> and <code>app/static/agent.json</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card mb-lg">
+        <h2 class="card__title">Response shape</h2>
+        <p><code>POST /api/simulate</code> returns:</p>
+        <pre style="background:var(--color-surface-alt);padding:var(--space-md);border-radius:var(--radius-sm);overflow-x:auto;margin-top:var(--space-sm);"><code>{
+  "year_min": 1900,
+  "year_max": 2100,
+  "dt": 0.5,
+  "time": [1900, 1900.5, 1901, ...],
+  "constants_used": { "nri": 1e12, ... },
+  "series": {
+    "pop": { "name": "pop", "values": [1.6e9, ...] },
+    "nrfr": { "name": "nrfr", "values": [1.0, ...] },
+    ...
+  }
+}</code></pre>
+      </div>
+
+      <div class="view-links">
+        <a href="/explore" class="btn btn-outline btn-sm">Explore scenarios</a>
+        <a href="/openapi.json" class="btn btn-outline btn-sm">OpenAPI spec</a>
+        <a href="/agent.json" class="btn btn-outline btn-sm">Agent manifest</a>
+      </div>
+    </div>
+
     <!-- CALIBRATE VIEW -->
     <div id="view-calibrate" class="view">
       <h2 class="section-title" data-i18n="calibrate.title">Calibrate &amp; Validate</h2>
@@ -417,6 +518,7 @@
 <script defer src="js/views/what-is-world3.js"></script>
 <script defer src="js/views/limits-to-growth.js"></script>
 <script defer src="js/views/scenarios.js"></script>
+<script defer src="js/views/developers.js"></script>
 <script defer src="js/app.js"></script>
 
 </body>

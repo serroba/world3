@@ -20,6 +20,7 @@
 - [About](#about)
 - [Quick Start](#quick-start)
 - [CLI](#cli)
+- [API](#api)
 - [Features](#features)
 - [Deployment](#deployment)
 - [Project Layout](#project-layout)
@@ -92,6 +93,41 @@ npm run browser-native:cli -- --summary --preset doubled-resources
 npm run browser-native:cli -- --plot-svg /tmp/world3.svg
 ```
 
+# API
+
+The simulator exposes a JSON API when deployed via Cloudflare Workers. The same simulation engine that runs in the browser runs server-side.
+
+## Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/simulate` | Run a simulation with custom parameters |
+| `GET` | `/api/presets` | List presets, constants, and variable metadata |
+
+## Quick example
+
+```bash
+# Standard run (all defaults)
+curl -X POST https://limits.world/api/simulate \
+  -H "Content-Type: application/json" \
+  -d '{}'
+
+# Named preset with overrides
+curl -X POST https://limits.world/api/simulate \
+  -H "Content-Type: application/json" \
+  -d '{"preset": "comprehensive-policy", "year_max": 2200}'
+```
+
+## Specifications
+
+| Resource | URL | Source |
+|----------|-----|--------|
+| OpenAPI 3.0 spec | [/openapi.json](https://limits.world/openapi.json) | [`app/static/openapi.json`](./app/static/openapi.json) |
+| Agent manifest | [/agent.json](https://limits.world/agent.json) | [`app/static/agent.json`](./app/static/agent.json) |
+| Developer docs | [/developers](https://limits.world/developers) | In-app API reference |
+
+The API is discoverable via standard `Link` response headers (`rel="service-desc"`) and HTML `<link>` tags.
+
 # Features
 
 - **5 preset scenarios**: Standard run, Optimistic technology, Comprehensive policy, Doubled resources, Population stability
@@ -114,7 +150,7 @@ Deployed via `.github/workflows/deploy-pages.yml`. The workflow runs `npm run bu
 
 ## Cloudflare Workers
 
-The root [wrangler.jsonc](./wrangler.jsonc) deploys the app as a static-assets-only Worker.
+The root [wrangler.jsonc](./wrangler.jsonc) deploys the app as a Worker with static assets. The Worker ([`worker/index.ts`](./worker/index.ts)) handles `/api/*` routes and falls through to static assets for the SPA.
 
 **Build command** (set in Cloudflare dashboard): `cd app/static && npm ci && npm run build`
 
@@ -124,6 +160,9 @@ The Worker uses SPA fallback mode (`not_found_handling: "single-page-application
 
 | Path | Purpose |
 |------|---------|
+| `app/static/openapi.json` | OpenAPI 3.0 specification for the simulation API |
+| `app/static/agent.json` | Machine-readable agent manifest for AI tool discovery |
+| `worker/index.ts` | Cloudflare Worker entry point — serves `/api/simulate` and `/api/presets` |
 | `app/static/ts/core/` | Shared World3 simulation engine, sector logic, equation DSL, calibration and validation |
 | `app/static/ts/cli/` | Node CLI adapters (summary, SVG, terminal chart) |
 | `app/static/js/views/` | Hand-written browser view modules (intro, history, FAQ, model, explore, compare, advanced, calibrate) |
@@ -155,6 +194,10 @@ The static web app consumes the shared core via lightweight browser-facing modul
 ## 3. CLI Adapter
 
 The CLI consumes the same shared core to generate summaries, SVG plots, and terminal charts. Used by CI for simulation validation and chart previews in pull requests.
+
+## 4. API Adapter (Cloudflare Worker)
+
+A thin Worker handler imports the shared core and serves it as a JSON API. Agents and external tools can call `POST /api/simulate` without running browser JS. The Worker also serves the static SPA for all non-API routes.
 
 # References
 

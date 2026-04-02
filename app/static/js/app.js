@@ -33,6 +33,7 @@
   Router.register("/what-is-world3", "view-what-is-world3", WhatIsWorld3View.render);
   Router.register("/limits-to-growth-model", "view-limits-to-growth", LimitsToGrowthView.render);
   Router.register("/world3-scenarios", "view-scenarios", ScenariosView.render);
+  Router.register("/developers", "view-developers", DevelopersView.render);
 
   Router.onNavigate(updateHreflangTags);
   Router.start();
