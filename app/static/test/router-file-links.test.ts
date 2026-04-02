@@ -11,7 +11,7 @@ import { describe, expect, test } from "vitest";
 const FILE_EXT_PATTERN = /\.\w+$/;
 
 function isStaticFileHref(href: string): boolean {
-  const pathname = href.split("?")[0] ?? href;
+  const pathname = href.split(/[?#]/)[0] ?? href;
   return FILE_EXT_PATTERN.test(pathname);
 }
 
@@ -44,5 +44,11 @@ describe("router static-file link detection", () => {
   test("ignores query params when checking for extension", () => {
     expect(isStaticFileHref("/openapi.json?v=2")).toBe(true);
     expect(isStaticFileHref("/explore?preset=standard-run")).toBe(false);
+  });
+
+  test("ignores hash fragments when checking for extension", () => {
+    expect(isStaticFileHref("/openapi.json#schema")).toBe(true);
+    expect(isStaticFileHref("/openapi.json?v=2#schema")).toBe(true);
+    expect(isStaticFileHref("/explore#top")).toBe(false);
   });
 });
