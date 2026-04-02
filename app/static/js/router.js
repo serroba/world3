@@ -145,7 +145,14 @@ const Router = (() => {
 
     replace(path) {
       history.replaceState(null, "", path);
-      navigate();
+      // Update nav link highlighting without re-rendering the active view.
+      // This prevents the Advanced view from rebuilding its accordions
+      // when syncScenarioUrl() updates the URL on every parameter change.
+      const { path: currentPath } = parsePath();
+      document.querySelectorAll(".site-nav__links a").forEach((a) => {
+        const href = a.getAttribute("href");
+        a.classList.toggle("active", href === currentPath);
+      });
     },
 
     /** Register a callback invoked after every navigation. */
