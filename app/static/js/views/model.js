@@ -43,14 +43,7 @@ const ModelView = (() => {
               undefined,
               section.equations.feedback,
             ),
-            items: section.equations.items.map((item, index) => ({
-              ...item,
-              label: I18n.t(
-                `${baseKey}.equations.items.${index}.label`,
-                undefined,
-                item.label,
-              ),
-            })),
+            equationKeys: section.equations.equationKeys || [],
           }
         : undefined,
       sources: (section.sources || []).map((source, index) => ({
@@ -110,14 +103,19 @@ const ModelView = (() => {
     preamble.textContent = eq.preamble;
     outer.appendChild(preamble);
 
-    eq.items.forEach((item) => {
+    const keys = eq.equationKeys || [];
+    keys.forEach((key) => {
+      const ref = (typeof EquationReference !== "undefined") ? EquationReference[key] : null;
+      if (!ref) return;
       const block = UI.el("div", "eq-block");
-      const label = UI.el("span", "eq-label", item.label + ": ");
+      const label = UI.el("span", "eq-label", ref.description + ": ");
       block.appendChild(label);
-      const eqSpan = document.createElement("span");
-      eqSpan.className = "eq";
-      eqSpan.innerHTML = item.html;
-      block.appendChild(eqSpan);
+      const eqCode = document.createElement("code");
+      eqCode.className = "eq eq-dynamo";
+      eqCode.textContent = ref.dynamo;
+      block.appendChild(eqCode);
+      const source = UI.el("span", "eq-source", ref.source);
+      block.appendChild(source);
       outer.appendChild(block);
     });
 

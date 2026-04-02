@@ -1,6 +1,9 @@
 /**
  * Model page section data — each entry defines a question-section with
  * three progressive disclosure levels: plain English, equations, constants.
+ *
+ * Equation items are referenced by key from WORLD3_EQUATION_REFERENCE
+ * (the single source of truth for DYNAMO equations and descriptions).
  */
 
 /* exported MODEL_SECTIONS */
@@ -41,33 +44,7 @@ const MODEL_SECTIONS = [
         "Population is the sum of four cohort stocks (P1\u2013P4). Each stock changes " +
         "by inflows from births or maturation and outflows from death or maturation " +
         "to the next group. Life expectancy is a base value multiplied by four factors.",
-      items: [
-        {
-          label: "Total population",
-          html:
-            '<span class="eq-var">POP</span> = ' +
-            '<span class="eq-var">P1</span> + <span class="eq-var">P2</span> + ' +
-            '<span class="eq-var">P3</span> + <span class="eq-var">P4</span>',
-        },
-        {
-          label: "Cohort change (ages 0\u201314)",
-          html:
-            '<span class="eq-frac"><span class="eq-num">d<span class="eq-var">P1</span></span>' +
-            '<span class="eq-den">d<span class="eq-var">t</span></span></span> = ' +
-            '<span class="eq-var">B</span> \u2212 <span class="eq-var">D1</span> \u2212 ' +
-            '<span class="eq-var">Mat1</span>',
-        },
-        {
-          label: "Life expectancy",
-          html:
-            '<span class="eq-var">LE</span> = ' +
-            '<span class="eq-var">LEN</span> \u00d7 ' +
-            '<span class="eq-var">LMF</span> \u00d7 ' +
-            '<span class="eq-var">LMHS</span> \u00d7 ' +
-            '<span class="eq-var">LMP</span> \u00d7 ' +
-            '<span class="eq-var">LMC</span>',
-        },
-      ],
+      equationKeys: ["pop", "p1", "le"],
       feedback:
         "This is a reinforcing loop: higher life expectancy \u2192 more people \u2192 more " +
         "industrial output \u2192 better health services \u2192 higher life expectancy. But " +
@@ -116,30 +93,7 @@ const MODEL_SECTIONS = [
       preamble:
         "Resources are a single stock that depletes at a rate proportional to population " +
         "and per-capita consumption. A technology multiplier can slow depletion.",
-      items: [
-        {
-          label: "Resource depletion",
-          html:
-            '<span class="eq-frac"><span class="eq-num">d<span class="eq-var">NR</span></span>' +
-            '<span class="eq-den">d<span class="eq-var">t</span></span></span> = ' +
-            '\u2212<span class="eq-var">NRUR</span>',
-        },
-        {
-          label: "Fraction remaining",
-          html:
-            '<span class="eq-var">NRFR</span> = ' +
-            '<span class="eq-frac"><span class="eq-num"><span class="eq-var">NR</span></span>' +
-            '<span class="eq-den"><span class="eq-var">NRI</span></span></span>',
-        },
-        {
-          label: "Usage rate",
-          html:
-            '<span class="eq-var">NRUR</span> = ' +
-            '<span class="eq-var">POP</span> \u00d7 ' +
-            '<span class="eq-var">PCRUM</span> \u00d7 ' +
-            '<span class="eq-var">NRUF</span>',
-        },
-      ],
+      equationKeys: ["nr", "nrfr", "nrur"],
       feedback:
         "This is a balancing loop: fewer resources \u2192 higher FCAOR \u2192 less industrial " +
         "output \u2192 lower consumption rate \u2192 slower depletion. But the economy shrinks " +
@@ -190,25 +144,7 @@ const MODEL_SECTIONS = [
         "Technology enters through multiplier functions that modify resource usage, " +
         "pollution generation, and land yield. The switch year determines when " +
         "improvements begin.",
-      items: [
-        {
-          label: "Resource usage factor (after switch)",
-          html:
-            '<span class="eq-var">NRUF</span> = ' +
-            '<span class="eq-var">NRUF2</span>(<span class="eq-var">t</span>) ' +
-            'when <span class="eq-var">t</span> \u2265 <span class="eq-var">t</span><span class="eq-sub">switch</span>',
-        },
-        {
-          label: "Industrial output per capita",
-          html:
-            '<span class="eq-var">IOPC</span> = ' +
-            '<span class="eq-frac"><span class="eq-num"><span class="eq-var">IC</span> \u00d7 ' +
-            '(1 \u2212 <span class="eq-var">FCAOR</span>) \u00d7 ' +
-            '<span class="eq-var">CUF</span></span>' +
-            '<span class="eq-den"><span class="eq-var">ICOR</span> \u00d7 ' +
-            '<span class="eq-var">POP</span></span></span>',
-        },
-      ],
+      equationKeys: ["io", "iopc"],
       feedback:
         "Technology creates a balancing loop against depletion and pollution, but population " +
         "and consumption growth create reinforcing loops that can overwhelm the gains. The " +
@@ -266,22 +202,7 @@ const MODEL_SECTIONS = [
         "Persistent pollution accumulates from industrial and agricultural activity " +
         "and is slowly absorbed by the environment. The pollution index (PPOLX) is " +
         "the ratio of current pollution to its 1970 reference level.",
-      items: [
-        {
-          label: "Pollution accumulation",
-          html:
-            '<span class="eq-frac"><span class="eq-num">d<span class="eq-var">PPOL</span></span>' +
-            '<span class="eq-den">d<span class="eq-var">t</span></span></span> = ' +
-            '<span class="eq-var">PPGR</span> \u2212 <span class="eq-var">PPASR</span>',
-        },
-        {
-          label: "Pollution index",
-          html:
-            '<span class="eq-var">PPOLX</span> = ' +
-            '<span class="eq-frac"><span class="eq-num"><span class="eq-var">PPOL</span></span>' +
-            '<span class="eq-den"><span class="eq-var">PPOL70</span></span></span>',
-        },
-      ],
+      equationKeys: ["ppol", "ppolx"],
       feedback:
         "Rising pollution \u2192 lower land fertility \u2192 less food \u2192 higher mortality " +
         "\u2192 lower population \u2192 less pollution (balancing). But also: rising pollution " +
@@ -329,32 +250,7 @@ const MODEL_SECTIONS = [
       preamble:
         "Food production is land yield times arable land, divided by population for " +
         "the per-capita figure. Land yield depends on agricultural inputs and fertility.",
-      items: [
-        {
-          label: "Food per capita",
-          html:
-            '<span class="eq-var">FPC</span> = ' +
-            '<span class="eq-frac"><span class="eq-num"><span class="eq-var">F</span></span>' +
-            '<span class="eq-den"><span class="eq-var">POP</span></span></span>',
-        },
-        {
-          label: "Food production",
-          html:
-            '<span class="eq-var">F</span> = ' +
-            '<span class="eq-var">LY</span> \u00d7 ' +
-            '<span class="eq-var">AL</span> \u00d7 ' +
-            '<span class="eq-var">LFH</span> \u00d7 ' +
-            '(1 \u2212 <span class="eq-var">PL</span>)',
-        },
-        {
-          label: "Land yield",
-          html:
-            '<span class="eq-var">LY</span> = ' +
-            '<span class="eq-var">LYN</span> \u00d7 ' +
-            '<span class="eq-var">LYMC</span> \u00d7 ' +
-            '<span class="eq-var">LYMAP</span>',
-        },
-      ],
+      equationKeys: ["fpc", "f", "ly"],
       feedback:
         "More agricultural capital \u2192 higher yield \u2192 more food \u2192 lower mortality " +
         "\u2192 more people \u2192 more capital needed (reinforcing). But pollution degrades " +
