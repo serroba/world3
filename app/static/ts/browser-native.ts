@@ -2,6 +2,9 @@ import {
   ModelData,
 } from "./model-data.js";
 import {
+  WORLD3_EQUATION_REFERENCE,
+} from "./core/world3-equation-reference.js";
+import {
   buildSimulationRequestFromPreset,
   resolveScenarioRequest,
 } from "./simulation-contracts.js";
@@ -31,6 +34,7 @@ declare global {
     CalibrationCore: ReturnType<typeof createCalibrationCore>;
     ValidationCore: ReturnType<typeof createValidationCore>;
     LocalOwidData: ReturnType<typeof createOwidDataProvider>;
+    EquationReference: typeof WORLD3_EQUATION_REFERENCE;
     I18n: I18nApi;
   }
 }
@@ -60,6 +64,7 @@ const LocalOwidData = createOwidDataProvider(loadLocalOwidDataset);
 const I18n = createI18n();
 
 window.ModelData = ModelData;
+window.EquationReference = WORLD3_EQUATION_REFERENCE;
 window.buildSimulationRequestFromPreset = (name, overrides) =>
   buildSimulationRequestFromPreset(ModelData, name, overrides);
 window.resolveScenarioRequest = (spec) => resolveScenarioRequest(ModelData, spec);
