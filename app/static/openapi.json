@@ -248,7 +248,7 @@
             "description": "Valid ranges for each constant as [min, max] tuples (null means unbounded)",
             "additionalProperties": {
               "type": "array",
-              "items": { "type": ["number", "null"] },
+              "items": { "type": "number", "nullable": true },
               "minItems": 2,
               "maxItems": 2
             }
@@ -292,7 +292,7 @@
             "description": "Valid ranges for scenario controls as [min, max] tuples",
             "additionalProperties": {
               "type": "array",
-              "items": { "type": ["number", "null"] },
+              "items": { "type": "number", "nullable": true },
               "minItems": 2,
               "maxItems": 2
             }
