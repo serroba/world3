@@ -58,34 +58,27 @@ async function handleSimulate(request: Request, env: Env): Promise<Response> {
     }
   }
 
-  // Resolve preset if specified
+  // Build request, omitting undefined keys (exactOptionalPropertyTypes)
+  const req: SimulationRequest = {};
+  if (typeof body.year_min === "number") req.year_min = body.year_min;
+  if (typeof body.year_max === "number") req.year_max = body.year_max;
+  if (typeof body.dt === "number") req.dt = body.dt;
+  if (typeof body.pyear === "number") req.pyear = body.pyear;
+  if (typeof body.iphst === "number") req.iphst = body.iphst;
+  if (body.constants) req.constants = body.constants as SimulationRequest["constants"];
+  if (body.output_variables) req.output_variables = body.output_variables as SimulationRequest["output_variables"];
+
   let simRequest: SimulationRequest;
   if (typeof body.preset === "string") {
     try {
-      simRequest = buildSimulationRequestFromPreset(ModelData, body.preset, {
-        year_min: body.year_min as number | undefined,
-        year_max: body.year_max as number | undefined,
-        dt: body.dt as number | undefined,
-        pyear: body.pyear as number | undefined,
-        iphst: body.iphst as number | undefined,
-        constants: body.constants as SimulationRequest["constants"],
-        output_variables: body.output_variables as SimulationRequest["output_variables"],
-      });
+      simRequest = buildSimulationRequestFromPreset(ModelData, body.preset, req);
     } catch (err) {
       return errorResponse(
         err instanceof Error ? err.message : "Invalid preset",
       );
     }
   } else {
-    simRequest = {
-      year_min: body.year_min as number | undefined,
-      year_max: body.year_max as number | undefined,
-      dt: body.dt as number | undefined,
-      pyear: body.pyear as number | undefined,
-      iphst: body.iphst as number | undefined,
-      constants: body.constants as SimulationRequest["constants"],
-      output_variables: body.output_variables as SimulationRequest["output_variables"],
-    };
+    simRequest = req;
   }
 
   const tables = await loadTables(env);

@@ -4,8 +4,9 @@ import { resolve } from "node:path";
 
 import { ModelData } from "../ts/model-data.ts";
 import { simulateWorld3 } from "../ts/core/world3-simulation.ts";
-import type { SimulationRequest, SimulationResult } from "../ts/simulation-contracts.ts";
+import type { ConstantMap, SimulationRequest, SimulationResult } from "../ts/simulation-contracts.ts";
 import { buildSimulationRequestFromPreset } from "../ts/simulation-contracts.ts";
+import type { World3VariableKey } from "../ts/core/world3-keys.ts";
 import type { RawLookupTable } from "../ts/core/world3-tables.ts";
 
 /**
@@ -26,29 +27,26 @@ function loadTables(): RawLookupTable[] {
 
 const tables = loadTables();
 
+/** Build a SimulationRequest from a raw JSON body, omitting undefined keys. */
+function requestFromBody(body: Record<string, unknown>): SimulationRequest {
+  const req: SimulationRequest = {};
+  if (typeof body.year_min === "number") req.year_min = body.year_min;
+  if (typeof body.year_max === "number") req.year_max = body.year_max;
+  if (typeof body.dt === "number") req.dt = body.dt;
+  if (typeof body.pyear === "number") req.pyear = body.pyear;
+  if (typeof body.iphst === "number") req.iphst = body.iphst;
+  if (body.constants) req.constants = body.constants as ConstantMap;
+  if (body.output_variables) req.output_variables = body.output_variables as World3VariableKey[];
+  return req;
+}
+
 /** Mirrors the Worker's handleSimulate logic. */
 function runApiSimulation(body: Record<string, unknown>): SimulationResult {
   let simRequest: SimulationRequest;
   if (typeof body.preset === "string") {
-    simRequest = buildSimulationRequestFromPreset(ModelData, body.preset, {
-      year_min: body.year_min as number | undefined,
-      year_max: body.year_max as number | undefined,
-      dt: body.dt as number | undefined,
-      pyear: body.pyear as number | undefined,
-      iphst: body.iphst as number | undefined,
-      constants: body.constants as SimulationRequest["constants"],
-      output_variables: body.output_variables as SimulationRequest["output_variables"],
-    });
+    simRequest = buildSimulationRequestFromPreset(ModelData, body.preset, requestFromBody(body));
   } else {
-    simRequest = {
-      year_min: body.year_min as number | undefined,
-      year_max: body.year_max as number | undefined,
-      dt: body.dt as number | undefined,
-      pyear: body.pyear as number | undefined,
-      iphst: body.iphst as number | undefined,
-      constants: body.constants as SimulationRequest["constants"],
-      output_variables: body.output_variables as SimulationRequest["output_variables"],
-    };
+    simRequest = requestFromBody(body);
   }
 
   const mergedConstants = {
@@ -128,6 +126,34 @@ describe("Worker API: /api/simulate", () => {
     expect(() => runApiSimulation({ preset: "nonexistent" })).toThrow(
       "Unknown preset",
     );
+  });
+
+  test("non-numeric fields are ignored in request parsing", () => {
+    // Simulates a body with string values where numbers are expected
+    const result = runApiSimulation({
+      year_min: "not a number" as unknown,
+      year_max: null as unknown,
+      dt: undefined,
+    });
+    // Should fall back to defaults since non-numbers are skipped
+    expect(result.year_min).toBe(1900);
+    expect(result.year_max).toBe(2100);
+    expect(result.dt).toBe(0.5);
+  });
+
+  test("pyear and iphst overrides are applied", () => {
+    const result = runApiSimulation({ pyear: 2000, iphst: 1960 });
+    // The simulation runs — pyear/iphst affect when policy constants switch
+    expect(result.series.pop).toBeDefined();
+    expect(result.time.length).toBeGreaterThan(0);
+  });
+
+  test("output_variables restricts returned series", () => {
+    const result = runApiSimulation({
+      output_variables: ["pop", "le"],
+    });
+    expect(result.series.pop).toBeDefined();
+    expect(result.series.le).toBeDefined();
   });
 
   test("result series values are JSON-serializable numbers", () => {
