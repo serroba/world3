@@ -1,0 +1,330 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "World3 Simulator API",
+    "version": "1.0.0",
+    "description": "API for the World3 system dynamics model from The Limits to Growth (1972). Run simulations with configurable parameters, explore named scenarios, and retrieve time series data for population, resources, pollution, food production, industrial output, and 80+ other variables.",
+    "contact": {
+      "url": "https://github.com/serroba/world3"
+    },
+    "license": {
+      "name": "MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://limits.world",
+      "description": "Production"
+    }
+  ],
+  "security": [],
+  "paths": {
+    "/api/simulate": {
+      "post": {
+        "operationId": "runSimulation",
+        "summary": "Run a World3 simulation",
+        "description": "Executes the World3 system dynamics model with the given parameters. All fields are optional; omitted fields use the standard-run defaults (1900-2100, dt=0.5, pyear=1975).",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SimulationRequest"
+              },
+              "examples": {
+                "standard-run": {
+                  "summary": "Business as usual (all defaults)",
+                  "value": {}
+                },
+                "doubled-resources": {
+                  "summary": "Double the initial nonrenewable resource base",
+                  "value": {
+                    "constants": {
+                      "nri": 2000000000000
+                    }
+                  }
+                },
+                "comprehensive-policy": {
+                  "summary": "Combined technology, population, and agriculture improvements",
+                  "value": {
+                    "constants": {
+                      "alai2": 4.0,
+                      "dcfsn": 2.0,
+                      "icor2": 2.0,
+                      "imef": 0.05,
+                      "lyf2": 2.0,
+                      "nruf2": 0.5,
+                      "pet": 2000,
+                      "ppgf2": 0.5,
+                      "zpgt": 2000
+                    }
+                  }
+                },
+                "custom-range": {
+                  "summary": "Simulate 1900-2200 with smaller time step and selected outputs",
+                  "value": {
+                    "year_min": 1900,
+                    "year_max": 2200,
+                    "dt": 0.25,
+                    "output_variables": ["pop", "iopc", "fpc", "ppolx", "nrfr", "le"]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Simulation completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimulationResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/presets": {
+      "get": {
+        "operationId": "listPresets",
+        "summary": "List available simulation presets",
+        "description": "Returns the named scenarios with their constant overrides and descriptions, plus model metadata (constant defaults, constraints, and variable definitions).",
+        "responses": {
+          "200": {
+            "description": "Preset list and model metadata",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PresetsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "SimulationRequest": {
+        "type": "object",
+        "description": "All fields are optional. Omitted fields use standard-run defaults.",
+        "properties": {
+          "preset": {
+            "type": "string",
+            "description": "Named scenario to use as the base. Constants from the preset are applied first, then any explicit constant overrides.",
+            "enum": ["standard-run", "doubled-resources", "optimistic-technology", "population-stability", "comprehensive-policy"]
+          },
+          "year_min": {
+            "type": "number",
+            "description": "Simulation start year. The engine always computes from 1900 internally; this controls the start of the returned output.",
+            "default": 1900,
+            "minimum": 1900,
+            "maximum": 2300
+          },
+          "year_max": {
+            "type": "number",
+            "description": "Simulation end year",
+            "default": 2100,
+            "minimum": 1950,
+            "maximum": 2300
+          },
+          "dt": {
+            "type": "number",
+            "description": "Integration time step in years",
+            "default": 0.5,
+            "minimum": 0.1,
+            "maximum": 2
+          },
+          "pyear": {
+            "type": "number",
+            "description": "Policy implementation year — when technology/policy constants switch from *1 to *2 variants",
+            "default": 1975,
+            "minimum": 1800,
+            "maximum": 2300
+          },
+          "iphst": {
+            "type": "number",
+            "description": "Year when health services begin to impact life expectancy",
+            "default": 1940,
+            "minimum": 1800,
+            "maximum": 2300
+          },
+          "constants": {
+            "type": "object",
+            "description": "Override individual World3 model constants. Keys are short constant names (e.g. 'nri', 'dcfsn'). See GET /api/presets for the full list with descriptions and constraints.",
+            "additionalProperties": {
+              "type": "number"
+            }
+          },
+          "output_variables": {
+            "type": "array",
+            "description": "Subset of variables to include in the response. If omitted, the 20 default output variables are returned. See GET /api/presets for the full variable list.",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "SimulationResult": {
+        "type": "object",
+        "required": ["year_min", "year_max", "dt", "time", "constants_used", "series"],
+        "properties": {
+          "year_min": {
+            "type": "number",
+            "description": "Actual start year used"
+          },
+          "year_max": {
+            "type": "number",
+            "description": "Actual end year used"
+          },
+          "dt": {
+            "type": "number",
+            "description": "Time step used"
+          },
+          "time": {
+            "type": "array",
+            "items": { "type": "number" },
+            "description": "Array of year values for each time step"
+          },
+          "constants_used": {
+            "type": "object",
+            "description": "The full set of constant values used in this simulation run",
+            "additionalProperties": { "type": "number" }
+          },
+          "series": {
+            "type": "object",
+            "description": "Time series results keyed by variable name. Each entry has 'name' (string) and 'values' (number array aligned with the time array).",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/TimeSeries"
+            }
+          }
+        }
+      },
+      "TimeSeries": {
+        "type": "object",
+        "required": ["name", "values"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Variable key"
+          },
+          "values": {
+            "type": "array",
+            "items": { "type": "number" },
+            "description": "Numeric values for each time step"
+          }
+        }
+      },
+      "PresetsResponse": {
+        "type": "object",
+        "properties": {
+          "presets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PresetInfo"
+            }
+          },
+          "constant_defaults": {
+            "type": "object",
+            "description": "Default values for all 73 model constants",
+            "additionalProperties": { "type": "number" }
+          },
+          "constant_constraints": {
+            "type": "object",
+            "description": "Valid ranges for each constant as [min, max] tuples (null means unbounded)",
+            "additionalProperties": {
+              "type": "array",
+              "items": { "type": "number", "nullable": true },
+              "minItems": 2,
+              "maxItems": 2
+            }
+          },
+          "constant_meta": {
+            "type": "object",
+            "description": "Metadata for each constant (full_name, sector, unit)",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "full_name": { "type": "string" },
+                "sector": { "type": "string" },
+                "unit": { "type": "string" }
+              }
+            }
+          },
+          "variable_meta": {
+            "type": "object",
+            "description": "Metadata for each output variable (full_name, sector, unit)",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "full_name": { "type": "string" },
+                "sector": { "type": "string" },
+                "unit": { "type": "string" }
+              }
+            }
+          },
+          "default_variables": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Variables included by default when output_variables is omitted"
+          },
+          "scenario_control_defaults": {
+            "type": "object",
+            "description": "Default values for scenario controls (year_min, year_max, dt, pyear, iphst)",
+            "additionalProperties": { "type": "number" }
+          },
+          "scenario_control_constraints": {
+            "type": "object",
+            "description": "Valid ranges for scenario controls as [min, max] tuples",
+            "additionalProperties": {
+              "type": "array",
+              "items": { "type": "number", "nullable": true },
+              "minItems": 2,
+              "maxItems": 2
+            }
+          }
+        }
+      },
+      "PresetInfo": {
+        "type": "object",
+        "required": ["name", "description", "constants"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "constants": {
+            "type": "object",
+            "description": "Constant overrides applied by this preset",
+            "additionalProperties": { "type": "number" }
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Human-readable error message"
+          }
+        }
+      }
+    }
+  }
+}

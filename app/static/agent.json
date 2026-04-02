@@ -1,0 +1,41 @@
+{
+  "name": "World3 Simulator",
+  "description": "Interactive system dynamics simulation of the Limits to Growth World3 model. Simulates global population, nonrenewable resources, pollution, food production, and industrial output from 1900 to 2300 under configurable policy scenarios.",
+  "url": "https://limits.world",
+  "api": {
+    "type": "openapi",
+    "url": "https://limits.world/openapi.json"
+  },
+  "capabilities": [
+    {
+      "name": "simulate",
+      "description": "Run a World3 simulation with custom parameters and constant overrides. Returns time series for population, resources, pollution, food, industrial output, and 80+ other variables.",
+      "endpoint": {
+        "method": "POST",
+        "path": "/api/simulate",
+        "content_type": "application/json"
+      }
+    },
+    {
+      "name": "presets",
+      "description": "Retrieve available named scenarios (standard-run, doubled-resources, optimistic-technology, population-stability, comprehensive-policy) and model metadata.",
+      "endpoint": {
+        "method": "GET",
+        "path": "/api/presets"
+      }
+    }
+  ],
+  "deep_links": {
+    "explore": "https://limits.world/explore?preset={preset}&view={view}",
+    "compare": "https://limits.world/compare?a={preset_a}&b={preset_b}",
+    "advanced": "https://limits.world/advanced?preset={preset}&state={base64_state}"
+  },
+  "presets": [
+    "standard-run",
+    "doubled-resources",
+    "optimistic-technology",
+    "population-stability",
+    "comprehensive-policy"
+  ],
+  "contact": "https://github.com/serroba/world3"
+}
