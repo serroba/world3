@@ -58,13 +58,19 @@ export type World3SimulationOptions = {
 
 export function simulateWorld3(options: World3SimulationOptions): SimulationResult {
   /* v8 ignore next 3 -- trivial defaults */
-  const yearMin = options.yearMin ?? 1900;
+  const requestedYearMin = options.yearMin ?? 1900;
   const yearMax = options.yearMax ?? 2100;
   const dt = options.dt ?? 0.5;
   const pyear = options.pyear ?? 1975;
   const iphst = options.iphst ?? 1940;
 
-  const time = createTimeGrid(yearMin, yearMax, dt);
+  // Validate and clamp yearMin
+  const clampedYearMin = Math.max(1900, Math.min(requestedYearMin, yearMax));
+
+  // Always simulate from 1900 so initial conditions are properly computed,
+  // then trim the output to the requested yearMin.
+  const simYearMin = 1900;
+  const time = createTimeGrid(simYearMin, yearMax, dt);
   const N = time.length;
   const lookupLib = createLookupLibrary(options.rawTables);
 
@@ -333,16 +339,29 @@ export function simulateWorld3(options: World3SimulationOptions): SimulationResu
     computeStep(k);
   }
 
-  // Build result
-  const timeArray = Array.from(time);
-  const series = buildWorld3SeriesResult(buffers);
+  // Build result — trim to requested yearMin
+  const fullTime = Array.from(time);
+  const fullSeries = buildWorld3SeriesResult(buffers);
+
+  // Find the first index at or after the requested start year
+  const trimIndex = clampedYearMin <= simYearMin ? 0 : fullTime.findIndex(t => t >= clampedYearMin);
+  const startIdx = trimIndex >= 0 ? trimIndex : 0;
+
+  const trimmedTime = fullTime.slice(startIdx);
+  const trimmedSeries: typeof fullSeries = {} as typeof fullSeries;
+  for (const [key, entry] of Object.entries(fullSeries)) {
+    trimmedSeries[key as keyof typeof fullSeries] = {
+      ...entry,
+      values: entry.values.slice(startIdx),
+    };
+  }
 
   return {
-    year_min: yearMin,
+    year_min: clampedYearMin,
     year_max: yearMax,
     dt,
-    time: timeArray,
+    time: trimmedTime,
     constants_used: { ...consts },
-    series,
+    series: trimmedSeries,
   };
 }
