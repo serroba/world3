@@ -1,0 +1,48 @@
+name: Publish @serroba/world3-core
+
+on:
+  push:
+    tags:
+      - "core-v*"
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: "https://npm.pkg.github.com"
+
+      - name: Install dependencies
+        working-directory: packages/core
+        run: npm ci
+
+      - name: Build
+        working-directory: packages/core
+        run: npm run build
+
+      - name: Verify package version matches tag
+        working-directory: packages/core
+        run: |
+          TAG="${GITHUB_REF#refs/tags/core-v}"
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "$TAG" != "$PKG_VERSION" ]; then
+            echo "::error::Tag core-v${TAG} does not match package.json version ${PKG_VERSION}"
+            exit 1
+          fi
+          echo "Publishing version ${PKG_VERSION}"
+
+      - name: Publish to GitHub Packages
+        working-directory: packages/core
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
