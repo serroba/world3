@@ -36,7 +36,7 @@ xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"\n';
 xml += '        xmlns:xhtml="http://www.w3.org/1999/xhtml">\n';
 
 for (const route of ROUTES) {
-  const suffix = route.path === "/" ? "" : route.path;
+  const suffix = route.path;
 
   // Default (English) URL
   xml += "  <url>\n";
