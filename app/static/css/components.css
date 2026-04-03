@@ -448,6 +448,13 @@ select:focus {
   margin-bottom: var(--space-md);
 }
 
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
 /* Section headings */
 .section-title {
   font-size: var(--text-xl);
