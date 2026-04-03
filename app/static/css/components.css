@@ -102,21 +102,14 @@
 /* Pills */
 .pill-group {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-sm);
-  overflow-x: auto;
   padding-bottom: var(--space-sm);
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-
-.pill-group::-webkit-scrollbar {
-  display: none;
 }
 
 .pill {
   display: inline-flex;
   align-items: center;
-  white-space: nowrap;
   padding: var(--space-xs) var(--space-md);
   font-size: var(--text-sm);
   font-weight: 500;

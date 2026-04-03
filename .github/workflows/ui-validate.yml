@@ -156,7 +156,7 @@ jobs:
           fi
 
           # Every registered route must be in the sitemap
-          for route in / /history /faq /model /explore /compare /advanced /calibrate /what-is-world3 /limits-to-growth-model /world3-scenarios; do
+          for route in / /history /faq /model /explore /compare /advanced /calibrate /developers /what-is-world3 /limits-to-growth-model /world3-scenarios; do
             if ! grep -q "limits.world${route}<" sitemap.xml; then
               echo "::error::sitemap.xml missing route: ${route}"
               status=1
@@ -164,11 +164,15 @@ jobs:
           done
 
           # Every sitemap URL path must match a registered route in app.js
-          for url in $(grep -oP '<loc>\K[^<]+' sitemap.xml); do
-            path=$(echo "$url" | sed 's|https://limits.world||')
-            if [ "$path" = "/" ]; then continue; fi
-            if ! grep -q "\"${path}\"" js/app.js; then
-              echo "::error::sitemap.xml has URL ${url} with no matching route in app.js"
+          # Extract unique base routes from the sitemap (strip domain and locale prefix)
+          sitemap_routes=$(grep '<loc>' sitemap.xml | sed 's|.*<loc>||;s|</loc>.*||' | \
+            sed 's|https://limits.world||' | \
+            sed -E 's|^/[a-z]{2}(-[A-Za-z]{2,})?(/|$)|\2|' | \
+            sort -u)
+          for base_path in $sitemap_routes; do
+            if [ "$base_path" = "/" ]; then continue; fi
+            if ! grep -q "\"${base_path}\"" js/app.js; then
+              echo "::error::sitemap route ${base_path} has no matching route in app.js"
               status=1
             fi
           done
