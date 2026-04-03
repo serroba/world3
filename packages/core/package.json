@@ -1,0 +1,40 @@
+{
+  "name": "@serroba/world3-core",
+  "version": "0.1.0",
+  "description": "World3 system dynamics simulation engine from The Limits to Growth",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/serroba/world3.git",
+    "directory": "packages/core"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "license": "GPL-3.0",
+  "keywords": [
+    "world3",
+    "limits-to-growth",
+    "system-dynamics",
+    "simulation",
+    "club-of-rome"
+  ],
+  "devDependencies": {
+    "typescript": "^6.0.2"
+  }
+}
