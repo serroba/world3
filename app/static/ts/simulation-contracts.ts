@@ -19,6 +19,10 @@ export type SimulationRequest = {
   iphst?: number;
   constants?: ConstantMap;
   output_variables?: World3VariableKey[];
+  /** When set, run with base_constants until this year, then switch to constants. */
+  diverge_year?: number;
+  /** Constants to use before diverge_year. */
+  base_constants?: ConstantMap;
 };
 
 export type ScenarioSpec = {

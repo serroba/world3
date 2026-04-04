@@ -98,25 +98,9 @@ const CompareView = (() => {
       }
       const data = await SimulationProvider.compare(
         scenarioA,
-        scenarioB
+        scenarioB,
+        activeDivergeYear !== null ? activeDivergeYear : undefined
       );
-
-      // When a divergence year is active, splice B's series so it matches A
-      // up to the divergence point, then follows B's own trajectory after.
-      if (activeDivergeYear !== null) {
-        const timeArr = data.results_b.time;
-        for (const key of Object.keys(data.results_b.series)) {
-          const seriesA = data.results_a.series[key];
-          const seriesB = data.results_b.series[key];
-          if (!seriesA || !seriesB) continue;
-          for (let i = 0; i < timeArr.length; i++) {
-            if (timeArr[i] <= activeDivergeYear) {
-              seriesB.values[i] = seriesA.values[i];
-            }
-          }
-        }
-      }
-
       const labelA = I18n.labelForPreset(presetA, data.scenario_a);
       const labelB = sharedScenario
         ? I18n.t("compare.shared_scenario", undefined, "Shared custom scenario")

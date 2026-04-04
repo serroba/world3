@@ -29,6 +29,7 @@ export type SimulationProviderApi = {
   compare: (
     scenarioA: ScenarioSpec,
     scenarioB?: ScenarioSpec,
+    divergeYear?: number,
   ) => Promise<CompareResult>;
 };
 
