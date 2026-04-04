@@ -38,10 +38,19 @@
   Router.onNavigate(updateHreflangTags);
   Router.start();
 
-  window.addEventListener("world3:localechange", () => {
+  window.addEventListener("world3:localechange", function() {
     syncLanguagePicker();
     I18n.applyDocument();
-    Router.refresh();
+
+    const targetUrl = LocaleUrl.buildLocaleUrl(
+      I18n.getLocale(),
+      Router.getCurrentPath(),
+      location.search,
+      location.hash,
+    );
+    if (LocaleUrl.needsUpdate(location.pathname, location.search, targetUrl)) {
+      history.replaceState(null, "", targetUrl);
+    }
   });
 })();
 
