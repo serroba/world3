@@ -55,6 +55,10 @@ export type World3SimulationOptions = {
   iphst?: number;
   constants?: ConstantMap;
   rawTables: RawLookupTable[];
+  /** When set, use baseConstants until this year, then switch to constants. */
+  divergeYear?: number;
+  /** Constants to use before divergeYear. Required when divergeYear is set. */
+  baseConstants?: ConstantMap;
 };
 
 export function simulateWorld3(options: World3SimulationOptions): SimulationResult {
@@ -126,74 +130,82 @@ export function simulateWorld3(options: World3SimulationOptions): SimulationResu
     PCRUM: requireLookup(lookupLib, "PCRUM"),
   };
 
+  function buildConstants(consts: ConstantMap): World3SimulationConstants {
+    return {
+      p1i: c(consts, "p1i"),
+      p2i: c(consts, "p2i"),
+      p3i: c(consts, "p3i"),
+      p4i: c(consts, "p4i"),
+      ici: c(consts, "ici"),
+      sci: c(consts, "sci"),
+      ali: c(consts, "ali"),
+      pali: c(consts, "pali"),
+      uili: c(consts, "uili"),
+      lferti: c(consts, "lferti"),
+      ppoli: c(consts, "ppoli"),
+      nri: c(consts, "nri"),
+      alic1: c(consts, "alic1"),
+      alic2: c(consts, "alic2"),
+      icor1: c(consts, "icor1"),
+      icor2: c(consts, "icor2"),
+      alsc1: c(consts, "alsc1"),
+      alsc2: c(consts, "alsc2"),
+      scor1: c(consts, "scor1"),
+      scor2: c(consts, "scor2"),
+      lfpf: c(consts, "lfpf"),
+      palt: c(consts, "palt"),
+      alai1: c(consts, "alai1"),
+      alai2: c(consts, "alai2"),
+      ppol70: c(consts, "ppol70"),
+      fipm: c(consts, "fipm"),
+      amti: c(consts, "amti"),
+      ppgf1: c(consts, "ppgf1"),
+      ppgf2: c(consts, "ppgf2"),
+      ppgf21: c(consts, "ppgf21"),
+      pptd1: c(consts, "pptd1"),
+      pptd2: c(consts, "pptd2"),
+      ahl70: c(consts, "ahl70"),
+      nruf1: c(consts, "nruf1"),
+      nruf2: c(consts, "nruf2"),
+      fioac1: c(consts, "fioac1"),
+      fioac2: c(consts, "fioac2"),
+      iopcd: c(consts, "iopcd"),
+      iet: c(consts, "iet"),
+      fcest: c(consts, "fcest"),
+      hsid: c(consts, "hsid"),
+      ieat: c(consts, "ieat"),
+      lpd: c(consts, "lpd"),
+      sad: c(consts, "sad"),
+      lufdt: c(consts, "lufdt"),
+      fspd: c(consts, "fspd"),
+      dcfsn: c(consts, "dcfsn"),
+      zpgt: c(consts, "zpgt"),
+      mtfn: c(consts, "mtfn"),
+      rlt: c(consts, "rlt"),
+      pet: c(consts, "pet"),
+      len: c(consts, "len"),
+      lfh: c(consts, "lfh"),
+      pl: c(consts, "pl"),
+      sfpc: c(consts, "sfpc"),
+      sd: c(consts, "sd"),
+      ilf: c(consts, "ilf"),
+      alln: c(consts, "alln"),
+      frpm: c(consts, "frpm"),
+      imef: c(consts, "imef"),
+      imti: c(consts, "imti"),
+      io70: c(consts, "io70"),
+      lyf1: c(consts, "lyf1"),
+      lyf2: c(consts, "lyf2"),
+      uildt: c(consts, "uildt"),
+    };
+  }
+
   const consts = options.constants ?? /* v8 ignore next */ {};
-  const constants: World3SimulationConstants = {
-    p1i: c(consts, "p1i"),
-    p2i: c(consts, "p2i"),
-    p3i: c(consts, "p3i"),
-    p4i: c(consts, "p4i"),
-    ici: c(consts, "ici"),
-    sci: c(consts, "sci"),
-    ali: c(consts, "ali"),
-    pali: c(consts, "pali"),
-    uili: c(consts, "uili"),
-    lferti: c(consts, "lferti"),
-    ppoli: c(consts, "ppoli"),
-    nri: c(consts, "nri"),
-    alic1: c(consts, "alic1"),
-    alic2: c(consts, "alic2"),
-    icor1: c(consts, "icor1"),
-    icor2: c(consts, "icor2"),
-    alsc1: c(consts, "alsc1"),
-    alsc2: c(consts, "alsc2"),
-    scor1: c(consts, "scor1"),
-    scor2: c(consts, "scor2"),
-    lfpf: c(consts, "lfpf"),
-    palt: c(consts, "palt"),
-    alai1: c(consts, "alai1"),
-    alai2: c(consts, "alai2"),
-    ppol70: c(consts, "ppol70"),
-    fipm: c(consts, "fipm"),
-    amti: c(consts, "amti"),
-    ppgf1: c(consts, "ppgf1"),
-    ppgf2: c(consts, "ppgf2"),
-    ppgf21: c(consts, "ppgf21"),
-    pptd1: c(consts, "pptd1"),
-    pptd2: c(consts, "pptd2"),
-    ahl70: c(consts, "ahl70"),
-    nruf1: c(consts, "nruf1"),
-    nruf2: c(consts, "nruf2"),
-    fioac1: c(consts, "fioac1"),
-    fioac2: c(consts, "fioac2"),
-    iopcd: c(consts, "iopcd"),
-    iet: c(consts, "iet"),
-    fcest: c(consts, "fcest"),
-    hsid: c(consts, "hsid"),
-    ieat: c(consts, "ieat"),
-    lpd: c(consts, "lpd"),
-    sad: c(consts, "sad"),
-    lufdt: c(consts, "lufdt"),
-    fspd: c(consts, "fspd"),
-    dcfsn: c(consts, "dcfsn"),
-    zpgt: c(consts, "zpgt"),
-    mtfn: c(consts, "mtfn"),
-    rlt: c(consts, "rlt"),
-    pet: c(consts, "pet"),
-    len: c(consts, "len"),
-    lfh: c(consts, "lfh"),
-    pl: c(consts, "pl"),
-    sfpc: c(consts, "sfpc"),
-    sd: c(consts, "sd"),
-    ilf: c(consts, "ilf"),
-    alln: c(consts, "alln"),
-    frpm: c(consts, "frpm"),
-    imef: c(consts, "imef"),
-    imti: c(consts, "imti"),
-    io70: c(consts, "io70"),
-    lyf1: c(consts, "lyf1"),
-    lyf2: c(consts, "lyf2"),
-    uildt: c(consts, "uildt"),
-  };
+  const constants = buildConstants(consts);
+  const divergeYear = options.divergeYear;
+  const baseConstants = (divergeYear !== undefined && options.baseConstants)
+    ? buildConstants(options.baseConstants)
+    : null;
 
   // Allocate all buffers
   const p1 = createSeriesBuffer(N), p2 = createSeriesBuffer(N);
@@ -276,32 +288,34 @@ export function simulateWorld3(options: World3SimulationOptions): SimulationResu
   // Core computation for one timestep
   function computeStep(k: number): void {
     const t = time[k]!;
-    advanceStateStocks(k, dt, buffers, constants);
+    // When divergeYear is set, use baseConstants before the diverge point
+    const c = (baseConstants && t <= divergeYear!) ? baseConstants : constants;
+    advanceStateStocks(k, dt, buffers, c);
     const populationLeading = computePopulationLeadingStep(
       k,
       t,
       buffers,
-      constants,
+      c,
       lookups,
       integrators,
       iphst,
     );
-    computeCapitalStep(k, t, buffers, constants, lookups, integrators, pyear);
-    computeAgricultureStep(k, t, buffers, constants, lookups, integrators, pyear);
-    computePollutionStep(k, t, buffers, constants, lookups, integrators, pyear);
-    computeResourceStep(k, t, buffers, constants, lookups, pyear);
-    const crossSectorState = computeCrossSectorStep(k, t, buffers, constants, lookups, pyear);
+    computeCapitalStep(k, t, buffers, c, lookups, integrators, pyear);
+    computeAgricultureStep(k, t, buffers, c, lookups, integrators, pyear);
+    computePollutionStep(k, t, buffers, c, lookups, integrators, pyear);
+    computeResourceStep(k, t, buffers, c, lookups, pyear);
+    const crossSectorState = computeCrossSectorStep(k, t, buffers, c, lookups, pyear);
     computePopulationFeedbackStep(
       k,
       t,
       buffers,
-      constants,
+      c,
       lookups,
       populationLeading,
       crossSectorState,
       pyear,
     );
-    computeMortalityAndBirthStep(k, t, buffers, constants, lookups);
+    computeMortalityAndBirthStep(k, t, buffers, c, lookups);
   }
 
   // k=0: iterate to converge circular dependencies at initialization.

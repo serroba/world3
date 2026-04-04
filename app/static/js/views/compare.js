@@ -96,13 +96,10 @@ const CompareView = (() => {
       } else {
         scenarioB = { preset: presetB };
       }
-      if (activeDivergeYear !== null) {
-        scenarioB.request = scenarioB.request || {};
-        scenarioB.request.pyear = activeDivergeYear;
-      }
       const data = await SimulationProvider.compare(
         scenarioA,
-        scenarioB
+        scenarioB,
+        activeDivergeYear !== null ? activeDivergeYear : undefined
       );
       const labelA = I18n.labelForPreset(presetA, data.scenario_a);
       const labelB = sharedScenario

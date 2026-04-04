@@ -42,7 +42,7 @@ export function createSimulationRuntime(
       ...(request.constants ?? {}),
     };
 
-    return simulateWorld3({
+    const simOptions: Parameters<typeof simulateWorld3>[0] = {
       yearMin: request.year_min ?? 1900,
       yearMax: request.year_max ?? 2100,
       dt: request.dt ?? 0.5,
@@ -50,7 +50,15 @@ export function createSimulationRuntime(
       iphst: request.iphst ?? 1940,
       constants: mergedConstants,
       rawTables: tables,
-    });
+    };
+    if (request.diverge_year !== undefined && request.base_constants) {
+      simOptions.divergeYear = request.diverge_year;
+      simOptions.baseConstants = {
+        ...modelData.constantDefaults,
+        ...request.base_constants,
+      };
+    }
+    return simulateWorld3(simOptions);
   }
 
   return {

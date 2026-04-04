@@ -23,6 +23,7 @@ export type LocalSimulationCore = {
   compare: (
     scenarioA: ScenarioSpec,
     scenarioB?: ScenarioSpec,
+    divergeYear?: number,
   ) => Promise<CompareResult>;
 };
 
@@ -116,14 +117,21 @@ export function createRuntimeBackedLocalSimulationCore(
       return runtime.simulate(normalizedRequest, options);
     },
 
-    async compare(scenarioA, scenarioB) {
+    async compare(scenarioA, scenarioB, divergeYear) {
       const requestA = withLocalDefaultOutputs(
         resolveScenarioRequest(modelData, scenarioA),
       );
       const resolvedScenarioB = scenarioB ?? { preset: "standard-run" };
-      const requestB = withLocalDefaultOutputs(
+      let requestB = withLocalDefaultOutputs(
         resolveScenarioRequest(modelData, resolvedScenarioB),
       );
+      if (divergeYear !== undefined) {
+        requestB = {
+          ...requestB,
+          diverge_year: divergeYear,
+          base_constants: requestA.constants ?? {},
+        };
+      }
       const [resultsA, resultsB] = await Promise.all([
         runtime.simulate(requestA),
         runtime.simulate(requestB),
