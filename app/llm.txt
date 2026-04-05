@@ -13,8 +13,10 @@ Send a JSON body with any of these optional fields:
 - "preset": named scenario (see below)
 - "year_min", "year_max": simulation range (default 1900–2100)
 - "dt": time step in years (default 0.5)
+- "pyear": policy implementation year — when *2 constants activate (default 1975)
+- "iphst": health services impact start year (default 1940)
 - "constants": object of constant overrides (see below)
-- "output_variables": array of variable keys to return (returns all if omitted)
+- "output_variables": array of variable keys to return (returns a default subset of key indicators if omitted)
 
 Example — standard run:
 ```json

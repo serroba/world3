@@ -26,7 +26,8 @@ const CORS_HEADERS = {
 
 const LINK_HEADER =
   '</openapi.json>; rel="service-desc"; type="application/json", ' +
-  '</agent.json>; rel="alternate"; type="application/json"';
+  '</agent.json>; rel="alternate"; type="application/json", ' +
+  '</llm.txt>; rel="help"; title="LLM agent instructions"';
 
 let coreInstance: ReturnType<typeof createWorld3Core> | null = null;
 
@@ -146,8 +147,7 @@ export default {
     // Fall through to static assets — add discovery headers for agents
     const response = await env.ASSETS.fetch(request);
     const headers = new Headers(response.headers);
-    headers.append("Link", '</llm.txt>; rel="help"; title="LLM agent instructions"');
-    headers.append("Link", '</openapi.json>; rel="service-desc"; type="application/json"');
+    headers.set("Link", LINK_HEADER);
     return new Response(response.body, { status: response.status, headers });
   },
 };
