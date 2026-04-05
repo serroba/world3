@@ -71,6 +71,8 @@ function parseSimulationRequest(body: Record<string, unknown>): SimulationReques
   if (typeof body.iphst === "number") req.iphst = body.iphst;
   if (body.constants) req.constants = body.constants as ConstantMap;
   if (body.output_variables) req.output_variables = body.output_variables as World3VariableKey[];
+  if (typeof body.diverge_year === "number") req.diverge_year = body.diverge_year;
+  if (body.base_constants) req.base_constants = body.base_constants as ConstantMap;
   return req;
 }
 
