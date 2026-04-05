@@ -300,11 +300,11 @@
   "intro.ai_prompt_title": "Erkunde mit deiner Lieblings-KI",
   "intro.ai_prompt_desc": "Kopiere eine der Eingabeaufforderungen unten in ChatGPT, Claude oder einen anderen KI-Assistenten. Die KI kann die World3-API auf limits.world nutzen, um Simulationen durchzuführen und deine Fragen zu beantworten.",
   "intro.ai_prompt_1_label": "Was wäre, wenn sich die Geburtenrate halbierte?",
-  "intro.ai_prompt_1": "Nutze die World3-Simulator-API auf https://limits.world (siehe /llm.txt für Anweisungen). Was würde mit der Weltbevölkerung, der Lebenserwartung und den Ressourcen passieren, wenn die globalen Geburtenraten ab 2026 auf die Hälfte sinken würden? Vergleiche mit dem Standardszenario.",
+  "intro.ai_prompt_1": "Nutze die World3-Simulator-API auf https://limits.world (siehe /llm.txt für Anweisungen). Was würde mit der Weltbevölkerung, der Lebenserwartung und den Ressourcen passieren, wenn die globalen Geburtenraten ab 2026 auf die Hälfte sinken? Vergleiche mit dem Standardszenario.",
   "intro.ai_prompt_2_label": "Was wäre, wenn die Ressourceneffizienz verdoppelt würde?",
-  "intro.ai_prompt_2": "Nutze die World3-Simulator-API auf https://limits.world (siehe /llm.txt für Anweisungen). Was würde passieren, wenn die Ressourceneffizienz verdoppelt und die Verschmutzung durch Technologie halbiert würde, ab 2026? Zeige Bevölkerungs-, Industrieproduktions- und Verschmutzungstrends im Vergleich zum Standardszenario.",
+  "intro.ai_prompt_2": "Nutze die World3-Simulator-API auf https://limits.world (siehe /llm.txt für Anweisungen). Was würde passieren, wenn die Ressourceneffizienz verdoppelt und die Verschmutzung ab 2026 durch Technologie halbiert würde? Zeige Bevölkerungs-, Industrieproduktions- und Verschmutzungstrends im Vergleich zum Standardszenario.",
   "intro.ai_prompt_3_label": "Erstelle dein eigenes Szenario",
-  "intro.ai_prompt_3": "Nutze die World3-Simulator-API auf https://limits.world (siehe /llm.txt für Anweisungen). Ich möchte ein benutzerdefiniertes Szenario erkunden: [beschreibe deine Was-wäre-wenn-Frage hier]. Führe die Simulation durch und erkläre, was bis 2100 mit der Zivilisation geschieht.",
+  "intro.ai_prompt_3": "Nutze die World3-Simulator-API auf https://limits.world (siehe /llm.txt für Anweisungen). Ich möchte ein eigenes Szenario erkunden: [beschreibe deine Frage hier]. Führe die Simulation durch und erkläre, was bis 2100 mit der Zivilisation geschieht.",
   "action.copy": "Kopieren",
   "action.copied": "Kopiert!"
 }

@@ -300,11 +300,11 @@
   "intro.ai_prompt_title": "Исследуйте с вашим любимым ИИ",
   "intro.ai_prompt_desc": "Скопируйте любой из запросов ниже в ChatGPT, Claude или любой другой ИИ-ассистент. ИИ может использовать API World3 на limits.world для запуска симуляций и ответов на ваши вопросы.",
   "intro.ai_prompt_1_label": "Что если рождаемость сократится вдвое?",
-  "intro.ai_prompt_1": "Use the World3 simulator API at https://limits.world (see /llm.txt for instructions). What would happen to world population, life expectancy, and resources if global birth rates dropped to half their current level starting in 2026? Compare with the standard business-as-usual scenario.",
+  "intro.ai_prompt_1": "Используй API симулятора World3 на https://limits.world (см. /llm.txt для инструкций). Что произойдёт с мировым населением, продолжительностью жизни и ресурсами, если глобальная рождаемость сократится вдвое начиная с 2026 года? Сравни со стандартным сценарием.",
   "intro.ai_prompt_2_label": "Что если эффективность ресурсов удвоится?",
-  "intro.ai_prompt_2": "Use the World3 simulator API at https://limits.world (see /llm.txt for instructions). What would happen if resource extraction efficiency doubled and pollution was cut in half through technology, starting from 2026? Show me population, industrial output, and pollution trends compared to business as usual.",
+  "intro.ai_prompt_2": "Используй API симулятора World3 на https://limits.world (см. /llm.txt для инструкций). Что произойдёт, если эффективность добычи ресурсов удвоится, а загрязнение сократится вдвое благодаря технологиям, начиная с 2026 года? Покажи тенденции населения, промышленного производства и загрязнения по сравнению со стандартным сценарием.",
   "intro.ai_prompt_3_label": "Создайте свой сценарий",
-  "intro.ai_prompt_3": "Use the World3 simulator API at https://limits.world (see /llm.txt for instructions). I want to explore a custom scenario: [describe your what-if question here]. Run the simulation and explain what happens to civilization by 2100.",
+  "intro.ai_prompt_3": "Используй API симулятора World3 на https://limits.world (см. /llm.txt для инструкций). Я хочу исследовать свой сценарий: [опиши свой вопрос здесь]. Запусти симуляцию и объясни, что произойдёт с цивилизацией к 2100 году.",
   "action.copy": "Копировать",
   "action.copied": "Скопировано!"
 }

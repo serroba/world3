@@ -300,7 +300,7 @@
   "intro.ai_prompt_title": "Explorez avec votre IA préférée",
   "intro.ai_prompt_desc": "Copiez l'une des instructions ci-dessous dans ChatGPT, Claude ou tout autre assistant IA. L'IA peut appeler l'API World3 sur limits.world pour lancer des simulations et répondre à vos questions.",
   "intro.ai_prompt_1_label": "Et si les taux de natalité étaient divisés par deux ?",
-  "intro.ai_prompt_1": "Utilise l'API du simulateur World3 sur https://limits.world (voir /llm.txt pour les instructions). Que se passerait-il si les taux de natalité mondiaux étaient divisés par deux à partir de 2026 ? Compare avec le scénario standard.",
+  "intro.ai_prompt_1": "Utilise l'API du simulateur World3 sur https://limits.world (voir /llm.txt pour les instructions). Que se passerait-il pour la population mondiale, l'espérance de vie et les ressources si les taux de natalité mondiaux étaient divisés par deux à partir de 2026 ? Compare avec le scénario standard.",
   "intro.ai_prompt_2_label": "Et si l'efficacité des ressources doublait ?",
   "intro.ai_prompt_2": "Utilise l'API du simulateur World3 sur https://limits.world (voir /llm.txt pour les instructions). Que se passerait-il si l'efficacité d'extraction des ressources doublait et que la pollution était réduite de moitié grâce à la technologie, à partir de 2026 ? Montre les tendances de population, production industrielle et pollution par rapport au scénario standard.",
   "intro.ai_prompt_3_label": "Créez votre propre scénario",
