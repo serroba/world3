@@ -217,7 +217,47 @@ const MODEL_SECTIONS = [
   },
 
   // -----------------------------------------------------------------------
-  // 5. Food
+  // 5. AI scaling
+  // -----------------------------------------------------------------------
+  {
+    id: "ai-scaling",
+    question: "What does AI\u2019s growth mean for the planet?",
+    shortLabel: "AI",
+    preset: "compare",
+    comparePresets: ["standard-run", "ai-scaling"],
+    chartVars: ["ppolx", "pop"],
+    summary:
+      "Guliyeva et al. (2025) extended World3 to include AI\u2019s environmental footprint: data-center CO\u2082 and e-waste. Even at conservative estimates \u2014 AI growing from ~1.3% of global industrial output in 2020 to ~6% by 2050 \u2014 the additional persistent pollution measurably accelerates the overshoot trajectory. The key caveat: the model captures only the cost side. Any productivity or efficiency gains that AI might bring are not modelled.",
+    concepts: [
+      {
+        term: "How AI enters the model",
+        definition:
+          "AI pollution is the product of AI output (an S-curve fraction of industrial output) and a per-unit pollution intensity. The intensity has two components: a CO\u2082 term that grows as compute scales, and an e-waste term that slowly declines as circularity improves \u2014 but total e-waste still grows with volume. Both components feed directly into the persistent pollution stock (PPOL) alongside industrial and agricultural sources.",
+      },
+      {
+        term: "What\u2019s not modelled",
+        definition:
+          "Only AI\u2019s environmental costs are included. Economic benefits \u2014 productivity gains, resource-discovery efficiency, agricultural optimisation \u2014 are outside scope. The paper treats this as a conservative lower-bound: AI\u2019s net planetary impact could be better or worse depending on how those productivity effects play out.",
+      },
+    ],
+    equations: {
+      preamble:
+        "AI output is modelled as a logistic share of industrial output, growing from AIIO20 in 2020 to AIIO50 by 2050. Multiplied by a per-unit pollution intensity (CO\u2082 + e-waste components), it yields an extra pollution generation rate (PPGAI) that is added to the standard industrial and agricultural flows.",
+      equationKeys: ["aiofrac", "aiout", "aipi", "ppgai"],
+      feedback:
+        "AI pollution \u2192 higher PPOLX \u2192 reduced land fertility and life expectancy \u2192 lower population \u2192 less industrial output \u2192 less AI output (balancing). But the loop is slow relative to the pace of AI growth, so the near-term effect is a net acceleration of overshoot.",
+    },
+    constantKeys: ["aiio20", "aiio50", "aico2e20", "aiesr", "aiwei20", "aiewr", "baie", "co2toper"],
+    sources: [
+      {
+        text: "Guliyeva, N., Bhardwaj, E. & Becker, C. \u2014 Exploring the Viability of the Updated World3 Model for Examining the Impact of Computing on Planetary Boundaries (2025)",
+        url: "https://arxiv.org/abs/2510.07634",
+      },
+    ],
+  },
+
+  // -----------------------------------------------------------------------
+  // 6. Food
   // -----------------------------------------------------------------------
   {
     id: "food-enough",
