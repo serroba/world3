@@ -18,6 +18,155 @@ type Env = {
   };
 };
 
+// ─── Per-route meta injection ─────────────────────────────────────────────────
+
+const BASE_URL = "https://limits.world";
+
+type RouteMeta = {
+  title: string;
+  description: string;
+  ogDescription: string;
+};
+
+const ROUTE_META: Record<string, RouteMeta> = {
+  "/": {
+    title: "World3 Simulator — Will civilization collapse by 2100?",
+    description:
+      "Run the 1972 MIT model that predicted overshoot. Change policy years, compare collapse vs. stabilisation scenarios, and watch how population, resources, and pollution interact through 2100. Free, no login.",
+    ogDescription:
+      "The 1972 MIT model that predicted overshoot. Run it yourself — compare collapse vs. stabilisation scenarios and see how population, resources, and pollution interact through 2100.",
+  },
+  "/model": {
+    title: "How World3 Works — Model Explained | World3 Simulator",
+    description:
+      "Deep dive into the World3 model: population, resources, pollution, food, technology, and AI scaling. Equations, assumptions, and policy scenarios explained.",
+    ogDescription:
+      "Explore how the World3 model simulates population, resources, pollution, food, technology, and AI's environmental impact — with equations and interactive charts.",
+  },
+  "/explore": {
+    title: "Explore World3 Scenarios | World3 Simulator",
+    description:
+      "Explore World3 scenarios interactively. See how population, industrial output, resources, pollution, and food per capita evolve through 2100 under different assumptions.",
+    ogDescription:
+      "Run World3 scenarios and watch population, resources, pollution, and food interact through 2100.",
+  },
+  "/compare": {
+    title: "Compare World3 Scenarios | World3 Simulator",
+    description:
+      "Compare two World3 scenarios side by side — standard run vs optimistic technology, AI scaling, comprehensive policy, or custom parameters.",
+    ogDescription:
+      "Compare any two World3 scenarios side by side and see how different assumptions change the trajectory to 2100.",
+  },
+  "/advanced": {
+    title: "Advanced Parameters | World3 Simulator",
+    description:
+      "Fine-tune every World3 model parameter — from resource endowment to pollution half-life — and run fully custom simulations.",
+    ogDescription:
+      "Adjust every World3 parameter and run fully custom simulations.",
+  },
+  "/faq": {
+    title: "FAQ | World3 Simulator",
+    description:
+      "Frequently asked questions about the World3 simulator, The Limits to Growth model, and how to interpret the results.",
+    ogDescription:
+      "Common questions about World3, The Limits to Growth, and how to read the simulation results.",
+  },
+  "/history": {
+    title: "History of World3 | World3 Simulator",
+    description:
+      "The history of the World3 model — from the 1972 Club of Rome report to the 30-year update, modern recalibration, and AI extensions.",
+    ogDescription:
+      "From the 1972 Club of Rome report to modern recalibration and AI extensions — the history of World3.",
+  },
+  "/calibrate": {
+    title: "Calibrate World3 | World3 Simulator",
+    description:
+      "Compare World3 simulation output against historical empirical data from 1900 to 2023. See how well the model tracks real-world population, CO₂, and more.",
+    ogDescription:
+      "See how the World3 model tracks real-world data for population, CO₂, and other indicators from 1900 to 2023.",
+  },
+  "/developers": {
+    title: "Developer API | World3 Simulator",
+    description:
+      "World3 simulation API for developers — run simulations, fetch presets, and retrieve time series data via a simple JSON API.",
+    ogDescription:
+      "Run World3 simulations programmatically via a simple JSON API. Free, no auth required.",
+  },
+  "/what-is-world3": {
+    title: "What is World3? | World3 Simulator",
+    description:
+      "World3 is the 1972 MIT system dynamics model from The Limits to Growth. Learn how it works, what it predicts, and why its findings remain relevant today.",
+    ogDescription:
+      "The 1972 MIT model that simulated civilisation's trajectory. What World3 is, how it works, and what it found.",
+  },
+  "/limits-to-growth-model": {
+    title: "The Limits to Growth Model | World3 Simulator",
+    description:
+      "The Limits to Growth (1972) used World3 to simulate civilisation's trajectory. Explore the model's findings, methodology, and 50-year legacy.",
+    ogDescription:
+      "How The Limits to Growth (1972) used World3 to model civilisation's trajectory — findings, methodology, and legacy.",
+  },
+  "/world3-scenarios": {
+    title: "World3 Scenarios | World3 Simulator",
+    description:
+      "Run and compare World3 scenarios: standard run, optimistic technology, comprehensive policy, AI scaling, and more.",
+    ogDescription:
+      "Standard run, optimistic technology, comprehensive policy, AI scaling — explore all World3 scenarios.",
+  },
+};
+
+/**
+ * All locale codes the SPA router recognises as a URL prefix, including "en"
+ * (which is valid as an explicit locale prefix even though English is the default).
+ * Must stay in sync with LOCALE_CODES in app/js/router.js.
+ */
+const LOCALE_PREFIXES = new Set([
+  "en", "es", "pt-BR", "pt-PT", "fr", "de", "it", "nl", "hu", "pl", "tr",
+  "ru", "uk", "ar", "fa", "hi", "bn", "id", "vi", "th", "ja", "zh-CN", "zh-TW",
+]);
+
+/** Strip locale prefix and normalize trailing slash; returns a key matchable in ROUTE_META. */
+export function getBaseRoute(pathname: string): string {
+  const parts = pathname.split("/").filter(Boolean);
+  const first = parts[0];
+  const baseParts = (first !== undefined && LOCALE_PREFIXES.has(first))
+    ? parts.slice(1)
+    : parts;
+  return baseParts.length > 0 ? `/${baseParts.join("/")}` : "/";
+}
+
+/** Normalize a pathname for use as a canonical URL path (strip trailing slash except root). */
+export function normalizePathname(pathname: string): string {
+  return pathname !== "/" && pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;
+}
+
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+/** Replace per-page meta in the index.html HTML string. */
+export function injectRouteMeta(html: string, meta: RouteMeta, canonicalUrl: string): string {
+  const title = escapeHtml(meta.title);
+  const desc = escapeHtml(meta.description);
+  const ogDesc = escapeHtml(meta.ogDescription);
+  const canonical = escapeHtml(canonicalUrl);
+  return html
+    .replace(/<title>[^<]*<\/title>/, `<title>${title}</title>`)
+    .replace(/(<meta name="description" content=")[^"]*(")/,  `$1${desc}$2`)
+    .replace(/(<meta property="og:title" content=")[^"]*(")/,  `$1${title}$2`)
+    .replace(/(<meta property="og:description" content=")[^"]*(")/,  `$1${ogDesc}$2`)
+    .replace(/(<meta property="og:url" content=")[^"]*(")/,  `$1${canonical}$2`)
+    .replace(/(<meta name="twitter:title" content=")[^"]*(")/,  `$1${title}$2`)
+    .replace(/(<meta name="twitter:description" content=")[^"]*(")/,  `$1${desc}$2`)
+    .replace(/(<link rel="canonical" href=")[^"]*(")/,  `$1${canonical}$2`);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
@@ -197,6 +346,30 @@ export default {
     const response = await env.ASSETS.fetch(request);
     const headers = new Headers(response.headers);
     headers.set("Link", LINK_HEADER);
+
+    // Inject per-route meta tags into HTML responses.
+    // Skip HEAD requests and non-200/non-body statuses, and responses that
+    // are already compressed (Content-Encoding would corrupt the rewritten body).
+    const contentType = response.headers.get("Content-Type") ?? "";
+    const contentEncoding = response.headers.get("Content-Encoding");
+    const canTransform =
+      request.method !== "HEAD" &&
+      response.status === 200 &&
+      contentType.includes("text/html") &&
+      !contentEncoding;
+    if (canTransform) {
+      const baseRoute = getBaseRoute(url.pathname);
+      const meta = ROUTE_META[baseRoute];
+      if (meta) {
+        const canonicalUrl = new URL(normalizePathname(url.pathname), BASE_URL).toString();
+        const html = await response.text();
+        const transformed = injectRouteMeta(html, meta, canonicalUrl);
+        headers.set("Content-Type", "text/html; charset=utf-8");
+        headers.delete("Content-Length"); // body length changed
+        return new Response(transformed, { status: response.status, headers });
+      }
+    }
+
     return new Response(response.body, { status: response.status, headers });
   },
 };
