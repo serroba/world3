@@ -223,11 +223,18 @@ describe("getBaseRoute", () => {
     expect(getBaseRoute("/zh-CN/explore")).toBe("/explore");
     expect(getBaseRoute("/pt-BR/advanced")).toBe("/advanced");
     expect(getBaseRoute("/ar/faq")).toBe("/faq");
+    expect(getBaseRoute("/fa/model")).toBe("/model"); // Persian (was missing)
   });
 
   test("returns root for locale-only path", () => {
     expect(getBaseRoute("/fr")).toBe("/");
     expect(getBaseRoute("/ja/")).toBe("/");
+  });
+
+  test("normalizes trailing slashes", () => {
+    expect(getBaseRoute("/model/")).toBe("/model");
+    expect(getBaseRoute("/fr/model/")).toBe("/model");
+    expect(getBaseRoute("//model")).toBe("/model");
   });
 
   test("does not strip unknown path segments", () => {

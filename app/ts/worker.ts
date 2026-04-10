@@ -118,18 +118,17 @@ const ROUTE_META: Record<string, RouteMeta> = {
 /** Locale prefixes that appear in the URL path (English is the default, no prefix). */
 const LOCALE_PREFIXES = new Set([
   "es", "pt-BR", "pt-PT", "fr", "de", "it", "nl", "hu", "pl", "tr",
-  "ru", "uk", "ar", "hi", "bn", "id", "vi", "th", "ja", "zh-CN", "zh-TW",
+  "ru", "uk", "ar", "fa", "hi", "bn", "id", "vi", "th", "ja", "zh-CN", "zh-TW",
 ]);
 
-/** Strip locale prefix from a pathname and return the canonical base route. */
+/** Strip locale prefix and normalize trailing slash; returns a key matchable in ROUTE_META. */
 export function getBaseRoute(pathname: string): string {
   const parts = pathname.split("/").filter(Boolean);
   const first = parts[0];
-  if (first !== undefined && LOCALE_PREFIXES.has(first)) {
-    const rest = parts.slice(1).join("/");
-    return rest ? `/${rest}` : "/";
-  }
-  return pathname || "/";
+  const baseParts = (first !== undefined && LOCALE_PREFIXES.has(first))
+    ? parts.slice(1)
+    : parts;
+  return baseParts.length > 0 ? `/${baseParts.join("/")}` : "/";
 }
 
 /** Replace per-page meta in the index.html HTML string. */
@@ -327,16 +326,25 @@ export default {
     const headers = new Headers(response.headers);
     headers.set("Link", LINK_HEADER);
 
-    // Inject per-route meta tags into HTML responses
+    // Inject per-route meta tags into HTML responses.
+    // Skip HEAD requests and non-200/non-body statuses, and responses that
+    // are already compressed (Content-Encoding would corrupt the rewritten body).
     const contentType = response.headers.get("Content-Type") ?? "";
-    if (contentType.includes("text/html")) {
+    const contentEncoding = response.headers.get("Content-Encoding");
+    const canTransform =
+      request.method !== "HEAD" &&
+      response.status === 200 &&
+      contentType.includes("text/html") &&
+      !contentEncoding;
+    if (canTransform) {
       const baseRoute = getBaseRoute(url.pathname);
       const meta = ROUTE_META[baseRoute];
       if (meta) {
-        const canonicalUrl = `${BASE_URL}${url.pathname === "/" ? "" : url.pathname}` || BASE_URL;
+        const canonicalUrl = new URL(url.pathname, BASE_URL).toString();
         const html = await response.text();
         const transformed = injectRouteMeta(html, meta, canonicalUrl);
         headers.set("Content-Type", "text/html; charset=utf-8");
+        headers.delete("Content-Length"); // body length changed
         return new Response(transformed, { status: response.status, headers });
       }
     }
